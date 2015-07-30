@@ -21,6 +21,13 @@ const GLchar* fragmentShaderSource = "#version 330 core\n"
 "color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
 "}\0";
 
+//const GLchar* fragmentShaderSource2 = "#version 330 core\n"
+//"out vec4 color;\n"
+//"void main()\n"
+//"{\n"
+//"color = vec4(1.0f, 1.0f, 0.0f, 1.0f);\n"
+//"}\0";
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
 	// When a user presses the escape key, we set the WindowShouldClose property to true,
@@ -81,7 +88,7 @@ int main()
 	glAttachShader(shaderProgram, vertexShader);
 	glAttachShader(shaderProgram, fragmentShader);
 	glLinkProgram(shaderProgram);
-	glDeleteShader(vertexShader);
+	//glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
 	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
 	if (!success) {
@@ -89,16 +96,38 @@ int main()
 		std::cout << "ERROR::PROGRAM::SHADER::LINKING_FAILED\n" << std::endl;
 	}
 
+	//GLuint fragmentShader2;
+	//fragmentShader2 = glCreateShader(GL_FRAGMENT_SHADER);
+	//glShaderSource(fragmentShader2, 1, &fragmentShaderSource2, NULL);
+	//glCompileShader(fragmentShader2);
+
+	//GLuint shaderProgram2;
+	//shaderProgram2 = glCreateProgram();
+	//glAttachShader(shaderProgram2, vertexShader);
+	//glAttachShader(shaderProgram2, fragmentShader2);
+	//glLinkProgram(shaderProgram2);
+	//glDeleteShader(vertexShader);
+	//glDeleteShader(fragmentShader2);
+
 	GLfloat vertices[] = {
 		0.5f, 0.5f, 0.0f, // Top Right
 		0.5f, -0.5f, 0.0f, // Bottom Right
 		-0.5f, -0.5f, 0.0f, // Bottom Left
-		-0.5f, 0.5f, 0.0f // Top Left
+		-0.5f, 0.5f, 0.0f, // Top Left
+		//-0.6f, 0.4f, 0.0f,
+		//-0.6f, -0.6f, 0.0f, 
+		//0.4f, -0.6f, 0.0f
 	};
 	GLuint indices[] = {
 		0, 1, 3, // First Triangle
 		1, 2, 3 // Second Triangle
 	};
+
+	//GLfloat vertices1[] = {
+	//	0.5f, 0.5f, 0.0f, 
+	//	0.5f, -0.5f, 0.0f, 
+	//	-0.5f, 0.5f, 0.0f
+	//};
 
 	GLuint VAO;
 	glGenVertexArrays(1, &VAO);
@@ -121,6 +150,23 @@ int main()
 	// 4. Unbind the VAO (NOT the EBO)
 	glBindVertexArray(0);
 
+	//GLfloat vertices2[] = {
+	//	-0.6f, 0.4f, 0.0f,
+	//	-0.6f, -0.6f, 0.0f,
+	//	0.4f, -0.6f, 0.0f
+	//};
+
+	//GLuint VAO2;
+	//glGenVertexArrays(1, &VAO2);
+	//GLuint VBO2;
+	//glGenBuffers(1, &VBO2);
+
+	//glBindVertexArray(VAO2);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices2), vertices2, GL_STATIC_DRAW);
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	//glEnableVertexAttribArray(0);
+	//glBindVertexArray(0);
 
 	// Program loop
 	while (!glfwWindowShouldClose(window)) {
@@ -134,7 +180,13 @@ int main()
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		//glDrawArrays(GL_TRIANGLES, 3, 3);
 		glBindVertexArray(0);
+		//glUseProgram(shaderProgram2);
+		//glBindVertexArray(VAO2);
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		//glBindVertexArray(0);
 
 		// Swap the buffers
 		glfwSwapBuffers(window);
