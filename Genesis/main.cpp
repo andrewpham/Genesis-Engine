@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_DEPRECATE
 // GLEW
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -7,19 +8,19 @@
 #include <fstream>
 #include <string>
 
-const GLchar* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 position;\n"
-"void main()\n"
-"{\n"
-"gl_Position = vec4(position.x, position.y, position.z, 1.0);\n"
-"}\0";
-
-const GLchar* fragmentShaderSource = "#version 330 core\n"
-"out vec4 color;\n"
-"void main()\n"
-"{\n"
-"color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-"}\0";
+//const GLchar* vertexShaderSource = "#version 330 core\n"
+//"layout (location = 0) in vec3 position;\n"
+//"void main()\n"
+//"{\n"
+//"gl_Position = vec4(position.x, position.y, position.z, 1.0);\n"
+//"}\0";
+//
+//const GLchar* fragmentShaderSource = "#version 330 core\n"
+//"out vec4 color;\n"
+//"void main()\n"
+//"{\n"
+//"color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+//"}\0";
 
 //const GLchar* fragmentShaderSource2 = "#version 330 core\n"
 //"out vec4 color;\n"
@@ -27,6 +28,28 @@ const GLchar* fragmentShaderSource = "#version 330 core\n"
 //"{\n"
 //"color = vec4(1.0f, 1.0f, 0.0f, 1.0f);\n"
 //"}\0";
+
+/* A simple function that will read a file into an allocated char pointer buffer */
+char* filetobuf(char *file)
+{
+	FILE *fptr;
+	long length;
+	char *buf;
+
+	fptr = fopen(file, "rb"); /* Open file for reading */
+	if (!fptr) /* Return NULL on failure */
+		return NULL;
+	fseek(fptr, 0, SEEK_END); /* Seek to the end of the file */
+	length = ftell(fptr); /* Find out how many bytes into the file we are */
+	buf = (char*)malloc(length + 1); /* Allocate a buffer for the entire length of the file and a null terminator */
+	fseek(fptr, 0, SEEK_SET); /* Go back to the beginning of the file */
+	fread(buf, length, 1, fptr); /* Read the contents of the file in to the buffer */
+	fclose(fptr); /* Close the file */
+	buf[length] = 0; /* Null terminator */
+
+	return buf; /* Return the buffer */
+}
+
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
@@ -63,6 +86,7 @@ int main()
 
 	GLuint vertexShader;
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	const GLchar* vertexShaderSource = filetobuf("Shaders/shader.vert");
 	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
 	glCompileShader(vertexShader);
 	GLint success;
@@ -75,6 +99,7 @@ int main()
 
 	GLuint fragmentShader;
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	const GLchar* fragmentShaderSource = filetobuf("Shaders/shader.frag");
 	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
 	glCompileShader(fragmentShader);
 	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
