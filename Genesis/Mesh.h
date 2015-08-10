@@ -10,9 +10,11 @@ using namespace std;
 #include <GL/glew.h> // Contains all the necessery OpenGL includes
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-// Other includes
-#include "Shader.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
+#include "Shader.h"
 
 struct Vertex {
 	// Position
@@ -26,11 +28,14 @@ struct Vertex {
 struct Texture {
 	GLuint id;
 	string type;
-	string path;
+	aiString path;
 };
 
 class Mesh {
 public:
+	/*  Render data  */
+	GLuint VAO, VBO, EBO;
+
 	/*  Mesh Data  */
 	vector<Vertex> vertices;
 	vector<GLuint> indices;
@@ -89,9 +94,6 @@ public:
 	}
 
 private:
-	/*  Render data  */
-	GLuint VAO, VBO, EBO;
-
 	/*  Functions    */
 	// Initializes all the buffer objects/arrays
 	void setupMesh()

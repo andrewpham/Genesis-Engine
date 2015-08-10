@@ -1,6 +1,3 @@
-// Std. Includes
-#include <iostream>
-
 // GLEW
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -8,29 +5,26 @@
 // GLFW
 #include <GLFW/glfw3.h>
 
-// Other Libs
-#include <SOIL.h>
+// GL includes
+#include "Shader.h"
+#include "Camera.h"
+#include "Model.h"
 
-// GLM Mathematics
+// GLM Mathemtics
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-// Other includes
-#include "Shader.h"
-#include "Texture.h"
-#include "Camera.h"
+// Other Libs
+#include <SOIL.h>
+
+// Properties
+GLuint screenWidth = 800, screenHeight = 600;
 
 // Function prototypes
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
-void do_movement();
-
-GLfloat mixValue = 0.2f;
-
-// Window dimensions
-const GLuint WIDTH = 800, HEIGHT = 600;
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void Do_Movement();
 
 // Camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -38,14 +32,10 @@ bool keys[1024];
 GLfloat lastX = 400, lastY = 300;
 bool firstMouse = true;
 
-// Deltatime
-GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
-GLfloat lastFrame = 0.0f;	// Time of last frame
+GLfloat deltaTime = 0.0f;
+GLfloat lastFrame = 0.0f;
 
-// Light attributes
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
-
-// The MAIN function, from here we start the application and run the game loop
+// The MAIN function, from here we start our application and run our Game loop
 int main()
 {
 	// Init GLFW
@@ -55,139 +45,277 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	// Create a GLFWwindow object that we can use for GLFW's functions
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "Genesis", nullptr, nullptr); // Windowed
 	glfwMakeContextCurrent(window);
 
 	// Set the required callback functions
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
-	glfwSetScrollCallback(window, scroll_callback);
 
-	// GLFW Options
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	// Options
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	// Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
-	glewExperimental = GL_TRUE;
 	// Initialize GLEW to setup the OpenGL Function pointers
+	glewExperimental = GL_TRUE;
 	glewInit();
 
 	// Define the viewport dimensions
-	glViewport(0, 0, WIDTH, HEIGHT);
+	glViewport(0, 0, screenWidth, screenHeight);
 
 	// Setup some OpenGL options
 	glEnable(GL_DEPTH_TEST);
 
-	// Build and compile our shader program
-	Shader ourShader("Shaders/shader.vert", "Shaders/shader.frag");
-	Shader lampShader("Shaders/lamp.vert", "Shaders/lamp.frag");
+	// Setup and compile our shaders
+	//Shader shaderRed("shaders/ubo.vs", "shaders/ubo_red.frag");
+	//Shader shaderGreen("shaders/ubo.vs", "shaders/ubo_green.frag");
+	//Shader shaderBlue("shaders/ubo.vs", "shaders/ubo_blue.frag");
+	//Shader shaderYellow("shaders/ubo.vs", "shaders/ubo_yellow.frag");
+	//Shader shader("Shaders/geometry.vs", "Shaders/geometry.frag");
+	//Shader normalShader("Shaders/normals.vs", "Shaders/normals.frag", "Shaders/normals.gs");
+	Shader planetShader("Shaders/advanced.vs", "Shaders/advanced.frag");
+	Shader instanceShader("Shaders/instancing.vs", "Shaders/instancing.frag");
 
-	GLfloat vertices[] = {
-		// Positions           // Normals           // Texture Coords
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-		0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
-		0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-		0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+	// Load models
+	//Model nanosuit("Nanosuit/nanosuit.obj");
+	Model planet("objects/planet.obj");
+	Model rock("objects/rock.obj");
 
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-		0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
-		0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-		0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+	// Set projection matrix
+	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)screenWidth / (GLfloat)screenHeight, 1.0f, 10000.0f);
+	planetShader.Use();
+	glUniformMatrix4fv(glGetUniformLocation(planetShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	// Also of instance shader
+	instanceShader.Use();
+	glUniformMatrix4fv(glGetUniformLocation(instanceShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	//// Also one for normal shader
+	//normalShader.Use();
+	//glUniformMatrix4fv(glGetUniformLocation(normalShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+#pragma region "object_initialization"
 
-		0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-		0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-		0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-		0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-		0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-		0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+	//GLfloat cubeVertices[] = {
+	//	-0.5f, -0.5f, -0.5f,
+	//	0.5f,  0.5f, -0.5f,
+	//	0.5f, -0.5f, -0.5f,
+	//	0.5f,  0.5f, -0.5f,
+	//	-0.5f, -0.5f, -0.5f,
+	//	-0.5f,  0.5f, -0.5f,
 
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-		0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
-		0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-		0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+	//	-0.5f, -0.5f,  0.5f,
+	//	0.5f, -0.5f,  0.5f,
+	//	0.5f,  0.5f,  0.5f,
+	//	0.5f,  0.5f,  0.5f,
+	//	-0.5f,  0.5f,  0.5f,
+	//	-0.5f, -0.5f,  0.5f,
 
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
-		0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-		0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-		0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
-	};
-	// Positions all containers
-	glm::vec3 cubePositions[] = {
-		glm::vec3(0.0f,  0.0f,  0.0f),
-		glm::vec3(2.0f,  5.0f, -15.0f),
-		glm::vec3(-1.5f, -2.2f, -2.5f),
-		glm::vec3(-3.8f, -2.0f, -12.3f),
-		glm::vec3(2.4f, -0.4f, -3.5f),
-		glm::vec3(-1.7f,  3.0f, -7.5f),
-		glm::vec3(1.3f, -2.0f, -2.5f),
-		glm::vec3(1.5f,  2.0f, -2.5f),
-		glm::vec3(1.5f,  0.2f, -1.5f),
-		glm::vec3(-1.3f,  1.0f, -1.5f)
-	};
-	// Positions of the point lights
-	glm::vec3 pointLightPositions[] = {
-		glm::vec3(0.7f,  0.2f,  2.0f),
-		glm::vec3(2.3f, -3.3f, -4.0f),
-		glm::vec3(-4.0f,  2.0f, -12.0f),
-		glm::vec3(0.0f,  0.0f, -3.0f)
-	};
+	//	-0.5f,  0.5f,  0.5f,
+	//	-0.5f,  0.5f, -0.5f,
+	//	-0.5f, -0.5f, -0.5f,
+	//	-0.5f, -0.5f, -0.5f,
+	//	-0.5f, -0.5f,  0.5f,
+	//	-0.5f,  0.5f,  0.5f,
 
-	// Set the container's VAO (and VBO)
-	GLuint VBO, VAO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	// Bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s).
-	glBindVertexArray(VAO);
+	//	0.5f,  0.5f,  0.5f,
+	//	0.5f, -0.5f, -0.5f,
+	//	0.5f,  0.5f, -0.5f,
+	//	0.5f, -0.5f, -0.5f,
+	//	0.5f,  0.5f,  0.5f,
+	//	0.5f, -0.5f,  0.5f,
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	//	-0.5f, -0.5f, -0.5f,
+	//	0.5f, -0.5f, -0.5f,
+	//	0.5f, -0.5f,  0.5f,
+	//	0.5f, -0.5f,  0.5f,
+	//	-0.5f, -0.5f,  0.5f,
+	//	-0.5f, -0.5f, -0.5f,
 
-	// Position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
-	// Normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(1);
-	// Texture attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(2);
+	//	-0.5f,  0.5f, -0.5f,
+	//	0.5f,  0.5f,  0.5f,
+	//	0.5f,  0.5f, -0.5f,
+	//	0.5f,  0.5f,  0.5f,
+	//	-0.5f,  0.5f, -0.5f,
+	//	-0.5f,  0.5f,  0.5f
+	//};
+	//GLfloat points[] = {
+	//	-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // Top-left
+	//	0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // Top-right
+	//	0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
+	//	-0.5f, -0.5f, 1.0f, 1.0f, 0.0f  // Bottom-left
+	//};
+	//GLfloat quadVertices[] = {
+	//	// Positions     // Colors
+	//	-0.05f,  0.05f,  1.0f, 0.0f, 0.0f,
+	//	0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
+	//	-0.05f, -0.05f,  0.0f, 0.0f, 1.0f,
 
-	glBindVertexArray(0); // Unbind VAO
+	//	-0.05f,  0.05f,  1.0f, 0.0f, 0.0f,
+	//	0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
+	//	0.05f,  0.05f,  0.0f, 1.0f, 1.0f
+	//};
 
-	// Then, we set the light's VAO (VBO stays the same. After all, the vertices are the same for the light object (also a 3D cube))
-	GLuint lightVAO;
-	glGenVertexArrays(1, &lightVAO);
-	glBindVertexArray(lightVAO);
-	// We only need to bind to the VBO, the container's VBO's data already contains the correct data.
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	// Set the vertex attributes (only position data for our lamp)
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
-	glBindVertexArray(0);
+	//// Setup point VAO
+	//GLuint VAO, VBO;
+	//glGenVertexArrays(1, &VAO);
+	//glGenBuffers(1, &VBO);
+	//glBindVertexArray(VAO);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(points), &points, GL_STATIC_DRAW);
+	//glEnableVertexAttribArray(0);
+	//glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+	//glEnableVertexAttribArray(1);
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
+	//glBindVertexArray(0);
 
-	Texture diffuseMap("container2.png", GL_REPEAT);
-	Texture specularMap("container2_specular.png", GL_REPEAT);
-	//Texture emissionMap("matrix.jpg", GL_REPEAT);
+	//// Setup cube VAO
+	//GLuint cubeVAO, cubeVBO;
+	//glGenVertexArrays(1, &cubeVAO);
+	//glGenBuffers(1, &cubeVBO);
+	//glBindVertexArray(cubeVAO);
+	//glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
+	//glEnableVertexAttribArray(0);
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	//glBindVertexArray(0);
 
-	// Set texture units
-	ourShader.Use();
-	glUniform1i(glGetUniformLocation(ourShader.Program, "material.diffuse"), 0);
-	glUniform1i(glGetUniformLocation(ourShader.Program, "material.specular"), 1);
+	// Generate a large list of semi-random model transformation matrices
+	GLuint amount = 100000;
+	glm::mat4* modelMatrices;
+	modelMatrices = new glm::mat4[amount];
+	srand(glfwGetTime()); // initialize random seed	
+	GLfloat radius = 150.0f;
+	GLfloat offset = 25.0f;
+	for (GLuint i = 0; i < amount; i++)
+	{
+		glm::mat4 model;
+		// 1. Translation: Randomly displace along circle with radius 'radius' in range [-offset, offset]
+		GLfloat angle = (GLfloat)i / (GLfloat)amount * 360.0f;
+		GLfloat displacement = (rand() % (GLint)(2 * offset * 100)) / 100.0f - offset;
+		GLfloat x = sin(angle) * radius + displacement;
+		displacement = (rand() % (GLint)(2 * offset * 100)) / 100.0f - offset;
+		GLfloat y = -2.5f + displacement * 0.4f; // Keep height of asteroid field smaller compared to width of x and z
+		displacement = (rand() % (GLint)(2 * offset * 100)) / 100.0f - offset;
+		GLfloat z = cos(angle) * radius + displacement;
+		model = glm::translate(model, glm::vec3(x, y, z));
+
+		// 2. Scale: Scale between 0.05 and 0.25f
+		GLfloat scale = (rand() % 20) / 100.0f + 0.05;
+		model = glm::scale(model, glm::vec3(scale));
+
+		// 3. Rotation: add random rotation around a (semi)randomly picked rotation axis vector
+		GLfloat rotAngle = (rand() % 360);
+		model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
+
+		// 4. Now add to list of matrices
+		modelMatrices[i] = model;
+	}
+
+	// Set transformation matrices as an instance vertex attribute (with divisor 1)
+	for (GLuint i = 0; i < rock.meshes.size(); i++)
+	{
+		GLuint VAO = rock.meshes[i].VAO;
+		GLuint buffer;
+		glBindVertexArray(VAO);
+		glGenBuffers(1, &buffer);
+		glBindBuffer(GL_ARRAY_BUFFER, buffer);
+		glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
+		// Set attribute pointers for matrix (4 times vec4)
+		glEnableVertexAttribArray(3);
+		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)0);
+		glEnableVertexAttribArray(4);
+		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)(sizeof(glm::vec4)));
+		glEnableVertexAttribArray(5);
+		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)(2 * sizeof(glm::vec4)));
+		glEnableVertexAttribArray(6);
+		glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)(3 * sizeof(glm::vec4)));
+
+		glVertexAttribDivisor(3, 1);
+		glVertexAttribDivisor(4, 1);
+		glVertexAttribDivisor(5, 1);
+		glVertexAttribDivisor(6, 1);
+
+		glBindVertexArray(0);
+	}
+
+	//// Generate a list of 100 quad locations/translation-vectors
+	//glm::vec2 translations[100];
+	//int index = 0;
+	//GLfloat offset = 0.1f;
+	//for (GLint y = -10; y < 10; y += 2)
+	//{
+	//	for (GLint x = -10; x < 10; x += 2)
+	//	{
+	//		glm::vec2 translation;
+	//		translation.x = (GLfloat)x / 10.0f + offset;
+	//		translation.y = (GLfloat)y / 10.0f + offset;
+	//		translations[index++] = translation;
+	//	}
+	//}
+
+	//// Store instance data in an array buffer
+	//GLuint instanceVBO;
+	//glGenBuffers(1, &instanceVBO);
+	//glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &translations[0], GL_STATIC_DRAW);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	//// Setup quad VAO
+	//GLuint quadVAO, quadVBO;
+	//glGenVertexArrays(1, &quadVAO);
+	//glGenBuffers(1, &quadVBO);
+	//glBindVertexArray(quadVAO);
+	//glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+	//glEnableVertexAttribArray(0);
+	//glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+	//glEnableVertexAttribArray(1);
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
+	//// Also set instance data
+	//glEnableVertexAttribArray(2);
+	//glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	//glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glVertexAttribDivisor(2, 1);
+	//glBindVertexArray(0);
+
+#pragma endregion
+
+	//// Create a uniform buffer object
+	//// First. We get the relevant block indices
+	//GLuint uniformBlockIndexRed = glGetUniformBlockIndex(shaderRed.Program, "Matrices");
+	//GLuint uniformBlockIndexGreen = glGetUniformBlockIndex(shaderGreen.Program, "Matrices");
+	//GLuint uniformBlockIndexBlue = glGetUniformBlockIndex(shaderBlue.Program, "Matrices");
+	//GLuint uniformBlockIndexYellow = glGetUniformBlockIndex(shaderYellow.Program, "Matrices");
+	//// Then we link each shader's uniform block to this uniform binding point
+	//glUniformBlockBinding(shaderRed.Program, uniformBlockIndexRed, 0);
+	//glUniformBlockBinding(shaderGreen.Program, uniformBlockIndexGreen, 0);
+	//glUniformBlockBinding(shaderBlue.Program, uniformBlockIndexBlue, 0);
+	//glUniformBlockBinding(shaderYellow.Program, uniformBlockIndexYellow, 0);
+	//// Now actually create the buffer
+	//GLuint uboMatrices;
+	//glGenBuffers(1, &uboMatrices);
+	//glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
+	//glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
+	//glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	//// Define the range of the buffer that links to a uniform binding point
+	//glBindBufferRange(GL_UNIFORM_BUFFER, 0, uboMatrices, 0, 2 * sizeof(glm::mat4));
+
+	//// Store the projection matrix (we only have to do this once) (note: we're not using zoom anymore by changing the FoV. We only create the projection matrix once now)
+	//glm::mat4 projection = glm::perspective(45.0f, (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
+	//glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
+	//glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection));
+	//glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	//shader.Use();
+	//for (GLuint i = 0; i < 100; i++)
+	//{
+	//	stringstream ss;
+	//	string index;
+	//	ss << i;
+	//	index = ss.str();
+	//	GLint location = glGetUniformLocation(shader.Program, ("offsets[" + index + "]").c_str());
+	//	glUniform2f(location, translations[i].x, translations[i].y);
+	//}
+
 
 	// Game loop
 	while (!glfwWindowShouldClose(window))
@@ -197,196 +325,121 @@ int main()
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
+		// Check and call events
 		glfwPollEvents();
-		do_movement();
+		Do_Movement();
 
-		// Clear the colorbuffer
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		// Clear buffers
+		glClearColor(0.03f, 0.03f, 0.03f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Use corresponding shader when setting uniforms/drawing objects
-		ourShader.Use();
+		// Add transformation matrices
+		planetShader.Use();
+		glm::mat4 view = camera.GetViewMatrix();
+		glUniformMatrix4fv(glGetUniformLocation(planetShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		instanceShader.Use();
+		glUniformMatrix4fv(glGetUniformLocation(instanceShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 
-		glUniform3f(glGetUniformLocation(ourShader.Program, "viewPos"), camera.Position.x, camera.Position.y, camera.Position.z);
-
-		// Set material properties
-		glUniform1f(glGetUniformLocation(ourShader.Program, "material.shininess"), 32.0f);
-		//glUniform3f(glGetUniformLocation(ourShader.Program, "material.diffuse"), 0.0f, 0.50980392f, 0.50980392f);
-		//glUniform3f(glGetUniformLocation(ourShader.Program, "material.specular"), 0.50196078f, 0.50196078f, 0.50196078f);
-
-		// Directional light
-		glUniform3f(glGetUniformLocation(ourShader.Program, "dirLight.direction"), -0.2f, -1.0f, -0.3f);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "dirLight.ambient"), 0.05f, 0.05f, 0.05f);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "dirLight.diffuse"), 0.4f, 0.4f, 0.4f);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "dirLight.specular"), 0.5f, 0.5f, 0.5f);
-
-		// Point lights
-		glUniform3f(glGetUniformLocation(ourShader.Program, "pointLights[0].position"),
-			pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "pointLights[1].position"),
-			pointLightPositions[1].x, pointLightPositions[1].y, pointLightPositions[1].z);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "pointLights[2].position"),
-			pointLightPositions[2].x, pointLightPositions[2].y, pointLightPositions[2].z);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "pointLights[3].position"),
-			pointLightPositions[3].x, pointLightPositions[3].y, pointLightPositions[3].z);
-		glUniform1f(glGetUniformLocation(ourShader.Program, "pointLights[0].constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(ourShader.Program, "pointLights[1].constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(ourShader.Program, "pointLights[2].constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(ourShader.Program, "pointLights[3].constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(ourShader.Program, "pointLights[0].linear"), 0.09f);
-		glUniform1f(glGetUniformLocation(ourShader.Program, "pointLights[1].linear"), 0.09f);
-		glUniform1f(glGetUniformLocation(ourShader.Program, "pointLights[2].linear"), 0.09f);
-		glUniform1f(glGetUniformLocation(ourShader.Program, "pointLights[3].linear"), 0.09f);
-		glUniform1f(glGetUniformLocation(ourShader.Program, "pointLights[0].quadratic"), 0.032f);
-		glUniform1f(glGetUniformLocation(ourShader.Program, "pointLights[1].quadratic"), 0.032f);
-		glUniform1f(glGetUniformLocation(ourShader.Program, "pointLights[2].quadratic"), 0.032f);
-		glUniform1f(glGetUniformLocation(ourShader.Program, "pointLights[3].quadratic"), 0.032f);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "pointLights[0].ambient"), 0.5f, 0.5f, 0.5f);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "pointLights[1].ambient"), 0.5f, 0.5f, 0.5f);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "pointLights[2].ambient"), 0.5f, 0.5f, 0.5f);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "pointLights[3].ambient"), 0.5f, 0.5f, 0.5f);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "pointLights[0].diffuse"), 0.8f, 0.8f, 0.8f);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "pointLights[1].diffuse"), 0.8f, 0.8f, 0.8f);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "pointLights[2].diffuse"), 0.8f, 0.8f, 0.8f);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "pointLights[3].diffuse"), 0.8f, 0.8f, 0.8f);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "pointLights[0].specular"), 1.0f, 1.0f, 1.0f);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "pointLights[1].specular"), 1.0f, 1.0f, 1.0f);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "pointLights[2].specular"), 1.0f, 1.0f, 1.0f);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "pointLights[3].specular"), 1.0f, 1.0f, 1.0f);
-
-		// SpotLight
-		glUniform3f(glGetUniformLocation(ourShader.Program, "spotLight.position"), camera.Position.x, camera.Position.y, camera.Position.z);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "spotLight.direction"), camera.Front.x, camera.Front.y, camera.Front.z);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "spotLight.ambient"), 0.0f, 0.0f, 0.0f);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "spotLight.diffuse"), 1.0f, 1.0f, 1.0f);
-		glUniform3f(glGetUniformLocation(ourShader.Program, "spotLight.specular"), 1.0f, 1.0f, 1.0f);
-		glUniform1f(glGetUniformLocation(ourShader.Program, "spotLight.constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(ourShader.Program, "spotLight.linear"), 0.09f);
-		glUniform1f(glGetUniformLocation(ourShader.Program, "spotLight.quadratic"), 0.032f);
-		glUniform1f(glGetUniformLocation(ourShader.Program, "spotLight.cutOff"), glm::cos(glm::radians(12.5f)));
-		glUniform1f(glGetUniformLocation(ourShader.Program, "spotLight.outerCutOff"), glm::cos(glm::radians(15.0f)));
-
-		// Create camera transformation
-		glm::mat4 view;
-		view = camera.GetViewMatrix();
-		glm::mat4 projection;
-		projection = glm::perspective(camera.Zoom, (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
-		// Get the uniform locations
-		GLint modelLoc = glGetUniformLocation(ourShader.Program, "model");
-		GLint viewLoc = glGetUniformLocation(ourShader.Program, "view");
-		GLint projLoc = glGetUniformLocation(ourShader.Program, "projection");
-		// Pass the matrices to the shader
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-		// Bind Textures
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, diffuseMap.texture);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, specularMap.texture);
-
-		// Draw containers
-		glBindVertexArray(VAO);
+		// Draw Planet
+		planetShader.Use();
 		glm::mat4 model;
-		for (GLuint i = 0; i < 10; i++) {
-			// Calculate the model matrix for each object and pass it to shader before drawing
-			model = glm::mat4();
-			model = glm::translate(model, cubePositions[i]);
-			GLfloat angle = 20.0f * i;
-			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		model = glm::translate(model, glm::vec3(0.0f, -5.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
+		glUniformMatrix4fv(glGetUniformLocation(planetShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		planet.Draw(planetShader);
 
-			glDrawArrays(GL_TRIANGLES, 0, 36);
+		// Draw meteorites
+		instanceShader.Use();
+		glBindTexture(GL_TEXTURE_2D, rock.textures_loaded[0].id); // Note we also made the textures_loaded vector public (instead of private) from the model class.
+		for (GLuint i = 0; i < rock.meshes.size(); i++)
+		{
+			glBindVertexArray(rock.meshes[i].VAO);
+			glDrawElementsInstanced(GL_TRIANGLES, rock.meshes[i].vertices.size(), GL_UNSIGNED_INT, 0, amount);
+			glBindVertexArray(0);
 		}
-		glBindVertexArray(0);
+		//for (GLuint i = 0; i < amount; i++)
+		//{
+		//	glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(modelMatrices[i]));
+		//	rock.Draw(shader);
+		//}
 
-		//// Also draw the lamp object, again binding the appropriate shader
-		lampShader.Use();
-		// Get location objects for the matrices on the lamp shader (these could be different on a different shader)
-		modelLoc = glGetUniformLocation(lampShader.Program, "model");
-		viewLoc = glGetUniformLocation(lampShader.Program, "view");
-		projLoc = glGetUniformLocation(lampShader.Program, "projection");
-		// Set matrices
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+		//// Draw 100 instanced quads
+		//shader.Use();
+		//glBindVertexArray(quadVAO);
+		//glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100);
+		//glBindVertexArray(0);
 
-		// We now draw as many light bulbs as we have point lights.
-		glBindVertexArray(lightVAO);
-		for (GLuint i = 0; i < 4; i++) {
-			model = glm::mat4();
-			model = glm::translate(model, pointLightPositions[i]);
-			model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
-			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-			// Draw the lamp object
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-		glBindVertexArray(0);
+		//// Add transformation matrices
+		//shader.Use();
+		//glm::mat4 view = camera.GetViewMatrix();
+		//glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		//glm::mat4 model;
+		//glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-		// Swap the screen buffers
+		//// Add time component to geometry shader in the form of a uniform
+		////glUniform1f(glGetUniformLocation(shader.Program, "time"), currentFrame);
+
+		//// Draw model
+		//nanosuit.Draw(shader);
+
+		//// Now set transformation matrices for drawing normals
+		//normalShader.Use();
+		//glUniformMatrix4fv(glGetUniformLocation(normalShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		//glUniformMatrix4fv(glGetUniformLocation(normalShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+		//// And draw model again, this time only drawing normal vectors using the geometry shaders (on top of previous model)
+		//nanosuit.Draw(normalShader);
+
+		//shader.Use();
+		//glBindVertexArray(VAO);
+		//glDrawArrays(GL_POINTS, 0, 4);
+		//glBindVertexArray(0);
+
+		//// Set the view and projection matrix in the uniform block - we only have to do this once per loop iteration.
+		//glm::mat4 view = camera.GetViewMatrix();
+		//glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
+		//glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view));
+		//glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+		//// Draw 4 cubes 
+		//// RED
+		//glBindVertexArray(cubeVAO);
+		//shaderRed.Use();
+		//glm::mat4 model;
+		//model = glm::translate(model, glm::vec3(-0.75f, 0.75f, 0.0f));	// Move top-left
+		//glUniformMatrix4fv(glGetUniformLocation(shaderRed.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
+		//// GREEN
+		//shaderGreen.Use();
+		//model = glm::mat4();
+		//model = glm::translate(model, glm::vec3(0.75f, 0.75f, 0.0f));		// Move top-right
+		//glUniformMatrix4fv(glGetUniformLocation(shaderGreen.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
+		//// BLUE
+		//shaderBlue.Use();
+		//model = glm::mat4();
+		//model = glm::translate(model, glm::vec3(-0.75f, -0.75f, 0.0f));	// Move bottom-left
+		//glUniformMatrix4fv(glGetUniformLocation(shaderBlue.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
+		//// YELLOW
+		//shaderYellow.Use();
+		//model = glm::mat4();
+		//model = glm::translate(model, glm::vec3(0.75f, -0.75f, 0.0f));	// Move bottom-right
+		//glUniformMatrix4fv(glGetUniformLocation(shaderYellow.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
+		//glBindVertexArray(0);
+
+		// Swap the buffers
 		glfwSwapBuffers(window);
 	}
-	// Properly de-allocate all resources once they've outlived their purpose
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteVertexArrays(1, &lightVAO);
-	glDeleteBuffers(1, &VBO);
-	// Terminate GLFW, clearing any resources allocated by GLFW.
+
 	glfwTerminate();
 	return 0;
 }
-
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-	camera.ProcessMouseScroll(yoffset);
-}
-
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
-{
-	if (firstMouse) {
-		lastX = xpos;
-		lastY = ypos;
-		firstMouse = false;
-	}
-
-	GLfloat xoffset = xpos - lastX;
-	GLfloat yoffset = lastY - ypos;
-
-	lastX = xpos;
-	lastY = ypos;
-
-	GLfloat sensitivity = 0.05f;
-	xoffset *= sensitivity;
-	yoffset *= sensitivity;
-
-	camera.ProcessMouseMovement(xoffset, yoffset);
-}
-
-// Is called whenever a key is pressed/released via GLFW
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
-{
-	GLfloat cameraSpeed = 0.05f;
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, GL_TRUE);
-	else if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
-		mixValue += 0.1f;
-		if (mixValue >= 1.0f)
-			mixValue = 1.0f;
-	}
-	else if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
-		mixValue -= 0.1f;
-		if (mixValue <= 0.0f)
-			mixValue = 0.0f;
-	}
-	if (key >= 0 && key < 1024) {
-		if (action == GLFW_PRESS)
-			keys[key] = true;
-		else if (action == GLFW_RELEASE)
-			keys[key] = false;
-	}
-}
+#pragma region "User input"
 
 // Moves/alters the camera positions based on user input
-void do_movement()
+void Do_Movement()
 {
 	// Camera controls
 	if (keys[GLFW_KEY_W])
@@ -398,3 +451,35 @@ void do_movement()
 	if (keys[GLFW_KEY_D])
 		camera.ProcessKeyboard(RIGHT, deltaTime);
 }
+
+// Is called whenever a key is pressed/released via GLFW
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
+{
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, GL_TRUE);
+
+	if (action == GLFW_PRESS)
+		keys[key] = true;
+	else if (action == GLFW_RELEASE)
+		keys[key] = false;
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	GLfloat xoffset = xpos - lastX;
+	GLfloat yoffset = lastY - ypos;
+
+	lastX = xpos;
+	lastY = ypos;
+
+	camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+#pragma endregion
