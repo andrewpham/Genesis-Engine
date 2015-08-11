@@ -53,7 +53,7 @@ int main()
 	glfwSetCursorPosCallback(window, mouse_callback);
 
 	// Options
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// Initialize GLEW to setup the OpenGL Function pointers
 	glewExperimental = GL_TRUE;
@@ -178,12 +178,12 @@ int main()
 	//glBindVertexArray(0);
 
 	// Generate a large list of semi-random model transformation matrices
-	GLuint amount = 100000;
+	GLuint amount = 1000;
 	glm::mat4* modelMatrices;
 	modelMatrices = new glm::mat4[amount];
 	srand(glfwGetTime()); // initialize random seed	
-	GLfloat radius = 150.0f;
-	GLfloat offset = 25.0f;
+	GLfloat radius = 50.0f;
+	GLfloat offset = 2.5f;
 	for (GLuint i = 0; i < amount; i++)
 	{
 		glm::mat4 model;
@@ -192,7 +192,7 @@ int main()
 		GLfloat displacement = (rand() % (GLint)(2 * offset * 100)) / 100.0f - offset;
 		GLfloat x = sin(angle) * radius + displacement;
 		displacement = (rand() % (GLint)(2 * offset * 100)) / 100.0f - offset;
-		GLfloat y = -2.5f + displacement * 0.4f; // Keep height of asteroid field smaller compared to width of x and z
+		GLfloat y = displacement * 0.4f; // Keep height of asteroid field smaller compared to width of x and z
 		displacement = (rand() % (GLint)(2 * offset * 100)) / 100.0f - offset;
 		GLfloat z = cos(angle) * radius + displacement;
 		model = glm::translate(model, glm::vec3(x, y, z));
@@ -377,7 +377,7 @@ int main()
 		//glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
 		//// Add time component to geometry shader in the form of a uniform
-		////glUniform1f(glGetUniformLocation(shader.Program, "time"), currentFrame);
+		//glUniform1f(glGetUniformLocation(shader.Program, "time"), currentFrame);
 
 		//// Draw model
 		//nanosuit.Draw(shader);
