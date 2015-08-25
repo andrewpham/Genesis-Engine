@@ -146,12 +146,12 @@ void render_skybox_demo(GLFWwindow* window)
 
 	// Cubemap (Skybox)
 	vector<const GLchar*> faces;
-	faces.push_back("Textures/right.jpg");
-	faces.push_back("Textures/left.jpg");
-	faces.push_back("Textures/top.jpg");
-	faces.push_back("Textures/bottom.jpg");
-	faces.push_back("Textures/back.jpg");
-	faces.push_back("Textures/front.jpg");
+	faces.push_back("Skybox/right.jpg");
+	faces.push_back("Skybox/left.jpg");
+	faces.push_back("Skybox/top.jpg");
+	faces.push_back("Skybox/bottom.jpg");
+	faces.push_back("Skybox/back.jpg");
+	faces.push_back("Skybox/front.jpg");
 	GLuint cubemapTexture = loadCubemap(faces);
 
 	// Game loop
@@ -216,7 +216,7 @@ void render_exploding_demo(GLFWwindow* window)
 	Shader shader("Shaders/geometry.vs", "Shaders/geometry.frag", "Shaders/geometry.gs");
 
 	// Load models
-	Model nanosuit("Nanosuit/nanosuit.obj");
+	Model katarina("Katarina/Lol_Katarina_Default.obj");
 
 	// Set projection matrix
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)screenWidth / (GLfloat)screenHeight, 1.0f, 100.0f);
@@ -248,7 +248,7 @@ void render_exploding_demo(GLFWwindow* window)
 		glUniform1f(glGetUniformLocation(shader.Program, "time"), currentFrame);
 
 		// Draw model
-		nanosuit.Draw(shader);
+		katarina.Draw(shader);
 
 		// Swap the buffers
 		glfwSwapBuffers(window);

@@ -36,8 +36,8 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	// Render demo
-	render_skybox_demo(window);
-	//render_exploding_demo(window);
+	//render_skybox_demo(window);
+	render_exploding_demo(window);
 	//render_instancing_demo(window);
 
 	return 0;
