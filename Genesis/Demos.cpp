@@ -26,8 +26,7 @@ void render_superbible_demo(GLFWwindow* window)
 	// Setup and compile our shaders
 	Shader shader("Shaders/superbible.vs", "Shaders/superbible.frag");
 
-#pragma region "object_initialization"
-	GLfloat vertex_positions[] =
+	static const GLfloat vertex_positions[] =
 	{
 		-0.25f,  0.25f, -0.25f,
 		-0.25f, -0.25f, -0.25f,
@@ -78,6 +77,11 @@ void render_superbible_demo(GLFWwindow* window)
 		-0.25f,  0.25f, -0.25f
 	};
 
+	GLint proj_location = glGetUniformLocation(shader.Program, "proj_matrix");
+	GLint mv_location = glGetUniformLocation(shader.Program, "mv_matrix");
+	GLfloat aspect = (GLfloat)screenWidth / (GLfloat)screenHeight;
+	GLuint i;
+
 	// Setup cube VAO
 	GLuint VAO, VBO;
 
@@ -104,28 +108,33 @@ void render_superbible_demo(GLFWwindow* window)
 		// Clear buffers
 		static const GLfloat green[] = { 0.0f, 0.25f, 0.0f, 1.0f };
 		static const GLfloat one = 1.0f;
+
+		// Clear the framebuffer with dark green and clear 
+		// the depth buffer to 1.0
 		glViewport(0, 0, screenWidth, screenHeight);
 		glClearBufferfv(GL_COLOR, 0, green);
 		glClearBufferfv(GL_DEPTH, 0, &one);
 
-		// Draw cube
+		// Draw cubes
 		shader.Use();
 		glBindVertexArray(VAO);
 
-		glm::mat4 proj_matrix = glm::perspective(50.0f, (GLfloat)screenWidth / (GLfloat)screenHeight, 0.1f, 1000.0f);
-		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "proj_matrix"), 1, GL_FALSE, glm::value_ptr(proj_matrix));
+		glm::mat4 proj_matrix = glm::perspective(50.0f, aspect, 0.1f, 1000.0f);
+		glUniformMatrix4fv(proj_location, 1, GL_FALSE, glm::value_ptr(proj_matrix));
 
-		float f = (float)currentFrame * 0.3f;
-		glm::mat4 mv_matrix;
-		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -6.0f));
-		mv_matrix = glm::translate(mv_matrix, glm::vec3(sinf(2.1f * f) * 0.5f,
-			cosf(1.7f * f) * 0.5f,
-			sinf(1.3f * f) * cosf(1.5f * f)  * 0.5f));
-		mv_matrix = glm::rotate(mv_matrix, (float)currentFrame * 0.45f, glm::vec3(0.0f, 1.0f, 0.0f));
-		mv_matrix = glm::rotate(mv_matrix, (float)currentFrame * 0.81f, glm::vec3(1.0f, 0.0f, 0.0f));
-		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "mv_matrix"), 1, GL_FALSE, glm::value_ptr(mv_matrix));
-
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		for (i = 0; i < 24; i++)
+		{
+			float f = (float)i + (float)currentFrame * 0.3f;
+			glm::mat4 mv_matrix;
+			mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -6.0f));
+			mv_matrix = glm::rotate(mv_matrix, (float)(currentFrame * 45.0f * M_PI / 180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			mv_matrix = glm::rotate(mv_matrix, (float)(currentFrame * 21.0f * M_PI / 180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+			mv_matrix = glm::translate(mv_matrix, glm::vec3(sinf(2.1f * f) * 2.0f,
+				cosf(1.7f * f) * 2.0f,
+				sinf(1.3f * f) * cosf(1.5f * f)  * 2.0f));
+			glUniformMatrix4fv(mv_location, 1, GL_FALSE, glm::value_ptr(mv_matrix));
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 		glBindVertexArray(0);
 
 		// Swap the buffers
