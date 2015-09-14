@@ -21,6 +21,124 @@ bool firstMouse = true;
 GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
 
+void render_superbible_demo(GLFWwindow* window)
+{
+	// Setup and compile our shaders
+	Shader shader("Shaders/superbible.vs", "Shaders/superbible.frag");
+
+#pragma region "object_initialization"
+	GLfloat vertex_positions[] =
+	{
+		-0.25f,  0.25f, -0.25f,
+		-0.25f, -0.25f, -0.25f,
+		0.25f, -0.25f, -0.25f,
+
+		0.25f, -0.25f, -0.25f,
+		0.25f,  0.25f, -0.25f,
+		-0.25f,  0.25f, -0.25f,
+
+		0.25f, -0.25f, -0.25f,
+		0.25f, -0.25f,  0.25f,
+		0.25f,  0.25f, -0.25f,
+
+		0.25f, -0.25f,  0.25f,
+		0.25f,  0.25f,  0.25f,
+		0.25f,  0.25f, -0.25f,
+
+		0.25f, -0.25f,  0.25f,
+		-0.25f, -0.25f,  0.25f,
+		0.25f,  0.25f,  0.25f,
+
+		-0.25f, -0.25f,  0.25f,
+		-0.25f,  0.25f,  0.25f,
+		0.25f,  0.25f,  0.25f,
+
+		-0.25f, -0.25f,  0.25f,
+		-0.25f, -0.25f, -0.25f,
+		-0.25f,  0.25f,  0.25f,
+
+		-0.25f, -0.25f, -0.25f,
+		-0.25f,  0.25f, -0.25f,
+		-0.25f,  0.25f,  0.25f,
+
+		-0.25f, -0.25f,  0.25f,
+		0.25f, -0.25f,  0.25f,
+		0.25f, -0.25f, -0.25f,
+
+		0.25f, -0.25f, -0.25f,
+		-0.25f, -0.25f, -0.25f,
+		-0.25f, -0.25f,  0.25f,
+
+		-0.25f,  0.25f, -0.25f,
+		0.25f,  0.25f, -0.25f,
+		0.25f,  0.25f,  0.25f,
+
+		0.25f,  0.25f,  0.25f,
+		-0.25f,  0.25f,  0.25f,
+		-0.25f,  0.25f, -0.25f
+	};
+
+	// Setup cube VAO
+	GLuint VAO, VBO;
+
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_positions), vertex_positions, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(0);
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Set frame time
+		GLfloat currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
+		// Check and call events
+		glfwPollEvents();
+
+		// Clear buffers
+		static const GLfloat green[] = { 0.0f, 0.25f, 0.0f, 1.0f };
+		static const GLfloat one = 1.0f;
+		glViewport(0, 0, screenWidth, screenHeight);
+		glClearBufferfv(GL_COLOR, 0, green);
+		glClearBufferfv(GL_DEPTH, 0, &one);
+
+		// Draw cube
+		shader.Use();
+		glBindVertexArray(VAO);
+
+		glm::mat4 proj_matrix = glm::perspective(50.0f, (GLfloat)screenWidth / (GLfloat)screenHeight, 0.1f, 1000.0f);
+		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "proj_matrix"), 1, GL_FALSE, glm::value_ptr(proj_matrix));
+
+		float f = (float)currentFrame * 0.3f;
+		glm::mat4 mv_matrix;
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -6.0f));
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(sinf(2.1f * f) * 0.5f,
+			cosf(1.7f * f) * 0.5f,
+			sinf(1.3f * f) * cosf(1.5f * f)  * 0.5f));
+		mv_matrix = glm::rotate(mv_matrix, (float)currentFrame * 0.45f, glm::vec3(0.0f, 1.0f, 0.0f));
+		mv_matrix = glm::rotate(mv_matrix, (float)currentFrame * 0.81f, glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "mv_matrix"), 1, GL_FALSE, glm::value_ptr(mv_matrix));
+
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+
+		// Swap the buffers
+		glfwSwapBuffers(window);
+	}
+
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteProgram(shader.Program);
+	glDeleteBuffers(1, &VBO);
+
+	glfwTerminate();
+}
+
 void render_skybox_demo(GLFWwindow* window)
 {
 	// Setup and compile our shaders

@@ -3,6 +3,8 @@
 #include <string>
 #include <algorithm>
 #include <vector>
+#define _USE_MATH_DEFINES
+#include <math.h>
 using namespace std;
 
 // GLFW
@@ -17,6 +19,7 @@ void Do_Movement();
 GLuint loadTexture(GLchar*);
 GLuint loadCubemap(vector<const GLchar*>);
 
+void render_superbible_demo(GLFWwindow*);
 void render_skybox_demo(GLFWwindow*);
 void render_exploding_demo(GLFWwindow*);
 void render_instancing_demo(GLFWwindow*);

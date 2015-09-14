@@ -35,9 +35,15 @@ int main()
 	// Setup some OpenGL options
 	glEnable(GL_DEPTH_TEST);
 
+	// Additional options for Superbible demo - comment out when not in use!
+	glEnable(GL_CULL_FACE);
+	glFrontFace(GL_CW);
+	glDepthFunc(GL_LEQUAL);
+
 	// Render demo
+	render_superbible_demo(window);
 	//render_skybox_demo(window);
-	render_exploding_demo(window);
+	//render_exploding_demo(window);
 	//render_instancing_demo(window);
 
 	return 0;
