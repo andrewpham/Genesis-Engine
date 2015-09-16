@@ -3,6 +3,8 @@
 #include "Camera.h"
 #include "Model.h"
 #include "Demos.h"
+#include "sb7ktx.h"
+#include "sb7object.h"
 
 // GLM Mathematics
 #include <glm/glm.hpp>
@@ -21,78 +23,80 @@ bool firstMouse = true;
 GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
 
+const float PI_F = 3.14159265358979f;
+GLuint tex_index = 0;
+
+void generate_texture(float * data, int width, int height)
+{
+	int x, y;
+
+	for (y = 0; y < height; y++)
+	{
+		for (x = 0; x < width; x++)
+		{
+			data[(y * width + x) * 4 + 0] = (float)((x & y) & 0xFF) / 255.0f;
+			data[(y * width + x) * 4 + 1] = (float)((x | y) & 0xFF) / 255.0f;
+			data[(y * width + x) * 4 + 2] = (float)((x ^ y) & 0xFF) / 255.0f;
+			data[(y * width + x) * 4 + 3] = 1.0f;
+		}
+	}
+}
+
 void render_superbible_demo(GLFWwindow* window)
 {
+#define B 0x00, 0x00, 0x00, 0x00
+#define W 0xFF, 0xFF, 0xFF, 0xFF
+	static const GLubyte tex_data[] =
+	{
+		B, W, B, W, B, W, B, W, B, W, B, W, B, W, B, W,
+		W, B, W, B, W, B, W, B, W, B, W, B, W, B, W, B,
+		B, W, B, W, B, W, B, W, B, W, B, W, B, W, B, W,
+		W, B, W, B, W, B, W, B, W, B, W, B, W, B, W, B,
+		B, W, B, W, B, W, B, W, B, W, B, W, B, W, B, W,
+		W, B, W, B, W, B, W, B, W, B, W, B, W, B, W, B,
+		B, W, B, W, B, W, B, W, B, W, B, W, B, W, B, W,
+		W, B, W, B, W, B, W, B, W, B, W, B, W, B, W, B,
+		B, W, B, W, B, W, B, W, B, W, B, W, B, W, B, W,
+		W, B, W, B, W, B, W, B, W, B, W, B, W, B, W, B,
+		B, W, B, W, B, W, B, W, B, W, B, W, B, W, B, W,
+		W, B, W, B, W, B, W, B, W, B, W, B, W, B, W, B,
+		B, W, B, W, B, W, B, W, B, W, B, W, B, W, B, W,
+		W, B, W, B, W, B, W, B, W, B, W, B, W, B, W, B,
+		B, W, B, W, B, W, B, W, B, W, B, W, B, W, B, W,
+		W, B, W, B, W, B, W, B, W, B, W, B, W, B, W, B,
+	};
+#undef B
+#undef W
+
 	// Setup and compile our shaders
 	Shader shader("Shaders/superbible.vs", "Shaders/superbible.frag");
 
-	static const GLfloat vertex_positions[] =
+	GLuint tex_object[2];
+
+	struct
 	{
-		-0.25f,  0.25f, -0.25f,
-		-0.25f, -0.25f, -0.25f,
-		0.25f, -0.25f, -0.25f,
+		GLint mv_matrix;
+		GLint proj_matrix;
+	} uniforms;
 
-		0.25f, -0.25f, -0.25f,
-		0.25f,  0.25f, -0.25f,
-		-0.25f,  0.25f, -0.25f,
+	sb7::object object;
 
-		0.25f, -0.25f, -0.25f,
-		0.25f, -0.25f,  0.25f,
-		0.25f,  0.25f, -0.25f,
+	shader.Use();
+	uniforms.mv_matrix = glGetUniformLocation(shader.Program, "mv_matrix");
+	uniforms.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
 
-		0.25f, -0.25f,  0.25f,
-		0.25f,  0.25f,  0.25f,
-		0.25f,  0.25f, -0.25f,
+	glGenTextures(1, &tex_object[0]);
+	glBindTexture(GL_TEXTURE_2D, tex_object[0]);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGB8, 16, 16);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 16, 16, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-		0.25f, -0.25f,  0.25f,
-		-0.25f, -0.25f,  0.25f,
-		0.25f,  0.25f,  0.25f,
+	tex_object[1] = sb7::ktx::file::load("Textures/pattern1.ktx");
 
-		-0.25f, -0.25f,  0.25f,
-		-0.25f,  0.25f,  0.25f,
-		0.25f,  0.25f,  0.25f,
+	object.load("sb7objects/torus_nrms_tc.sbm");
 
-		-0.25f, -0.25f,  0.25f,
-		-0.25f, -0.25f, -0.25f,
-		-0.25f,  0.25f,  0.25f,
-
-		-0.25f, -0.25f, -0.25f,
-		-0.25f,  0.25f, -0.25f,
-		-0.25f,  0.25f,  0.25f,
-
-		-0.25f, -0.25f,  0.25f,
-		0.25f, -0.25f,  0.25f,
-		0.25f, -0.25f, -0.25f,
-
-		0.25f, -0.25f, -0.25f,
-		-0.25f, -0.25f, -0.25f,
-		-0.25f, -0.25f,  0.25f,
-
-		-0.25f,  0.25f, -0.25f,
-		0.25f,  0.25f, -0.25f,
-		0.25f,  0.25f,  0.25f,
-
-		0.25f,  0.25f,  0.25f,
-		-0.25f,  0.25f,  0.25f,
-		-0.25f,  0.25f, -0.25f
-	};
-
-	GLint proj_location = glGetUniformLocation(shader.Program, "proj_matrix");
-	GLint mv_location = glGetUniformLocation(shader.Program, "mv_matrix");
-	GLfloat aspect = (GLfloat)screenWidth / (GLfloat)screenHeight;
-	GLuint i;
-
-	// Setup cube VAO
-	GLuint VAO, VBO;
-
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_positions), vertex_positions, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	glEnableVertexAttribArray(0);
+	glDepthFunc(GL_LEQUAL);
 
 	// Game loop
 	while (!glfwWindowShouldClose(window))
@@ -104,46 +108,39 @@ void render_superbible_demo(GLFWwindow* window)
 
 		// Check and call events
 		glfwPollEvents();
+		Do_Movement();
 
 		// Clear buffers
-		static const GLfloat green[] = { 0.0f, 0.25f, 0.0f, 1.0f };
-		static const GLfloat one = 1.0f;
+		static const GLfloat gray[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+		static const GLfloat ones[] = { 1.0f };
 
-		// Clear the framebuffer with dark green and clear 
-		// the depth buffer to 1.0
-		glViewport(0, 0, screenWidth, screenHeight);
-		glClearBufferfv(GL_COLOR, 0, green);
-		glClearBufferfv(GL_DEPTH, 0, &one);
+		glClearBufferfv(GL_COLOR, 0, gray);
+		glClearBufferfv(GL_DEPTH, 0, ones);
+
+		glViewport(0, 0, (GLfloat)screenWidth, (GLfloat)screenHeight);
+
+		glBindTexture(GL_TEXTURE_2D, tex_object[tex_index]);
 
 		// Draw cubes
 		shader.Use();
-		glBindVertexArray(VAO);
 
-		glm::mat4 proj_matrix = glm::perspective(50.0f, aspect, 0.1f, 1000.0f);
-		glUniformMatrix4fv(proj_location, 1, GL_FALSE, glm::value_ptr(proj_matrix));
+		glm::mat4 proj_matrix = glm::perspective(60.0f, ((float)screenWidth) / ((float)screenHeight), 0.1f, 1000.0f);
+		glm::mat4 mv_matrix;
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -1.8f));
+		mv_matrix = glm::rotate(mv_matrix, (GLfloat)currentFrame * 19.3f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		mv_matrix = glm::rotate(mv_matrix, (GLfloat)currentFrame * 21.1f * PI_F / 180.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 
-		for (i = 0; i < 24; i++)
-		{
-			float f = (float)i + (float)currentFrame * 0.3f;
-			glm::mat4 mv_matrix;
-			mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -6.0f));
-			mv_matrix = glm::rotate(mv_matrix, (float)(currentFrame * 45.0f * M_PI / 180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-			mv_matrix = glm::rotate(mv_matrix, (float)(currentFrame * 21.0f * M_PI / 180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-			mv_matrix = glm::translate(mv_matrix, glm::vec3(sinf(2.1f * f) * 2.0f,
-				cosf(1.7f * f) * 2.0f,
-				sinf(1.3f * f) * cosf(1.5f * f)  * 2.0f));
-			glUniformMatrix4fv(mv_location, 1, GL_FALSE, glm::value_ptr(mv_matrix));
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-		glBindVertexArray(0);
+		glUniformMatrix4fv(uniforms.mv_matrix, 1, GL_FALSE, glm::value_ptr(mv_matrix));
+		glUniformMatrix4fv(uniforms.proj_matrix, 1, GL_FALSE, glm::value_ptr(proj_matrix));
+
+		object.render();
 
 		// Swap the buffers
 		glfwSwapBuffers(window);
 	}
 
-	glDeleteVertexArrays(1, &VAO);
 	glDeleteProgram(shader.Program);
-	glDeleteBuffers(1, &VBO);
+	glDeleteTextures(2, tex_object);
 
 	glfwTerminate();
 }
@@ -578,6 +575,12 @@ void Do_Movement()
 		camera.ProcessKeyboard(LEFT, deltaTime);
 	if (keys[GLFW_KEY_D])
 		camera.ProcessKeyboard(RIGHT, deltaTime);
+	if (keys[GLFW_KEY_T])
+	{
+		tex_index++;
+		if (tex_index > 1)
+			tex_index = 0;
+	}
 }
 
 // Is called whenever a key is pressed/released via GLFW

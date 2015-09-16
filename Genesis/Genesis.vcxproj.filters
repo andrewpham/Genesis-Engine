@@ -21,6 +21,12 @@
     <ClCompile Include="Demos.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="sb7ktx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sb7object.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -36,6 +42,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Demos.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sb7ktx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sb7object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sb6mfile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
