@@ -32,11 +32,12 @@ int main()
 	// Define the viewport dimensions
 	glViewport(0, 0, screenWidth, screenHeight);
 
-	// Setup some OpenGL options
-	glEnable(GL_DEPTH_TEST);
+	// Setup some OpenGL options - disable when rendering fragmentlist!
+	//glEnable(GL_DEPTH_TEST);
 
 	// Render demo
-	render_superbible_demo(window);
+	render_superbible_fragmentlist(window);
+	//render_superbible_demo(window);
 	//render_skybox_demo(window);
 	//render_exploding_demo(window);
 	//render_instancing_demo(window);

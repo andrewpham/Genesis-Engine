@@ -26,20 +26,127 @@ GLfloat lastFrame = 0.0f;
 const float PI_F = 3.14159265358979f;
 GLuint tex_index = 0;
 
-void generate_texture(float * data, int width, int height)
+void render_superbible_fragmentlist(GLFWwindow* window)
 {
-	int x, y;
-
-	for (y = 0; y < height; y++)
+	struct
 	{
-		for (x = 0; x < width; x++)
-		{
-			data[(y * width + x) * 4 + 0] = (float)((x & y) & 0xFF) / 255.0f;
-			data[(y * width + x) * 4 + 1] = (float)((x | y) & 0xFF) / 255.0f;
-			data[(y * width + x) * 4 + 2] = (float)((x ^ y) & 0xFF) / 255.0f;
-			data[(y * width + x) * 4 + 3] = 1.0f;
-		}
+		GLuint color;
+		GLuint normals;
+	} textures;
+
+	struct uniforms_block
+	{
+		glm::mat4 mv_matrix;
+		glm::mat4 view_matrix;
+		glm::mat4 proj_matrix;
+	};
+
+	GLuint uniforms_buffer;
+
+	struct
+	{
+		GLint mvp;
+	} uniforms;
+
+	sb7::object object;
+
+	GLuint fragment_buffer;
+	GLuint head_pointer_image;
+	GLuint atomic_counter_buffer;
+	GLuint dummy_vao;
+
+	// Setup and compile our shaders
+	Shader clearShader("Shaders/clear.vs", "Shaders/clear.frag");
+	Shader appendShader("Shaders/append.vs", "Shaders/append.frag");
+	Shader resolveShader("Shaders/resolve.vs", "Shaders/resolve.frag");
+
+	appendShader.Use();
+	uniforms.mvp = glGetUniformLocation(appendShader.Program, "mvp");
+
+	glGenBuffers(1, &uniforms_buffer);
+	glBindBuffer(GL_UNIFORM_BUFFER, uniforms_buffer);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(uniforms_block), NULL, GL_DYNAMIC_DRAW);
+
+	object.load("sb7objects/dragon.sbm");
+
+	glGenBuffers(1, &fragment_buffer);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, fragment_buffer);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, 1024 * 1024 * 16, NULL, GL_DYNAMIC_COPY);
+
+	glGenBuffers(1, &atomic_counter_buffer);
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter_buffer);
+	glBufferData(GL_ATOMIC_COUNTER_BUFFER, 4, NULL, GL_DYNAMIC_COPY);
+
+	glGenTextures(1, &head_pointer_image);
+	glBindTexture(GL_TEXTURE_2D, head_pointer_image);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32UI, 1024, 1024);
+
+	glGenVertexArrays(1, &dummy_vao);
+	glBindVertexArray(dummy_vao);
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Set frame time
+		GLfloat currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
+		// Check and call events
+		glfwPollEvents();
+
+		// Clear buffers
+		static const GLfloat zeros[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		static const GLfloat gray[] = { 0.1f, 0.1f, 0.1f, 0.0f };
+		static const GLfloat ones[] = { 1.0f };
+
+		glViewport(0, 0, (float)screenWidth, (float)screenHeight);
+
+		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
+
+		clearShader.Use();
+		glBindVertexArray(dummy_vao);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+		appendShader.Use();
+
+		glm::mat4 model_matrix;
+		model_matrix = glm::scale(model_matrix, glm::vec3(7.0f, 7.0f, 7.0f));
+		glm::vec3 view_position = glm::vec3(cosf(currentFrame * 0.35f) * 120.0f * 2.3f, cosf(currentFrame * 0.4f) * 30.0f * 2.3f,
+			sinf(currentFrame * 0.35f) * 120.0f * 2.3f);
+		glm::mat4 view_matrix = glm::lookAt(view_position, glm::vec3(0.0f, 30.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+		glm::mat4 mv_matrix = view_matrix * model_matrix;
+		glm::mat4 proj_matrix = glm::perspective(50.0f, (float)screenWidth / (float)screenHeight, 0.1f, 1000.0f);
+
+		glUniformMatrix4fv(uniforms.mvp, 1, GL_FALSE, glm::value_ptr(proj_matrix * mv_matrix));
+
+		static const unsigned int zero = 0;
+		glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, atomic_counter_buffer);
+		glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(zero), &zero);
+
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, fragment_buffer);
+
+		glBindImageTexture(0, head_pointer_image, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32UI);
+
+		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
+
+		object.render();
+
+		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
+
+		resolveShader.Use();
+
+		glBindVertexArray(dummy_vao);
+		
+		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
+
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+		// Swap the buffers
+		glfwSwapBuffers(window);
 	}
+
+	glfwTerminate();
 }
 
 void render_superbible_demo(GLFWwindow* window)
@@ -563,26 +670,6 @@ GLuint loadTexture(GLchar* path)
 
 #pragma region "User input"
 
-// Moves/alters the camera positions based on user input
-void Do_Movement()
-{
-	// Camera controls
-	if (keys[GLFW_KEY_W])
-		camera.ProcessKeyboard(FORWARD, deltaTime);
-	if (keys[GLFW_KEY_S])
-		camera.ProcessKeyboard(BACKWARD, deltaTime);
-	if (keys[GLFW_KEY_A])
-		camera.ProcessKeyboard(LEFT, deltaTime);
-	if (keys[GLFW_KEY_D])
-		camera.ProcessKeyboard(RIGHT, deltaTime);
-	if (keys[GLFW_KEY_T])
-	{
-		tex_index++;
-		if (tex_index > 1)
-			tex_index = 0;
-	}
-}
-
 // Is called whenever a key is pressed/released via GLFW
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
@@ -613,4 +700,40 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
+// Moves/alters the camera positions based on user input
+void Do_Movement()
+{
+	// Camera controls
+	if (keys[GLFW_KEY_W])
+		camera.ProcessKeyboard(FORWARD, deltaTime);
+	if (keys[GLFW_KEY_S])
+		camera.ProcessKeyboard(BACKWARD, deltaTime);
+	if (keys[GLFW_KEY_A])
+		camera.ProcessKeyboard(LEFT, deltaTime);
+	if (keys[GLFW_KEY_D])
+		camera.ProcessKeyboard(RIGHT, deltaTime);
+	if (keys[GLFW_KEY_T])
+	{
+		tex_index++;
+		if (tex_index > 1)
+			tex_index = 0;
+	}
+}
+
 #pragma endregion
+
+void generate_texture(float * data, int width, int height)
+{
+	int x, y;
+
+	for (y = 0; y < height; y++)
+	{
+		for (x = 0; x < width; x++)
+		{
+			data[(y * width + x) * 4 + 0] = (float)((x & y) & 0xFF) / 255.0f;
+			data[(y * width + x) * 4 + 1] = (float)((x | y) & 0xFF) / 255.0f;
+			data[(y * width + x) * 4 + 2] = (float)((x ^ y) & 0xFF) / 255.0f;
+			data[(y * width + x) * 4 + 3] = 1.0f;
+		}
+	}
+}

@@ -11,12 +11,14 @@ using namespace std;
 // Properties
 extern GLuint screenWidth, screenHeight;
 
+GLuint loadCubemap(vector<const GLchar*>);
+GLuint loadTexture(GLchar*);
 void key_callback(GLFWwindow*, int, int, int, int);
 void mouse_callback(GLFWwindow*, double, double);
 void Do_Movement();
-GLuint loadTexture(GLchar*);
-GLuint loadCubemap(vector<const GLchar*>);
+void generate_texture(float*, int, int);
 
+void render_superbible_fragmentlist(GLFWwindow*);
 void render_superbible_demo(GLFWwindow*);
 void render_skybox_demo(GLFWwindow*);
 void render_exploding_demo(GLFWwindow*);
