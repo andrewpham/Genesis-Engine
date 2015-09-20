@@ -18,6 +18,7 @@ void mouse_callback(GLFWwindow*, double, double);
 void Do_Movement();
 void generate_texture(float*, int, int);
 
+void render_superbible_squares(GLFWwindow*);
 void render_superbible_fragmentlist(GLFWwindow*);
 void render_superbible_demo(GLFWwindow*);
 void render_skybox_demo(GLFWwindow*);

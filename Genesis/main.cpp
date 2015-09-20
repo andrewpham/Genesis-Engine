@@ -36,7 +36,8 @@ int main()
 	//glEnable(GL_DEPTH_TEST);
 
 	// Render demo
-	render_superbible_fragmentlist(window);
+	render_superbible_squares(window);
+	//render_superbible_fragmentlist(window);
 	//render_superbible_demo(window);
 	//render_skybox_demo(window);
 	//render_exploding_demo(window);
