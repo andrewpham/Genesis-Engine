@@ -25,6 +25,152 @@ GLfloat lastFrame = 0.0f;
 
 const float PI_F = 3.14159265358979f;
 GLuint tex_index = 0;
+MODE mode = MODE_MULTIDRAW;
+bool paused = false;
+bool vsync = false;
+
+void render_superbible_asteroids(GLFWwindow* window)
+{
+	// Setup and compile our shaders
+	Shader shader("Shaders/asteroids.vs", "Shaders/asteroids.frag");
+
+	sb7::object         object;
+
+	GLuint              indirect_draw_buffer;
+	GLuint              draw_index_buffer;
+
+	struct
+	{
+		GLint           time;
+		GLint           view_matrix;
+		GLint           proj_matrix;
+		GLint           viewproj_matrix;
+	} uniforms;
+
+	shader.Use();
+
+	uniforms.time = glGetUniformLocation(shader.Program, "time");
+	uniforms.view_matrix = glGetUniformLocation(shader.Program, "view_matrix");
+	uniforms.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
+	uniforms.viewproj_matrix = glGetUniformLocation(shader.Program, "viewproj_matrix");
+
+	int i;
+
+	object.load("sb7objects/asteroids.sbm");
+
+	glGenBuffers(1, &indirect_draw_buffer);
+	glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirect_draw_buffer);
+	glBufferData(GL_DRAW_INDIRECT_BUFFER, NUM_DRAWS * sizeof(DrawArraysIndirectCommand), NULL, GL_STATIC_DRAW);
+
+	DrawArraysIndirectCommand * cmd = (DrawArraysIndirectCommand *)
+		glMapBufferRange(GL_DRAW_INDIRECT_BUFFER, 0, NUM_DRAWS * sizeof(DrawArraysIndirectCommand), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+
+	for (i = 0; i < NUM_DRAWS; i++)
+	{
+		object.get_sub_object_info(i % object.get_sub_object_count(), cmd[i].first, cmd[i].count);
+		cmd[i].primCount = 1;
+		cmd[i].baseInstance = i;
+	}
+
+	glUnmapBuffer(GL_DRAW_INDIRECT_BUFFER);
+
+	glBindVertexArray(object.get_vao());
+
+	glGenBuffers(1, &draw_index_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, draw_index_buffer);
+	glBufferData(GL_ARRAY_BUFFER, NUM_DRAWS * sizeof(GLuint), NULL, GL_STATIC_DRAW);
+
+	GLuint * draw_index = 
+		(GLuint *)glMapBufferRange(GL_ARRAY_BUFFER,
+								   0, 
+								   NUM_DRAWS * sizeof(GLuint), 
+			GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+
+	for (i = 0; i < NUM_DRAWS; i++)
+	{
+		draw_index[i] = i;
+	}
+
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+
+	glVertexAttribIPointer(10, 1, GL_UNSIGNED_INT, 0, NULL);
+	glVertexAttribDivisor(10, 1);
+	glEnableVertexAttribArray(10);
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+
+	glEnable(GL_CULL_FACE);
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Check and call events
+		glfwPollEvents();
+		Do_Movement();
+
+		int j;
+		static const float one = 1.0f;
+		static const float black[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+
+		static double last_time = 0.0;
+		static double total_time = 0.0;
+
+		// Set frame time
+		GLfloat currentTime = glfwGetTime();
+		if (!paused)
+			total_time += (currentTime - last_time);
+		last_time = currentTime;
+
+		float t = float(total_time);
+		int i = int(total_time * 3.0f);
+
+		// Clear buffers
+		glViewport(0, 0, (float)screenWidth, (float)screenHeight);
+		glClearBufferfv(GL_COLOR, 0, black);
+		glClearBufferfv(GL_DEPTH, 0, &one);
+
+		const glm::mat4 view_matrix = glm::lookAt(glm::vec3(100.0f * cosf(t * 0.023f), 100.0f * cosf(t * 0.023f), 300.0f * sinf(t * 0.037f) - 600.0f),
+			glm::vec3(0.0f, 0.0f, 260.0f),
+			glm::normalize(glm::vec3(0.1f - cosf(t * 0.1f) * 0.3f, 1.0f, 0.0f)));
+		const glm::mat4 proj_matrix = glm::perspective(50.0f,
+			(float)screenWidth / (float)screenHeight,
+			1.0f,
+			2000.0f);
+
+		shader.Use();
+
+		glUniform1f(uniforms.time, t);
+		glUniformMatrix4fv(uniforms.view_matrix, 1, GL_FALSE, glm::value_ptr(view_matrix));
+		glUniformMatrix4fv(uniforms.proj_matrix, 1, GL_FALSE, glm::value_ptr(proj_matrix));
+		glUniformMatrix4fv(uniforms.viewproj_matrix, 1, GL_FALSE, glm::value_ptr(proj_matrix * view_matrix));
+
+		glBindVertexArray(object.get_vao());
+
+		if (mode == MODE_MULTIDRAW)
+		{
+			glMultiDrawArraysIndirect(GL_TRIANGLES, NULL, NUM_DRAWS, 0);
+		}
+		else if (mode == MODE_SEPARATE_DRAWS)
+		{
+			for (j = 0; j < NUM_DRAWS; j++)
+			{
+				GLuint first, count;
+				object.get_sub_object_info(j % object.get_sub_object_count(), first, count);
+				glDrawArraysInstancedBaseInstance(GL_TRIANGLES,
+					first,
+					count,
+					1, j);
+			}
+		}
+
+		// Swap the buffers
+		glfwSwapBuffers(window);
+	}
+
+	glfwTerminate();
+}
 
 void render_superbible_squares(GLFWwindow* window)
 {
@@ -792,6 +938,14 @@ void Do_Movement()
 		tex_index++;
 		if (tex_index > 1)
 			tex_index = 0;
+	}
+	if (keys[GLFW_KEY_P])
+		paused = !paused;
+	if (keys[GLFW_KEY_D])
+	{
+		mode = MODE(mode + 1);
+		if (mode > MODE_MAX)
+			mode = MODE_FIRST;
 	}
 }
 
