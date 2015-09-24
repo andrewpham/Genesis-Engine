@@ -29,6 +29,90 @@ MODE mode = MODE_MULTIDRAW;
 bool paused = false;
 bool vsync = false;
 
+void render_superbible_clipdistance(GLFWwindow* window)
+{
+	// Setup and compile our shaders
+	Shader shader("Shaders/clipdistance.vs", "Shaders/clipdistance.frag");
+
+	sb7::object object;
+
+	struct
+	{
+		GLint proj_matrix;
+		GLint mv_matrix;
+		GLint clip_plane;
+		GLint clip_sphere;
+	} uniforms;
+
+	shader.Use();
+	uniforms.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
+	uniforms.mv_matrix = glGetUniformLocation(shader.Program, "mv_matrix");
+	uniforms.clip_plane = glGetUniformLocation(shader.Program, "clip_plane");
+	uniforms.clip_sphere = glGetUniformLocation(shader.Program, "clip_sphere");
+
+	object.load("sb7objects/dragon.sbm");
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Check and call events
+		glfwPollEvents();
+		Do_Movement();
+
+		// Clear buffers
+		static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		static const GLfloat one = 1.0f;
+
+		static double last_time = 0.0;
+		static double total_time = 0.0;
+
+		// Set frame time
+		GLfloat currentTime = glfwGetTime();
+		if (!paused)
+			total_time += (currentTime - last_time);
+		last_time = currentTime;
+
+		float f = (float)total_time;
+
+		glClearBufferfv(GL_COLOR, 0, black);
+		glClearBufferfv(GL_DEPTH, 0, &one);
+
+		shader.Use();
+
+		glm::mat4 proj_matrix = glm::perspective(50.0f, (float)screenWidth / (float)screenHeight, 0.1f, 1000.0f);
+		glm::mat4 mv_matrix;
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -80.0f));
+		mv_matrix = glm::rotate(mv_matrix, f * 0.34f, glm::vec3(0.0f, 1.0f, 0.0f));
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, -4.0f, 0.0f));
+
+		glm::mat4 plane_matrix;
+		plane_matrix = glm::rotate(plane_matrix, f * 6.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+		plane_matrix = glm::rotate(plane_matrix, f * 7.3f, glm::vec3(0.0f, 1.0f, 0.0f));
+
+		glm::vec4 plane = plane_matrix[0];
+		plane[3] = 0.0f;
+		plane = glm::normalize(plane);
+
+		glm::vec4 clip_sphere = glm::vec4(sinf(f * 0.7f) * 3.0f, cosf(f * 1.9f) * 3.0f, sinf(f * 0.1f) * 3.0f, cosf(f * 1.7f) + 2.5f);
+
+		glUniformMatrix4fv(uniforms.proj_matrix, 1, GL_FALSE, glm::value_ptr(proj_matrix));
+		glUniformMatrix4fv(uniforms.mv_matrix, 1, GL_FALSE, glm::value_ptr(mv_matrix));
+		glUniform4fv(uniforms.clip_plane, 1, glm::value_ptr(plane));
+		glUniform4fv(uniforms.clip_sphere, 1, glm::value_ptr(clip_sphere));
+
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_CLIP_DISTANCE0);
+		glEnable(GL_CLIP_DISTANCE1);
+
+		object.render();
+
+		// Swap the buffers
+		glfwSwapBuffers(window);
+	}
+
+	glfwTerminate();
+}
+
 void render_superbible_asteroids(GLFWwindow* window)
 {
 	// Setup and compile our shaders

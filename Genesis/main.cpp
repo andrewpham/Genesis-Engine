@@ -32,11 +32,12 @@ int main()
 	// Define the viewport dimensions
 	glViewport(0, 0, screenWidth, screenHeight);
 
-	// Setup some OpenGL options - disable when rendering fragmentlist!
+	// Setup some OpenGL options - disable when rendering SB code!
 	//glEnable(GL_DEPTH_TEST);
 
 	// Render demo
-	render_superbible_asteroids(window);
+	render_superbible_clipdistance(window);
+	//render_superbible_asteroids(window);
 	//render_superbible_squares(window);
 	//render_superbible_fragmentlist(window);
 	//render_superbible_demo(window);

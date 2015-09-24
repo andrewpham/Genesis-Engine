@@ -38,6 +38,7 @@ void mouse_callback(GLFWwindow*, double, double);
 void Do_Movement();
 void generate_texture(float*, int, int);
 
+void render_superbible_clipdistance(GLFWwindow*);
 void render_superbible_asteroids(GLFWwindow*);
 void render_superbible_squares(GLFWwindow*);
 void render_superbible_fragmentlist(GLFWwindow*);
