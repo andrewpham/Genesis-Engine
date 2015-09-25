@@ -54,7 +54,7 @@ void render_superbible_tessmodes(GLFWwindow* window)
 		static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 		glClearBufferfv(GL_COLOR, 0, black);
 
-		shader3.Use();
+		shader1.Use();
 		glDrawArrays(GL_PATCHES, 0, 4);
 
 		// Swap the buffers
