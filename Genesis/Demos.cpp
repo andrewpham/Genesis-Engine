@@ -29,6 +29,41 @@ MODE mode = MODE_MULTIDRAW;
 bool paused = false;
 bool vsync = false;
 
+void render_superbible_tessmodes(GLFWwindow* window)
+{
+	// Setup and compile our shaders
+	Shader shader0("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_quads.tcs", "Shaders/tessmodes_quads.tes");
+	Shader shader1("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_triangles.tcs", "Shaders/tessmodes_triangles.tes");
+	Shader shader2("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_triangles.tcs", "Shaders/tessmodes_triangles_as_points.tes");
+	Shader shader3("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_isolines.tcs", "Shaders/tessmodes_isolines.tes");
+
+	GLuint VAO;
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	glPatchParameteri(GL_PATCH_VERTICES, 4);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Check and call events
+		glfwPollEvents();
+
+		// Clear buffers
+		static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		glClearBufferfv(GL_COLOR, 0, black);
+
+		shader3.Use();
+		glDrawArrays(GL_PATCHES, 0, 4);
+
+		// Swap the buffers
+		glfwSwapBuffers(window);
+	}
+
+	glfwTerminate();
+}
+
 void render_superbible_clipdistance(GLFWwindow* window)
 {
 	// Setup and compile our shaders
