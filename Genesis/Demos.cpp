@@ -27,7 +27,106 @@ const float PI_F = 3.14159265358979f;
 GLuint tex_index = 0;
 MODE mode = MODE_MULTIDRAW;
 bool paused = false;
-bool vsync = false;
+
+// Displacement Mapping Controls
+float dmap_depth = false;
+bool enable_displacement = false;
+bool wireframe = false;
+bool enable_fog = false;
+
+void render_superbible_dispmap(GLFWwindow* window)
+{
+	// Setup and compile our shaders
+	Shader shader("Shaders/dispmap.vs", "Shaders/dispmap.frag", "Shaders/dispmap.tcs", "Shaders/dispmap.tes");
+
+	GLuint VAO;
+	GLuint tex_displacement;
+	GLuint tex_color;
+
+	struct
+	{
+		GLint mvp_matrix;
+		GLint mv_matrix;
+		GLint proj_matrix;
+		GLint dmap_depth;
+		GLint enable_fog;
+	} uniforms;
+
+	shader.Use();
+
+	uniforms.mv_matrix = glGetUniformLocation(shader.Program, "mv_matrix");
+	uniforms.mvp_matrix = glGetUniformLocation(shader.Program, "mvp_matrix");
+	uniforms.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
+	uniforms.dmap_depth = glGetUniformLocation(shader.Program, "dmap_depth");
+	uniforms.enable_fog = glGetUniformLocation(shader.Program, "enable_fog");
+	dmap_depth = 6.0f;
+
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	glPatchParameteri(GL_PATCH_VERTICES, 4);
+
+	glEnable(GL_CULL_FACE);
+
+	tex_displacement = sb7::ktx::file::load("Textures/terragen1.ktx");
+	glActiveTexture(GL_TEXTURE1);
+	tex_color = sb7::ktx::file::load("Textures/terragen_color.ktx");
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Check and call events
+		glfwPollEvents();
+		Do_Movement();
+
+		// Clear buffers
+		static const GLfloat black[] = { 0.85f, 0.95f, 1.0f, 1.0f };
+		static const GLfloat one = 1.0f;
+		static double last_time = 0.0;
+		static double total_time = 0.0;
+
+		GLfloat currentTime = glfwGetTime();
+		if (!paused)
+			total_time += (currentTime - last_time);
+		last_time = currentTime;
+
+		float t = (float)total_time * 0.03f;
+		float r = sinf(t * 5.37f) * 15.0f + 16.0f;
+		float h = cosf(t * 4.79f) * 2.0f + 3.2f;
+
+		glViewport(0, 0, screenWidth, screenHeight);
+		glClearBufferfv(GL_COLOR, 0, black);
+		glClearBufferfv(GL_DEPTH, 0, &one);
+
+		glm::mat4 mv_matrix = glm::lookAt(glm::vec3(sinf(t) * r, h, cosf(t) * r), glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+		glm::mat4 proj_matrix = glm::perspective(60.0f, (float)screenWidth / (float)screenHeight, 0.1f, 1000.0f);
+
+		shader.Use();
+
+		glUniformMatrix4fv(uniforms.mv_matrix, 1, GL_FALSE, glm::value_ptr(mv_matrix));
+		glUniformMatrix4fv(uniforms.proj_matrix, 1, GL_FALSE, glm::value_ptr(proj_matrix));
+		glUniformMatrix4fv(uniforms.mvp_matrix, 1, GL_FALSE, glm::value_ptr(proj_matrix * mv_matrix));
+		glUniform1f(uniforms.dmap_depth, enable_displacement ? dmap_depth : 0.0f);
+		glUniform1i(uniforms.enable_fog, enable_fog ? 1 : 0);
+
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
+
+		if (wireframe)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		else
+			glPolygonMode(GL_PATCHES, GL_FILL);
+		glDrawArraysInstanced(GL_PATCHES, 0, 4, 64 * 64);
+
+		// Swap the buffers
+		glfwSwapBuffers(window);
+	}
+
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteProgram(shader.Program);
+
+	glfwTerminate();
+}
 
 void render_superbible_tessmodes(GLFWwindow* window)
 {
@@ -1052,6 +1151,7 @@ void Do_Movement()
 		camera.ProcessKeyboard(LEFT, deltaTime);
 	if (keys[GLFW_KEY_D])
 		camera.ProcessKeyboard(RIGHT, deltaTime);
+	// SB controls
 	if (keys[GLFW_KEY_T])
 	{
 		tex_index++;
@@ -1066,6 +1166,16 @@ void Do_Movement()
 		if (mode > MODE_MAX)
 			mode = MODE_FIRST;
 	}
+	if (keys[GLFW_KEY_APOSTROPHE])
+		dmap_depth += 0.1f;
+	if (keys[GLFW_KEY_SEMICOLON])
+		dmap_depth -= 0.1f;
+	if (keys[GLFW_KEY_F])
+		enable_fog = !enable_fog;
+	if (keys[GLFW_KEY_G])
+		enable_displacement = !enable_displacement;
+	if (keys[GLFW_KEY_H])
+		wireframe = !wireframe;
 }
 
 #pragma endregion

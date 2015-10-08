@@ -36,7 +36,8 @@ int main()
 	//glEnable(GL_DEPTH_TEST);
 
 	// Render demo
-	render_superbible_tessmodes(window);
+	render_superbible_dispmap(window);
+	//render_superbible_tessmodes(window);
 	//render_superbible_clipdistance(window);
 	//render_superbible_asteroids(window);
 	//render_superbible_squares(window);
