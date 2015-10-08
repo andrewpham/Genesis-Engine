@@ -38,6 +38,8 @@ void mouse_callback(GLFWwindow*, double, double);
 void Do_Movement();
 void generate_texture(float*, int, int);
 
+void render_superbible_objectexploder(GLFWwindow*);
+void render_superbible_gsculling(GLFWwindow*);
 void render_superbible_cubicbezier(GLFWwindow*);
 void render_superbible_dispmap(GLFWwindow*);
 void render_superbible_tessmodes(GLFWwindow*);
