@@ -38,6 +38,101 @@ bool enable_fog = false;
 bool show_points = false;
 bool show_cage = false;
 
+void render_superbible_gstessellate(GLFWwindow* window)
+{
+	// Setup and compile our shaders
+	Shader shader("Shaders/gstessellate.vs", "Shaders/gstessellate.frag", "Shaders/gstessellate.gs");
+
+	GLint mv_location;
+	GLint mvp_location;
+	GLint stretch_location;
+	GLuint vao;
+	GLuint buffer;
+
+	shader.Use();
+
+	mv_location = glGetUniformLocation(shader.Program, "mvMatrix");
+	mvp_location = glGetUniformLocation(shader.Program, "mvpMatrix");
+	stretch_location = glGetUniformLocation(shader.Program, "stretch");
+
+	static const GLfloat tetrahedron_verts[] =
+	{
+		0.000f,  0.000f,  1.000f,
+		0.943f,  0.000f, -0.333f,
+		-0.471f,  0.816f, -0.333f,
+		-0.471f, -0.816f, -0.333f
+	};
+
+	static const GLushort tetrahedron_indices[] =
+	{
+		0, 1, 2,
+		0, 2, 3,
+		0, 3, 1,
+		3, 2, 1
+	};
+
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(tetrahedron_verts) + sizeof(tetrahedron_indices), NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(tetrahedron_indices), tetrahedron_indices);
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, sizeof(tetrahedron_indices), sizeof(tetrahedron_verts), tetrahedron_verts);
+
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)sizeof(tetrahedron_indices));
+	glEnableVertexAttribArray(0);
+
+	glEnable(GL_CULL_FACE);
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Check and call events
+		glfwPollEvents();
+
+		// Clear buffers
+		static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		static const GLfloat one = 1.0f;
+		GLfloat currentTime = glfwGetTime();
+		float f = (float)currentTime;
+
+		glViewport(0, 0, screenWidth, screenHeight);
+		glClearBufferfv(GL_COLOR, 0, black);
+		glClearBufferfv(GL_DEPTH, 0, &one);
+
+		shader.Use();
+
+		glm::mat4 proj_matrix = glm::perspective(50.0f,
+			(float)screenWidth / (float)screenHeight,
+			0.1f,
+			1000.0f);
+
+		glm::mat4 mv_matrix;
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -13.0f));
+		mv_matrix = glm::rotate(mv_matrix, (float)currentTime * 71.0f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		mv_matrix = glm::rotate(mv_matrix, (float)currentTime * 10.0f * PI_F / 180.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+
+		glUniformMatrix4fv(mvp_location, 1, GL_FALSE, glm::value_ptr(proj_matrix * mv_matrix));
+
+		glUniformMatrix4fv(mv_location, 1, GL_FALSE, glm::value_ptr(mv_matrix));
+
+		glUniform1f(stretch_location, sinf(f * 4.0f) * 0.75f + 1.0f);
+
+		glBindVertexArray(vao);
+		glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_SHORT, NULL);
+
+		// Swap the buffers
+		glfwSwapBuffers(window);
+	}
+
+	glfwTerminate();
+}
+
 void render_superbible_objectexploder(GLFWwindow* window)
 {
 	// Setup and compile our shaders

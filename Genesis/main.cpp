@@ -36,7 +36,8 @@ int main()
 	//glEnable(GL_DEPTH_TEST);
 
 	// Render demo
-	render_superbible_objectexploder(window);
+	render_superbible_gstessellate(window);
+	//render_superbible_objectexploder(window);
 	//render_superbible_gsculling(window);
 	//render_superbible_cubicbezier(window);
 	//render_superbible_dispmap(window);
