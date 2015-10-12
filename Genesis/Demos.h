@@ -38,6 +38,7 @@ void key_callback(GLFWwindow*, int, int, int, int);
 void mouse_callback(GLFWwindow*, double, double);
 void Do_Movement();
 
+void render_superbible_depthclamp(GLFWwindow*);
 void render_superbible_multiscissor(GLFWwindow*);
 void render_superbible_noperspective(GLFWwindow*);
 void render_superbible_multiviewport(GLFWwindow*);

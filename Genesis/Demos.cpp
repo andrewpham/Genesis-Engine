@@ -46,6 +46,76 @@ int vid_offset = 0;
 // Additional No Perspective Controls
 bool use_perspective = true;
 
+void render_superbible_depthclamp(GLFWwindow* window)
+{
+	// Setup and compile our shaders
+	Shader shader("Shaders/depthclamp.vs", "Shaders/depthclamp.frag");
+
+	GLint mv_location;
+	GLint proj_location;
+	GLint explode_factor_location;
+
+	sb7::object object;
+
+	shader.Use();
+
+	mv_location = glGetUniformLocation(shader.Program, "mv_matrix");
+	proj_location = glGetUniformLocation(shader.Program, "proj_matrix");
+	explode_factor_location = glGetUniformLocation(shader.Program, "explode_factor");
+
+	object.load("sb7objects/dragon.sbm");
+
+	glEnable(GL_CULL_FACE);
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Check and call events
+		glfwPollEvents();
+
+		// Clear buffers
+		static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		static const GLfloat one = 1.0f;
+		GLfloat currentTime = glfwGetTime();
+		float f = (float)currentTime;
+
+		glViewport(0, 0, screenWidth, screenHeight);
+		glClearBufferfv(GL_COLOR, 0, black);
+		glClearBufferfv(GL_DEPTH, 0, &one);
+
+		shader.Use();
+
+		glm::mat4 proj_matrix = glm::perspective(50.0f,
+			(float)screenWidth / (float)screenHeight,
+			1.8f,
+			1000.0f);
+		glUniformMatrix4fv(proj_location, 1, GL_FALSE, glm::value_ptr(proj_matrix));
+
+		glEnable(GL_DEPTH_CLAMP);
+
+		glm::mat4 mv_matrix;
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -20.0f));
+		mv_matrix = glm::rotate(mv_matrix, f * 45.0f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		mv_matrix = glm::rotate(mv_matrix, f * 81.0f * PI_F / 180.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(mv_location, 1, GL_FALSE, glm::value_ptr(mv_matrix));
+
+		glUniform1f(explode_factor_location, sinf((float)currentTime * 3.0f) * cosf((float)currentTime * 4.0f) * 0.7f + 1.1f);
+
+		object.render();
+
+		// Swap the buffers
+		glfwSwapBuffers(window);
+	}
+
+	object.free();
+	glDeleteProgram(shader.Program);
+
+	glfwTerminate();
+}
+
 void render_superbible_multiscissor(GLFWwindow* window)
 {
 	// Setup and compile our shaders
