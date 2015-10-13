@@ -198,7 +198,7 @@ void render_superbible_basicfbo(GLFWwindow* window)
 		GLfloat currentTime = glfwGetTime();
 		float f = (float)currentTime * 0.3f;
 		glm::mat4 mv_matrix;
-		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -4.0f));
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -12.0f));
 		mv_matrix = glm::translate(mv_matrix, glm::vec3(sinf(2.1f * f) * 0.5f,
 			cosf(1.7f * f) * 0.5f,
 			sinf(1.3f * f) * cosf(1.5f * f) * 2.0f));
