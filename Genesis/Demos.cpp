@@ -46,6 +46,209 @@ int vid_offset = 0;
 // Additional No Perspective Controls
 bool use_perspective = true;
 
+void render_superbible_basicfbo(GLFWwindow* window)
+{
+	// Setup and compile our shaders
+	Shader shader1("Shaders/basicfbo.vs", "Shaders/basicfbo.frag");
+	Shader shader2("Shaders/basicfbo.vs", "Shaders/basicfbo2.frag");
+
+	GLuint VAO;
+	GLuint position_buffer;
+	GLuint index_buffer;
+	GLuint FBO;
+	GLuint color_texture;
+	GLuint depth_texture;
+	GLint mv_location;
+	GLint proj_location;
+	GLuint mv_location2;
+	GLuint proj_location2;
+
+	shader1.Use();
+
+	mv_location = glGetUniformLocation(shader1.Program, "mv_matrix");
+	proj_location = glGetUniformLocation(shader1.Program, "proj_matrix");
+	
+	shader2.Use();
+
+	mv_location2 = glGetUniformLocation(shader2.Program, "mv_matrix");
+	proj_location2 = glGetUniformLocation(shader2.Program, "proj_matrix");
+
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	static const GLushort vertex_indices[] =
+	{
+		0, 1, 2,
+		2, 1, 3,
+		2, 3, 4,
+		4, 3, 5,
+		4, 5, 6,
+		6, 5, 7,
+		6, 7, 0,
+		0, 7, 1,
+		6, 0, 2,
+		2, 4, 6,
+		7, 5, 3,
+		7, 3, 1
+	};
+
+	static const GLfloat vertex_data[] =
+	{
+		// Position                 Tex Coord
+		-0.25f, -0.25f,  0.25f,      0.0f, 1.0f,
+		-0.25f, -0.25f, -0.25f,      0.0f, 0.0f,
+		0.25f, -0.25f, -0.25f,      1.0f, 0.0f,
+
+		0.25f, -0.25f, -0.25f,      1.0f, 0.0f,
+		0.25f, -0.25f,  0.25f,      1.0f, 1.0f,
+		-0.25f, -0.25f,  0.25f,      0.0f, 1.0f,
+
+		0.25f, -0.25f, -0.25f,      0.0f, 0.0f,
+		0.25f,  0.25f, -0.25f,      1.0f, 0.0f,
+		0.25f, -0.25f,  0.25f,      0.0f, 1.0f,
+
+		0.25f,  0.25f, -0.25f,      1.0f, 0.0f,
+		0.25f,  0.25f,  0.25f,      1.0f, 1.0f,
+		0.25f, -0.25f,  0.25f,      0.0f, 1.0f,
+
+		0.25f,  0.25f, -0.25f,      1.0f, 0.0f,
+		-0.25f,  0.25f, -0.25f,      0.0f, 0.0f,
+		0.25f,  0.25f,  0.25f,      1.0f, 1.0f,
+
+		-0.25f,  0.25f, -0.25f,      0.0f, 0.0f,
+		-0.25f,  0.25f,  0.25f,      0.0f, 1.0f,
+		0.25f,  0.25f,  0.25f,      1.0f, 1.0f,
+
+		-0.25f,  0.25f, -0.25f,      1.0f, 0.0f,
+		-0.25f, -0.25f, -0.25f,      0.0f, 0.0f,
+		-0.25f,  0.25f,  0.25f,      1.0f, 1.0f,
+
+		-0.25f, -0.25f, -0.25f,      0.0f, 0.0f,
+		-0.25f, -0.25f,  0.25f,      0.0f, 1.0f,
+		-0.25f,  0.25f,  0.25f,      1.0f, 1.0f,
+
+		-0.25f,  0.25f, -0.25f,      0.0f, 1.0f,
+		0.25f,  0.25f, -0.25f,      1.0f, 1.0f,
+		0.25f, -0.25f, -0.25f,      1.0f, 0.0f,
+
+		0.25f, -0.25f, -0.25f,      1.0f, 0.0f,
+		-0.25f, -0.25f, -0.25f,      0.0f, 0.0f,
+		-0.25f,  0.25f, -0.25f,      0.0f, 1.0f,
+
+		-0.25f, -0.25f,  0.25f,      0.0f, 0.0f,
+		0.25f, -0.25f,  0.25f,      1.0f, 0.0f,
+		0.25f,  0.25f,  0.25f,      1.0f, 1.0f,
+
+		0.25f,  0.25f,  0.25f,      1.0f, 1.0f,
+		-0.25f,  0.25f,  0.25f,      0.0f, 1.0f,
+		-0.25f, -0.25f,  0.25f,      0.0f, 0.0f,
+	};
+
+	glGenBuffers(1, &position_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, position_buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data), vertex_data, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), NULL);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid *)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
+
+	glGenBuffers(1, &index_buffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(vertex_indices), vertex_indices, GL_STATIC_DRAW);
+
+	glEnable(GL_CULL_FACE);
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+
+	glGenFramebuffers(1, &FBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+	glGenTextures(1, &color_texture);
+	glBindTexture(GL_TEXTURE_2D, color_texture);
+	glTexStorage2D(GL_TEXTURE_2D, 9, GL_RGBA8, 512, 512);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glGenTextures(1, &depth_texture);
+	glBindTexture(GL_TEXTURE_2D, depth_texture);
+	glTexStorage2D(GL_TEXTURE_2D, 9, GL_DEPTH_COMPONENT32F, 512, 512);
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color_texture, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_texture, 0);
+
+	static const GLenum draw_buffers[] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, draw_buffers);
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Check and call events
+		glfwPollEvents();
+
+		static const GLfloat blue[] = { 0.0f, 0.0f, 0.3f, 1.0f };
+		static const GLfloat one = 1.0f;
+
+		glm::mat4 proj_matrix = glm::perspective(50.0f,
+			(float)screenWidth / (float)screenHeight,
+			0.1f,
+			1000.0f);
+
+		GLfloat currentTime = glfwGetTime();
+		float f = (float)currentTime * 0.3f;
+		glm::mat4 mv_matrix;
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -4.0f));
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(sinf(2.1f * f) * 0.5f,
+			cosf(1.7f * f) * 0.5f,
+			sinf(1.3f * f) * cosf(1.5f * f) * 2.0f));
+		mv_matrix = glm::rotate(mv_matrix, (float)currentTime * 45.0f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		mv_matrix = glm::rotate(mv_matrix, (float)currentTime * 81.0f * PI_F / 180.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+
+		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+		glViewport(0, 0, 512, 512);
+		static const GLfloat green[] = { 0.0f, 0.3f, 0.0f, 1.0f };
+		glClearBufferfv(GL_COLOR, 0, green);
+		glClearBufferfi(GL_DEPTH_STENCIL, 0, 1.0f, 0);
+
+		shader1.Use();
+
+		glUniformMatrix4fv(proj_location, 1, GL_FALSE, glm::value_ptr(proj_matrix));
+		glUniformMatrix4fv(mv_location, 1, GL_FALSE, glm::value_ptr(mv_matrix));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		glViewport(0, 0, screenWidth, screenHeight);
+		glClearBufferfv(GL_COLOR, 0, blue);
+		glClearBufferfv(GL_DEPTH, 0, &one);
+
+		glBindTexture(GL_TEXTURE_2D, color_texture);
+
+		shader2.Use();
+
+		glUniformMatrix4fv(proj_location2, 1, GL_FALSE, glm::value_ptr(proj_matrix));
+		glUniformMatrix4fv(mv_location2, 1, GL_FALSE, glm::value_ptr(mv_matrix));
+
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		// Swap the buffers
+		glfwSwapBuffers(window);
+	}
+
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteProgram(shader1.Program);
+	glDeleteProgram(shader2.Program);
+	glDeleteBuffers(1, &position_buffer);
+	glDeleteFramebuffers(1, &FBO);
+	glDeleteTextures(1, &color_texture);
+
+	glfwTerminate();
+}
+
 void render_superbible_depthclamp(GLFWwindow* window)
 {
 	// Setup and compile our shaders
