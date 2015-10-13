@@ -1445,12 +1445,12 @@ void render_superbible_clipdistance(GLFWwindow* window)
 		glm::mat4 proj_matrix = glm::perspective(50.0f, (float)screenWidth / (float)screenHeight, 0.1f, 1000.0f);
 		glm::mat4 mv_matrix;
 		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -80.0f));
-		mv_matrix = glm::rotate(mv_matrix, f * 0.34f, glm::vec3(0.0f, 1.0f, 0.0f));
+		mv_matrix = glm::rotate(mv_matrix, f * 0.34f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, -4.0f, 0.0f));
 
 		glm::mat4 plane_matrix;
-		plane_matrix = glm::rotate(plane_matrix, f * 6.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-		plane_matrix = glm::rotate(plane_matrix, f * 7.3f, glm::vec3(0.0f, 1.0f, 0.0f));
+		plane_matrix = glm::rotate(plane_matrix, f * 6.0f * PI_F / 180.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+		plane_matrix = glm::rotate(plane_matrix, f * 7.3f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 
 		glm::vec4 plane = plane_matrix[0];
 		plane[3] = 0.0f;
