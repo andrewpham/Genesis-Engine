@@ -38,7 +38,6 @@ void key_callback(GLFWwindow*, int, int, int, int);
 void mouse_callback(GLFWwindow*, double, double);
 void Do_Movement();
 
-void render_superbible_msaanative(GLFWwindow*);
 void render_superbible_polygonsmooth(GLFWwindow*);
 void render_superbible_linesmooth(GLFWwindow*);
 void render_superbible_basicfbo(GLFWwindow*);
