@@ -36,7 +36,10 @@ int main()
 	//glEnable(GL_DEPTH_TEST);
 
 	// Render demo
-	render_superbible_basicfbo(window);
+	render_superbible_msaanative(window);
+	//render_superbible_polygonsmooth(window);
+	//render_superbible_linesmooth(window);
+	//render_superbible_basicfbo(window);
 	//render_superbible_depthclamp(window);
 	//render_superbible_multiscissor(window);
 	//render_superbible_noperspective(window);

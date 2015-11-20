@@ -46,6 +46,337 @@ int vid_offset = 0;
 // Additional No Perspective Controls
 bool use_perspective = true;
 
+void render_superbible_msaanative(GLFWwindow* window)
+{
+	// Setup and compile our shaders
+	Shader shader("Shaders/linesmooth.vs", "Shaders/linesmooth.frag");
+
+	GLuint VAO;
+	GLuint position_buffer;
+	GLuint index_buffer;
+	GLint mv_location;
+	GLint proj_location;
+
+	shader.Use();
+
+	mv_location = glGetUniformLocation(shader.Program, "mv_matrix");
+	proj_location = glGetUniformLocation(shader.Program, "proj_matrix");
+
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	static const GLushort vertex_indices[] =
+	{
+		0, 1, 2,
+		2, 1, 3,
+		2, 3, 4,
+		4, 3, 5,
+		4, 5, 6,
+		6, 5, 7,
+		6, 7, 0,
+		0, 7, 1,
+		6, 0, 2,
+		2, 4, 6,
+		7, 5, 3,
+		7, 3, 1
+	};
+
+	static const GLfloat vertex_positions[] =
+	{
+		-0.25f, -0.25f, -0.25f,
+		-0.25f,  0.25f, -0.25f,
+		0.25f, -0.25f, -0.25f,
+		0.25f,  0.25f, -0.25f,
+		0.25f, -0.25f,  0.25f,
+		0.25f,  0.25f,  0.25f,
+		-0.25f, -0.25f,  0.25f,
+		-0.25f,  0.25f,  0.25f,
+	};
+
+	glGenBuffers(1, &position_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, position_buffer);
+	glBufferData(GL_ARRAY_BUFFER,
+		sizeof(vertex_positions),
+		vertex_positions,
+		GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(0);
+
+	glGenBuffers(1, &index_buffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+		sizeof(vertex_indices),
+		vertex_indices,
+		GL_STATIC_DRAW);
+
+	glEnable(GL_CULL_FACE);
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Check and call events
+		glfwPollEvents();
+
+		// Clear buffers
+		static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		static const GLfloat one = 1.0f;
+
+		glClearBufferfv(GL_COLOR, 0, black);
+
+		shader.Use();
+
+		glm::mat4 proj_matrix = glm::perspective(50.0f,
+			(float)screenWidth / (float)screenHeight,
+			0.1f,
+			1000.0f);
+		glUniformMatrix4fv(proj_location, 1, GL_FALSE, glm::value_ptr(proj_matrix));
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_POLYGON_SMOOTH);
+
+		float currentTime = glfwGetTime();
+		float f = (float)currentTime * 0.3f;
+		currentTime = 3.15;
+		glm::mat4 mv_matrix;
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -4.0f));
+		mv_matrix = glm::rotate(mv_matrix, (float)currentTime * 45.0f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		mv_matrix = glm::rotate(mv_matrix, (float)currentTime * 81.0f * PI_F / 180.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(mv_location, 1, GL_FALSE, glm::value_ptr(mv_matrix));
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
+
+		// Swap the buffers
+		glfwSwapBuffers(window);
+	}
+
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteProgram(shader.Program);
+	glDeleteBuffers(1, &position_buffer);
+
+	glfwTerminate();
+}
+
+void render_superbible_polygonsmooth(GLFWwindow* window)
+{
+	// Setup and compile our shaders
+	Shader shader("Shaders/linesmooth.vs", "Shaders/linesmooth.frag");
+
+	GLuint VAO;
+	GLuint position_buffer;
+	GLuint index_buffer;
+	GLint mv_location;
+	GLint proj_location;
+
+	shader.Use();
+
+	mv_location = glGetUniformLocation(shader.Program, "mv_matrix");
+	proj_location = glGetUniformLocation(shader.Program, "proj_matrix");
+
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	static const GLushort vertex_indices[] =
+	{
+		0, 1, 2,
+		2, 1, 3,
+		2, 3, 4,
+		4, 3, 5,
+		4, 5, 6,
+		6, 5, 7,
+		6, 7, 0,
+		0, 7, 1,
+		6, 0, 2,
+		2, 4, 6,
+		7, 5, 3,
+		7, 3, 1
+	};
+
+	static const GLfloat vertex_positions[] =
+	{
+		-0.25f, -0.25f, -0.25f,
+		-0.25f,  0.25f, -0.25f,
+		0.25f, -0.25f, -0.25f,
+		0.25f,  0.25f, -0.25f,
+		0.25f, -0.25f,  0.25f,
+		0.25f,  0.25f,  0.25f,
+		-0.25f, -0.25f,  0.25f,
+		-0.25f,  0.25f,  0.25f,
+	};
+
+	glGenBuffers(1, &position_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, position_buffer);
+	glBufferData(GL_ARRAY_BUFFER,
+		sizeof(vertex_positions),
+		vertex_positions,
+		GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(0);
+
+	glGenBuffers(1, &index_buffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+		sizeof(vertex_indices),
+		vertex_indices,
+		GL_STATIC_DRAW);
+
+	glEnable(GL_CULL_FACE);
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Check and call events
+		glfwPollEvents();
+
+		// Clear buffers
+		static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		static const GLfloat one = 1.0f;
+
+		glClearBufferfv(GL_COLOR, 0, black);
+
+		shader.Use();
+
+		glm::mat4 proj_matrix = glm::perspective(50.0f,
+			(float)screenWidth / (float)screenHeight,
+			0.1f,
+			1000.0f);
+		glUniformMatrix4fv(proj_location, 1, GL_FALSE, glm::value_ptr(proj_matrix));
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_POLYGON_SMOOTH);
+
+		float currentTime = glfwGetTime();
+		float f = (float)currentTime * 0.3f;
+		currentTime = 3.15;
+		glm::mat4 mv_matrix;
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -4.0f));
+		mv_matrix = glm::rotate(mv_matrix, (float)currentTime * 45.0f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		mv_matrix = glm::rotate(mv_matrix, (float)currentTime * 81.0f * PI_F / 180.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(mv_location, 1, GL_FALSE, glm::value_ptr(mv_matrix));
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
+
+		// Swap the buffers
+		glfwSwapBuffers(window);
+	}
+
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteProgram(shader.Program);
+	glDeleteBuffers(1, &position_buffer);
+
+	glfwTerminate();
+}
+
+void render_superbible_linesmooth(GLFWwindow* window)
+{
+	// Setup and compile our shaders
+	Shader shader("Shaders/linesmooth.vs", "Shaders/linesmooth.frag");
+
+	GLuint VAO;
+	GLuint position_buffer;
+	GLuint index_buffer;
+	GLint mv_location;
+	GLint proj_location;
+
+	shader.Use();
+
+	mv_location = glGetUniformLocation(shader.Program, "mv_matrix");
+	proj_location = glGetUniformLocation(shader.Program, "proj_matrix");
+
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	static const GLushort vertex_indices[] =
+	{
+		0, 1, 2,
+		2, 1, 3,
+		2, 3, 4,
+		4, 3, 5,
+		4, 5, 6,
+		6, 5, 7,
+		6, 7, 0,
+		0, 7, 1,
+		6, 0, 2,
+		2, 4, 6,
+		7, 5, 3,
+		7, 3, 1
+	};
+
+	static const GLfloat vertex_positions[] =
+	{
+		-0.25f, -0.25f, -0.25f,
+		-0.25f,  0.25f, -0.25f,
+		0.25f, -0.25f, -0.25f,
+		0.25f,  0.25f, -0.25f,
+		0.25f, -0.25f,  0.25f,
+		0.25f,  0.25f,  0.25f,
+		-0.25f, -0.25f,  0.25f,
+		-0.25f,  0.25f,  0.25f,
+	};
+
+	glGenBuffers(1, &position_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, position_buffer);
+	glBufferData(GL_ARRAY_BUFFER,
+		sizeof(vertex_positions),
+		vertex_positions,
+		GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(0);
+
+	glGenBuffers(1, &index_buffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+		sizeof(vertex_indices),
+		vertex_indices,
+		GL_STATIC_DRAW);
+
+	glEnable(GL_CULL_FACE);
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Check and call events
+		glfwPollEvents();
+
+		// Clear buffers
+		static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		static const GLfloat one = 1.0f;
+
+		glClearBufferfv(GL_COLOR, 0, black);
+
+		shader.Use();
+
+		glm::mat4 proj_matrix = glm::perspective(50.0f,
+			(float)screenWidth / (float)screenHeight,
+			0.1f,
+			1000.0f);
+		glUniformMatrix4fv(proj_location, 1, GL_FALSE, glm::value_ptr(proj_matrix));
+
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_LINE_SMOOTH);
+
+		float currentTime = glfwGetTime();
+		float f = (float)currentTime * 0.3f;
+		currentTime = 3.15;
+		glm::mat4 mv_matrix;
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -4.0f));
+		mv_matrix = glm::rotate(mv_matrix, (float)currentTime * 45.0f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		mv_matrix = glm::rotate(mv_matrix, (float)currentTime * 81.0f * PI_F / 180.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(mv_location, 1, GL_FALSE, glm::value_ptr(mv_matrix));
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
+
+		// Swap the buffers
+		glfwSwapBuffers(window);
+	}
+
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteProgram(shader.Program);
+	glDeleteBuffers(1, &position_buffer);
+
+	glfwTerminate();
+}
+
 void render_superbible_basicfbo(GLFWwindow* window)
 {
 	// Setup and compile our shaders
