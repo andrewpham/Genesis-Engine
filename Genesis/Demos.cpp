@@ -2586,7 +2586,11 @@ void Do_Movement()
 {
 	// Camera controls
 	if (keys[GLFW_KEY_W])
+	{
 		camera.ProcessKeyboard(FORWARD, deltaTime);
+
+		wireframe = !wireframe;
+	}
 	if (keys[GLFW_KEY_S])
 		camera.ProcessKeyboard(BACKWARD, deltaTime);
 	if (keys[GLFW_KEY_A])
@@ -2601,18 +2605,12 @@ void Do_Movement()
 		mode = MODE(mode + 1);
 		if (mode > MODE_MAX)
 			mode = MODE_FIRST;
+
+		enable_displacement = !enable_displacement;
 	}
 
-	if (keys[GLFW_KEY_APOSTROPHE])
-		dmap_depth += 0.1f;
-	if (keys[GLFW_KEY_SEMICOLON])
-		dmap_depth -= 0.1f;
 	if (keys[GLFW_KEY_F])
 		enable_fog = !enable_fog;
-	if (keys[GLFW_KEY_G])
-		enable_displacement = !enable_displacement;
-	if (keys[GLFW_KEY_H])
-		wireframe = !wireframe;
 
 	if (keys[GLFW_KEY_C])
 		show_cage = !show_cage;
@@ -2623,22 +2621,32 @@ void Do_Movement()
 		mode_no = 0;
 	if (keys[GLFW_KEY_2])
 		mode_no = 1;
-	if (keys[GLFW_KEY_SLASH])
-		vid_offset++;
-	if (keys[GLFW_KEY_PERIOD])
-		vid_offset--;
 	if (keys[GLFW_KEY_M]) // Altered for HDR Tone Mapping!
+	{
 		mode_no = (mode_no + 1) % 3;
-	if (keys[GLFW_KEY_U])
+
 		use_perspective = !use_perspective;
+	}
 
 	// New Keybinds for HDR Tone Mapping
 	if (keys[GLFW_KEY_3])
 		mode_no = 2;
 	if (keys[GLFW_KEY_EQUAL])
+	{
+		dmap_depth += 0.1f;
+
+		vid_offset++;
+
 		exposure *= 1.1f;
+	}
 	if (keys[GLFW_KEY_MINUS])
+	{
+		dmap_depth -= 0.1f;
+
+		vid_offset--;
+
 		exposure /= 1.1f;
+	}
 }
 
 #pragma endregion
