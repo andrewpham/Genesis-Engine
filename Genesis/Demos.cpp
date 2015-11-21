@@ -69,11 +69,35 @@ void render_superbible_hdrtonemap(GLFWwindow* window)
 		} exposure;
 	} uniforms;
 
+	shaderExposure.Use();
+
+	uniforms.exposure.exposure = glGetUniformLocation(shaderExposure.Program, "exposure");
+
+	// Load texture from file
+	tex_src = sb7::ktx::file::load("Textures/treelights_2k.ktx");
+
+	// Now bind it to the context using the GL_TEXTURE_2D binding point
+	glBindTexture(GL_TEXTURE_2D, tex_src);
+
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	static const GLfloat exposureLUT[20] = { 11.0f, 6.0f, 3.2f, 2.8f, 2.2f, 1.90f, 1.80f, 1.80f, 1.70f, 1.70f,  1.60f, 1.60f, 1.50f, 1.50f, 1.40f, 1.40f, 1.30f, 1.20f, 1.10f, 1.00f };
+
+	glGenTextures(1, &tex_lut);
+	glBindTexture(GL_TEXTURE_1D, tex_lut);
+	glTexStorage1D(GL_TEXTURE_1D, 1, GL_R32F, 20);
+	glTexSubImage1D(GL_TEXTURE_1D, 0, 0, 20, GL_RED, GL_FLOAT, exposureLUT);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+
 	// Game loop
 	while (!glfwWindowShouldClose(window))
 	{
 		// Check and call events
 		glfwPollEvents();
+		Do_Movement();
 
 		// Clear buffers
 		static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -81,9 +105,36 @@ void render_superbible_hdrtonemap(GLFWwindow* window)
 
 		glClearBufferfv(GL_COLOR, 0, black);
 
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_1D, tex_lut);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, tex_src);
+
+		switch (mode_no)
+		{
+			case 0:
+				shaderNaive.Use();
+				break;
+			case 1:
+				shaderExposure.Use();
+				glUniform1f(uniforms.exposure.exposure, exposure);
+				break;
+			case 2:
+				shaderAdaptive.Use();
+				break;
+		}
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
 		// Swap the buffers
 		glfwSwapBuffers(window);
 	}
+
+	glDeleteProgram(shaderNaive.Program);
+	glDeleteProgram(shaderExposure.Program);
+	glDeleteProgram(shaderAdaptive.Program);
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteTextures(1, &tex_src);
+	glDeleteTextures(1, &tex_lut);
 
 	glfwTerminate();
 }
