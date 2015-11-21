@@ -46,6 +46,48 @@ int vid_offset = 0;
 // Additional No Perspective Controls
 bool use_perspective = true;
 
+// Additional HDR Tone Mapping Controls
+float exposure = 1.0f;
+
+void render_superbible_hdrtonemap(GLFWwindow* window)
+{
+	// Setup and compile our shaders
+	Shader shaderNaive("Shaders/tonemap.vs", "Shaders/tonemap_naive.frag");
+	Shader shaderExposure("Shaders/tonemap.vs", "Shaders/tonemap_exposure.frag");
+	Shader shaderAdaptive("Shaders/tonemap.vs", "Shaders/tonemap_adaptive.frag");
+
+	GLuint tex_src;
+	GLuint tex_lut;
+
+	GLuint VAO;
+
+	struct
+	{
+		struct
+		{
+			int exposure;
+		} exposure;
+	} uniforms;
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Check and call events
+		glfwPollEvents();
+
+		// Clear buffers
+		static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		static const GLfloat one = 1.0f;
+
+		glClearBufferfv(GL_COLOR, 0, black);
+
+		// Swap the buffers
+		glfwSwapBuffers(window);
+	}
+
+	glfwTerminate();
+}
+
 void render_superbible_polygonsmooth(GLFWwindow* window)
 {
 	// Setup and compile our shaders
@@ -2534,10 +2576,18 @@ void Do_Movement()
 		vid_offset++;
 	if (keys[GLFW_KEY_PERIOD])
 		vid_offset--;
-	if (keys[GLFW_KEY_M])
-		mode_no = (mode_no + 1) % 2;
+	if (keys[GLFW_KEY_M]) // Altered for HDR Tone Mapping!
+		mode_no = (mode_no + 1) % 3;
 	if (keys[GLFW_KEY_U])
 		use_perspective = !use_perspective;
+
+	// New Keybinds for HDR Tone Mapping
+	if (keys[GLFW_KEY_3])
+		mode_no = 2;
+	if (keys[GLFW_KEY_EQUAL])
+		exposure *= 1.1f;
+	if (keys[GLFW_KEY_MINUS])
+		exposure /= 1.1f;
 }
 
 #pragma endregion
