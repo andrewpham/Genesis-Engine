@@ -36,7 +36,9 @@ int main()
 	//glEnable(GL_DEPTH_TEST);
 
 	// Render demo
-	render_superbible_hdrtonemap(window);
+	render_superbible_shapedpoints(window);
+	//render_superbible_starfield(window);
+	//render_superbible_hdrtonemap(window);
 	//render_superbible_polygonsmooth(window);
 	//render_superbible_linesmooth(window);
 	//render_superbible_basicfbo(window);

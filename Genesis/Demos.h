@@ -23,6 +23,11 @@ enum MODE
 	MODE_SEPARATE_DRAWS,
 	MODE_MAX = MODE_SEPARATE_DRAWS
 };
+// Starfield Enum
+enum
+{
+	NUM_STARS = 2000
+};
 
 struct DrawArraysIndirectCommand
 {
@@ -37,7 +42,10 @@ GLuint loadTexture(GLchar*);
 void key_callback(GLFWwindow*, int, int, int, int);
 void mouse_callback(GLFWwindow*, double, double);
 void Do_Movement();
+static inline float random_float();
 
+void render_superbible_shapedpoints(GLFWwindow*);
+void render_superbible_starfield(GLFWwindow*);
 void render_superbible_hdrtonemap(GLFWwindow*);
 void render_superbible_polygonsmooth(GLFWwindow*);
 void render_superbible_linesmooth(GLFWwindow*);

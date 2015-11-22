@@ -49,6 +49,141 @@ bool use_perspective = true;
 // Additional HDR Tone Mapping Controls
 float exposure = 1.0f;
 
+// Random number generator
+static unsigned int seed = 0x13371337;
+
+void render_superbible_shapedpoints(GLFWwindow* window)
+{
+	// Setup and compile our shaders
+	Shader shader("Shaders/shapedpoints.vs", "Shaders/shapedpoints.frag");
+
+	GLuint VAO;
+
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Check and call events
+		glfwPollEvents();
+
+		// Clear buffers
+		static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		static const GLfloat one[] = { 1.0f };
+
+		glClearBufferfv(GL_COLOR, 0, black);
+		glClearBufferfv(GL_DEPTH, 0, one);
+
+		shader.Use();
+
+		glPointSize(200.0f);
+		glBindVertexArray(VAO);
+		glDrawArrays(GL_POINTS, 0, 4);
+
+		// Swap the buffers
+		glfwSwapBuffers(window);
+	}
+
+	glfwTerminate();
+}
+
+void render_superbible_starfield(GLFWwindow* window)
+{
+	// Setup and compile our shaders
+	Shader shader("Shaders/starfield.vs", "Shaders/starfield.frag");
+
+	GLuint star_texture;
+	GLuint star_vao;
+	GLuint star_buffer;
+
+	struct
+	{
+		int time;
+		int proj_matrix;
+	} uniforms;
+
+	shader.Use();
+
+	uniforms.time = glGetUniformLocation(shader.Program, "time");
+	uniforms.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
+
+	star_texture = sb7::ktx::file::load("Textures/star.ktx");
+
+	glGenVertexArrays(1, &star_vao);
+	glBindVertexArray(star_vao);
+
+	struct star_t
+	{
+		glm::vec3 position;
+		glm::vec3 color;
+	};
+
+	glGenBuffers(1, &star_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, star_buffer);
+	glBufferData(GL_ARRAY_BUFFER, NUM_STARS * sizeof(star_t), NULL, GL_STATIC_DRAW);
+
+	star_t * star = (star_t *)glMapBufferRange(GL_ARRAY_BUFFER, 0, NUM_STARS * sizeof(star_t), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+	int i;
+
+	for (i = 0; i < 1000; i++)
+	{
+		star[i].position[0] = (random_float() * 2.0f - 1.0f) * 100.0f;
+		star[i].position[1] = (random_float() * 2.0f - 1.0f) * 100.0f;
+		star[i].position[2] = random_float();
+		star[i].color[0] = 0.8f + random_float() * 0.2f;
+		star[i].color[1] = 0.8f + random_float() * 0.2f;
+		star[i].color[2] = 0.8f + random_float() * 0.2f;
+	}
+
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(star_t), NULL);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(star_t), (void *)sizeof(glm::vec3));
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Check and call events
+		glfwPollEvents();
+
+		// Clear buffers
+		static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		static const GLfloat one[] = { 1.0f };
+		float t = (float)glfwGetTime();
+		glm::mat4 proj_matrix = glm::perspective(50.0f,
+			(float)screenWidth / (float)screenHeight,
+			0.1f,
+			1000.0f);
+
+		t *= 0.1f;
+		t -= floor(t);
+
+		glClearBufferfv(GL_COLOR, 0, black);
+		glClearBufferfv(GL_DEPTH, 0, one);
+
+		shader.Use();
+
+		glUniform1f(uniforms.time, t);
+		glUniformMatrix4fv(uniforms.proj_matrix, 1, GL_FALSE, glm::value_ptr(proj_matrix));
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_ONE, GL_ONE);
+
+		glBindVertexArray(star_vao);
+
+		glEnable(GL_PROGRAM_POINT_SIZE);
+		glDrawArrays(GL_POINTS, 0, NUM_STARS);
+
+		// Swap the buffers
+		glfwSwapBuffers(window);
+	}
+
+	glfwTerminate();
+}
+
 void render_superbible_hdrtonemap(GLFWwindow* window)
 {
 	// Setup and compile our shaders
@@ -2650,3 +2785,17 @@ void Do_Movement()
 }
 
 #pragma endregion
+
+static inline float random_float()
+{
+	float res;
+	unsigned int tmp;
+
+	seed *= 16807;
+
+	tmp = seed ^ (seed >> 4) ^ (seed << 15);
+
+	*((unsigned int *)&res) = (tmp >> 9) | 0x3F800000;
+
+	return (res - 1.0f);
+}
