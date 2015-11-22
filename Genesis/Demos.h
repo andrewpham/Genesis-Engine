@@ -1,27 +1,15 @@
 #pragma once
-// Std. Includes
-#include <string>
-#include <algorithm>
-#include <vector>
-using namespace std;
-
-// GLFW
-#include <GLFW/glfw3.h>
+#include "InputManager.h"
 
 // Properties
 extern GLuint screenWidth, screenHeight;
+
+extern InputManager inputManager;
 
 // Multi-Draw Indirect Enums and Struct
 enum
 {
 	NUM_DRAWS = 50000
-};
-enum MODE
-{
-	MODE_FIRST,
-	MODE_MULTIDRAW = 0,
-	MODE_SEPARATE_DRAWS,
-	MODE_MAX = MODE_SEPARATE_DRAWS
 };
 // Starfield Enum
 enum
@@ -39,9 +27,6 @@ struct DrawArraysIndirectCommand
 
 GLuint loadCubemap(vector<const GLchar*>);
 GLuint loadTexture(GLchar*);
-void key_callback(GLFWwindow*, int, int, int, int);
-void mouse_callback(GLFWwindow*, double, double);
-void Do_Movement();
 static inline float random_float();
 
 void render_superbible_shapedpoints(GLFWwindow*);

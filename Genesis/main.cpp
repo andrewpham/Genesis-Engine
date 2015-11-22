@@ -5,6 +5,36 @@
 // GL includes
 #include "Demos.h"
 
+// Is called whenever a key is pressed/released via GLFW
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode)
+{
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, GL_TRUE);
+
+	if (action == GLFW_PRESS)
+		inputManager._keys[key] = true;
+	else if (action == GLFW_RELEASE)
+		inputManager._keys[key] = false;
+}
+
+void mouseCallback(GLFWwindow* window, double xpos, double ypos)
+{
+	if (inputManager.getFirstMouse())
+	{
+		inputManager.setLastX(xpos);
+		inputManager.setLastY(ypos);
+		inputManager.setFirstMouse(false);
+	}
+
+	GLfloat xoffset = xpos - inputManager.getLastX();
+	GLfloat yoffset = inputManager.getLastY() - ypos;
+
+	inputManager.setLastX(xpos);
+	inputManager.setLastY(ypos);
+
+	inputManager._camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
 // The MAIN function, from here we start our application and run our Game loop
 int main()
 {
@@ -19,8 +49,8 @@ int main()
 	glfwMakeContextCurrent(window);
 
 	// Set the required callback functions
-	glfwSetKeyCallback(window, key_callback);
-	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetKeyCallback(window, keyCallback);
+	glfwSetCursorPosCallback(window, mouseCallback);
 
 	// Options
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -36,9 +66,9 @@ int main()
 	//glEnable(GL_DEPTH_TEST);
 
 	// Render demo
-	render_superbible_shapedpoints(window);
+	//render_superbible_shapedpoints(window);
 	//render_superbible_starfield(window);
-	//render_superbible_hdrtonemap(window);
+	render_superbible_hdrtonemap(window);
 	//render_superbible_polygonsmooth(window);
 	//render_superbible_linesmooth(window);
 	//render_superbible_basicfbo(window);

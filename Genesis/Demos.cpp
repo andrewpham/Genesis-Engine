@@ -1,6 +1,5 @@
 // GL includes
 #include "Shader.h"
-#include "Camera.h"
 #include "Model.h"
 #include "Demos.h"
 #include "sb7ktx.h"
@@ -14,40 +13,9 @@
 // Properties
 GLuint screenWidth = 800, screenHeight = 600;
 
-// Camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-bool keys[1024];
-GLfloat lastX = 400, lastY = 300;
-bool firstMouse = true;
-
-GLfloat deltaTime = 0.0f;
-GLfloat lastFrame = 0.0f;
+InputManager inputManager;
 
 const float PI_F = 3.14159265358979f;
-
-// Multi-Draw Indirect Controls
-MODE mode = MODE_MULTIDRAW;
-bool paused = false;
-
-// Additional Displacement Mapping Controls
-float dmap_depth = false;
-bool enable_displacement = false;
-bool wireframe = false;
-bool enable_fog = false;
-
-// Additional Cubic Bezier Controls
-bool show_points = false;
-bool show_cage = false;
-
-// Additional GS Quads Controls
-int mode_no = 0;
-int vid_offset = 0;
-
-// Additional No Perspective Controls
-bool use_perspective = true;
-
-// Additional HDR Tone Mapping Controls
-float exposure = 1.0f;
 
 // Random number generator
 static unsigned int seed = 0x13371337;
@@ -232,7 +200,7 @@ void render_superbible_hdrtonemap(GLFWwindow* window)
 	{
 		// Check and call events
 		glfwPollEvents();
-		Do_Movement();
+		inputManager.checkKeysPressed();
 
 		// Clear buffers
 		static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -245,14 +213,14 @@ void render_superbible_hdrtonemap(GLFWwindow* window)
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, tex_src);
 
-		switch (mode_no)
+		switch (inputManager.getModeNo())
 		{
 			case 0:
 				shaderNaive.Use();
 				break;
 			case 1:
 				shaderExposure.Use();
-				glUniform1f(uniforms.exposure.exposure, exposure);
+				glUniform1f(uniforms.exposure.exposure, inputManager.getExposure());
 				break;
 			case 2:
 				shaderAdaptive.Use();
@@ -975,7 +943,7 @@ void render_superbible_noperspective(GLFWwindow* window)
 	{
 		// Check and call events
 		glfwPollEvents();
-		Do_Movement();
+		inputManager.checkKeysPressed();
 
 		// Clear buffers
 		static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -984,7 +952,7 @@ void render_superbible_noperspective(GLFWwindow* window)
 		static double total_time = 0.0;
 
 		GLfloat currentTime = glfwGetTime();
-		if (!paused)
+		if (!inputManager.getPaused())
 			total_time += (currentTime - last_time);
 		last_time = currentTime;
 
@@ -1004,7 +972,7 @@ void render_superbible_noperspective(GLFWwindow* window)
 		shader.Use();
 
 		glUniformMatrix4fv(uniforms.mvp, 1, GL_FALSE, glm::value_ptr(proj_matrix * mv_matrix));
-		glUniform1i(uniforms.use_perspective, use_perspective);
+		glUniform1i(uniforms.use_perspective, inputManager.getUsePerspective());
 
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -1189,7 +1157,7 @@ void render_superbible_gsquads(GLFWwindow* window)
 	{
 		// Check and call events
 		glfwPollEvents();
-		Do_Movement();
+		inputManager.checkKeysPressed();
 
 		// Clear buffers
 		static const GLfloat black[] = { 0.0f, 0.25f, 0.0f, 1.0f };
@@ -1199,7 +1167,7 @@ void render_superbible_gsquads(GLFWwindow* window)
 		static double total_time = 0.0;
 
 		GLfloat currentTime = glfwGetTime();
-		if (!paused)
+		if (!inputManager.getPaused())
 			total_time += (currentTime - last_time);
 		last_time = currentTime;
 
@@ -1214,18 +1182,18 @@ void render_superbible_gsquads(GLFWwindow* window)
 		glm::mat4 proj_matrix = glm::perspective(50.0f, (float)screenWidth / (float)screenHeight, 0.1f, 1000.0f);
 		glm::mat4 mvp = proj_matrix * mv_matrix;
 
-		switch (mode_no)
+		switch (inputManager.getModeNo())
 		{
 			case 0:
 				shaderFans.Use();
 				glUniformMatrix4fv(mvp_loc_fans, 1, GL_FALSE, glm::value_ptr(mvp));
-				glUniform1i(vid_offset_loc_fans, vid_offset);
+				glUniform1i(vid_offset_loc_fans, inputManager.getVidOffset());
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 				break;
 			case 1:
 				shaderLinesAdj.Use();
 				glUniformMatrix4fv(mvp_loc_linesadj, 1, GL_FALSE, glm::value_ptr(mvp));
-				glUniform1i(vid_offset_loc_linesadj, vid_offset);
+				glUniform1i(vid_offset_loc_linesadj, inputManager.getVidOffset());
 				glDrawArrays(GL_LINES_ADJACENCY, 0, 4);
 				break;
 		}
@@ -1601,7 +1569,7 @@ void render_superbible_cubicbezier(GLFWwindow* window)
 	{
 		// Check and call events
 		glfwPollEvents();
-		Do_Movement();
+		inputManager.checkKeysPressed();
 
 		// Clear buffers
 		static const GLfloat gray[] = { 0.1f, 0.1f, 0.1f, 0.0f };
@@ -1612,7 +1580,7 @@ void render_superbible_cubicbezier(GLFWwindow* window)
 		static double total_time = 0.0;
 
 		GLfloat currentTime = glfwGetTime();
-		if (!paused)
+		if (!inputManager.getPaused())
 			total_time += (currentTime - last_time);
 		last_time = currentTime;
 
@@ -1675,7 +1643,7 @@ void render_superbible_cubicbezier(GLFWwindow* window)
 		glUniformMatrix4fv(uniforms.patch.proj_matrix, 1, GL_FALSE, glm::value_ptr(proj_matrix));
 		glUniformMatrix4fv(uniforms.patch.mvp, 1, GL_FALSE, glm::value_ptr(proj_matrix * mv_matrix));
 
-		if (wireframe)
+		if (inputManager.getWireframe())
 		{
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		}
@@ -1690,14 +1658,14 @@ void render_superbible_cubicbezier(GLFWwindow* window)
 		draw_cp_shader.Use();
 		glUniformMatrix4fv(uniforms.control_point.mvp, 1, GL_FALSE, glm::value_ptr(proj_matrix * mv_matrix));
 
-		if (show_points)
+		if (inputManager.getShowPoints())
 		{
 			glPointSize(9.0f);
 			glUniform4fv(uniforms.control_point.draw_color, 1, glm::value_ptr(glm::vec4(0.2f, 0.7f, 0.9f, 1.0f)));
 			glDrawArrays(GL_POINTS, 0, 16);
 		}
 
-		if (show_cage)
+		if (inputManager.getShowCage())
 		{
 			glUniform4fv(uniforms.control_point.draw_color, 1, glm::value_ptr(glm::vec4(0.7f, 0.9f, 0.2f, 1.0f)));
 			glDrawElements(GL_LINES, 48, GL_UNSIGNED_SHORT, NULL);
@@ -1737,7 +1705,7 @@ void render_superbible_dispmap(GLFWwindow* window)
 	uniforms.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
 	uniforms.dmap_depth = glGetUniformLocation(shader.Program, "dmap_depth");
 	uniforms.enable_fog = glGetUniformLocation(shader.Program, "enable_fog");
-	dmap_depth = 6.0f;
+	inputManager.setDmapDepth(6.0f);
 
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
@@ -1755,7 +1723,7 @@ void render_superbible_dispmap(GLFWwindow* window)
 	{
 		// Check and call events
 		glfwPollEvents();
-		Do_Movement();
+		inputManager.checkKeysPressed();
 
 		// Clear buffers
 		static const GLfloat black[] = { 0.85f, 0.95f, 1.0f, 1.0f };
@@ -1764,7 +1732,7 @@ void render_superbible_dispmap(GLFWwindow* window)
 		static double total_time = 0.0;
 
 		GLfloat currentTime = glfwGetTime();
-		if (!paused)
+		if (!inputManager.getPaused())
 			total_time += (currentTime - last_time);
 		last_time = currentTime;
 
@@ -1784,13 +1752,13 @@ void render_superbible_dispmap(GLFWwindow* window)
 		glUniformMatrix4fv(uniforms.mv_matrix, 1, GL_FALSE, glm::value_ptr(mv_matrix));
 		glUniformMatrix4fv(uniforms.proj_matrix, 1, GL_FALSE, glm::value_ptr(proj_matrix));
 		glUniformMatrix4fv(uniforms.mvp_matrix, 1, GL_FALSE, glm::value_ptr(proj_matrix * mv_matrix));
-		glUniform1f(uniforms.dmap_depth, enable_displacement ? dmap_depth : 0.0f);
-		glUniform1i(uniforms.enable_fog, enable_fog ? 1 : 0);
+		glUniform1f(uniforms.dmap_depth, inputManager.getEnableDisplacement() ? inputManager.getDmapDepth() : 0.0f);
+		glUniform1i(uniforms.enable_fog, inputManager.getEnableFog() ? 1 : 0);
 
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
 
-		if (wireframe)
+		if (inputManager.getWireframe())
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		else
 			glPolygonMode(GL_PATCHES, GL_FILL);
@@ -1869,7 +1837,7 @@ void render_superbible_clipdistance(GLFWwindow* window)
 	{
 		// Check and call events
 		glfwPollEvents();
-		Do_Movement();
+		inputManager.checkKeysPressed();
 
 		// Clear buffers
 		static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -1880,7 +1848,7 @@ void render_superbible_clipdistance(GLFWwindow* window)
 
 		// Set frame time
 		GLfloat currentTime = glfwGetTime();
-		if (!paused)
+		if (!inputManager.getPaused())
 			total_time += (currentTime - last_time);
 		last_time = currentTime;
 
@@ -2003,7 +1971,7 @@ void render_superbible_multidrawindirect(GLFWwindow* window)
 	{
 		// Check and call events
 		glfwPollEvents();
-		Do_Movement();
+		inputManager.checkKeysPressed();
 
 		int j;
 		static const float one = 1.0f;
@@ -2015,7 +1983,7 @@ void render_superbible_multidrawindirect(GLFWwindow* window)
 
 		// Set frame time
 		GLfloat currentTime = glfwGetTime();
-		if (!paused)
+		if (!inputManager.getPaused())
 			total_time += (currentTime - last_time);
 		last_time = currentTime;
 
@@ -2044,11 +2012,11 @@ void render_superbible_multidrawindirect(GLFWwindow* window)
 
 		glBindVertexArray(object.get_vao());
 
-		if (mode == MODE_MULTIDRAW)
+		if (inputManager.getMode() == MODE_MULTIDRAW)
 		{
 			glMultiDrawArraysIndirect(GL_TRIANGLES, NULL, NUM_DRAWS, 0);
 		}
-		else if (mode == MODE_SEPARATE_DRAWS)
+		else if (inputManager.getMode() == MODE_SEPARATE_DRAWS)
 		{
 			for (j = 0; j < NUM_DRAWS; j++)
 			{
@@ -2406,12 +2374,12 @@ void render_skybox_demo(GLFWwindow* window)
 	{
 		// Set frame time
 		GLfloat currentFrame = glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
+		inputManager.setDeltaTime(currentFrame - inputManager.getLastFrame());
+		inputManager.setLastFrame(currentFrame);
 
 		// Check and call events
 		glfwPollEvents();
-		Do_Movement();
+		inputManager.checkKeysPressed();
 
 		// Clear buffers
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -2420,8 +2388,8 @@ void render_skybox_demo(GLFWwindow* window)
 		// Draw skybox first
 		glDepthMask(GL_FALSE);// Remember to turn depth writing off
 		skyboxShader.Use();
-		glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));	// Remove any translation component of the view matrix
-		glm::mat4 projection = glm::perspective(camera.Zoom, (GLfloat)screenWidth / (GLfloat)screenHeight, 0.1f, 100.0f);
+		glm::mat4 view = glm::mat4(glm::mat3(inputManager._camera.GetViewMatrix()));	// Remove any translation component of the view matrix
+		glm::mat4 projection = glm::perspective(inputManager._camera.Zoom, (GLfloat)screenWidth / (GLfloat)screenHeight, 0.1f, 100.0f);
 		glUniformMatrix4fv(glGetUniformLocation(skyboxShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(glGetUniformLocation(skyboxShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 		// Draw cube
@@ -2436,7 +2404,7 @@ void render_skybox_demo(GLFWwindow* window)
 		// Then draw scene as normal
 		shader.Use();
 		glm::mat4 model;
-		view = camera.GetViewMatrix();
+		view = inputManager._camera.GetViewMatrix();
 
 		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
@@ -2475,19 +2443,19 @@ void render_exploding_demo(GLFWwindow* window)
 	{
 		// Set frame time
 		GLfloat currentFrame = glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
+		inputManager.setDeltaTime(currentFrame - inputManager.getLastFrame());
+		inputManager.setLastFrame(currentFrame);
 
 		// Check and call events
 		glfwPollEvents();
-		Do_Movement();
+		inputManager.checkKeysPressed();
 
 		// Clear buffers
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Add transformation matrices
-		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
+		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(inputManager._camera.GetViewMatrix()));
 		glm::mat4 model;
 		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
@@ -2590,12 +2558,12 @@ void render_instancing_demo(GLFWwindow* window)
 	{
 		// Set frame time
 		GLfloat currentFrame = glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
+		inputManager.setDeltaTime(currentFrame - inputManager.getLastFrame());
+		inputManager.setLastFrame(currentFrame);
 
 		// Check and call events
 		glfwPollEvents();
-		Do_Movement();
+		inputManager.checkKeysPressed();
 
 		// Clear buffers
 		glClearColor(0.03f, 0.03f, 0.03f, 1.0f);
@@ -2603,7 +2571,7 @@ void render_instancing_demo(GLFWwindow* window)
 
 		// Add transformation matrices
 		planetShader.Use();
-		glm::mat4 view = camera.GetViewMatrix();
+		glm::mat4 view = inputManager._camera.GetViewMatrix();
 		glUniformMatrix4fv(glGetUniformLocation(planetShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		instanceShader.Use();
 		glUniformMatrix4fv(glGetUniformLocation(instanceShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
@@ -2683,108 +2651,6 @@ GLuint loadTexture(GLchar* path)
 	SOIL_free_image_data(image);
 	return textureID;
 }
-
-#pragma region "User input"
-
-// Is called whenever a key is pressed/released via GLFW
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
-{
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, GL_TRUE);
-
-	if (action == GLFW_PRESS)
-		keys[key] = true;
-	else if (action == GLFW_RELEASE)
-		keys[key] = false;
-}
-
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
-{
-	if (firstMouse)
-	{
-		lastX = xpos;
-		lastY = ypos;
-		firstMouse = false;
-	}
-
-	GLfloat xoffset = xpos - lastX;
-	GLfloat yoffset = lastY - ypos;
-
-	lastX = xpos;
-	lastY = ypos;
-
-	camera.ProcessMouseMovement(xoffset, yoffset);
-}
-
-// Moves/alters the camera positions based on user input
-void Do_Movement()
-{
-	// Camera controls
-	if (keys[GLFW_KEY_W])
-	{
-		camera.ProcessKeyboard(FORWARD, deltaTime);
-
-		wireframe = !wireframe;
-	}
-	if (keys[GLFW_KEY_S])
-		camera.ProcessKeyboard(BACKWARD, deltaTime);
-	if (keys[GLFW_KEY_A])
-		camera.ProcessKeyboard(LEFT, deltaTime);
-	if (keys[GLFW_KEY_D])
-		camera.ProcessKeyboard(RIGHT, deltaTime);
-	// SB controls
-	if (keys[GLFW_KEY_P])
-		paused = !paused;
-	if (keys[GLFW_KEY_D])
-	{
-		mode = MODE(mode + 1);
-		if (mode > MODE_MAX)
-			mode = MODE_FIRST;
-
-		enable_displacement = !enable_displacement;
-	}
-
-	if (keys[GLFW_KEY_F])
-		enable_fog = !enable_fog;
-
-	if (keys[GLFW_KEY_C])
-		show_cage = !show_cage;
-	if (keys[GLFW_KEY_X])
-		show_points = !show_points;
-
-	if (keys[GLFW_KEY_1])
-		mode_no = 0;
-	if (keys[GLFW_KEY_2])
-		mode_no = 1;
-	if (keys[GLFW_KEY_M]) // Altered for HDR Tone Mapping!
-	{
-		mode_no = (mode_no + 1) % 3;
-
-		use_perspective = !use_perspective;
-	}
-
-	// New Keybinds for HDR Tone Mapping
-	if (keys[GLFW_KEY_3])
-		mode_no = 2;
-	if (keys[GLFW_KEY_EQUAL])
-	{
-		dmap_depth += 0.1f;
-
-		vid_offset++;
-
-		exposure *= 1.1f;
-	}
-	if (keys[GLFW_KEY_MINUS])
-	{
-		dmap_depth -= 0.1f;
-
-		vid_offset--;
-
-		exposure /= 1.1f;
-	}
-}
-
-#pragma endregion
 
 static inline float random_float()
 {
