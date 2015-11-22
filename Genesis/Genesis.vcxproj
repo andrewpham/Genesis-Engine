@@ -122,14 +122,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Callbacks.cpp" />
     <ClCompile Include="Demos.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="sb7ktx.cpp" />
     <ClCompile Include="sb7object.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Callbacks.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="Variables.h" />
     <ClInclude Include="Demos.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Mesh.h" />

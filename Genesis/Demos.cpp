@@ -2,23 +2,11 @@
 #include "Shader.h"
 #include "Model.h"
 #include "Demos.h"
-#include "sb7ktx.h"
-#include "sb7object.h"
-
-// GLM Mathematics
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 // Properties
 GLuint screenWidth = 800, screenHeight = 600;
 
-InputManager inputManager;
-
-const float PI_F = 3.14159265358979f;
-
-// Random number generator
-static unsigned int seed = 0x13371337;
+genesis::InputManager inputManager;
 
 void render_superbible_shapedpoints(GLFWwindow* window)
 {

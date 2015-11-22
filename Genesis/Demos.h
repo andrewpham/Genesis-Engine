@@ -1,29 +1,12 @@
 #pragma once
+// Std. Includes
+#include "sb7ktx.h"
+#include "sb7object.h"
 #include "InputManager.h"
+#include "Variables.h"
 
-// Properties
-extern GLuint screenWidth, screenHeight;
-
-extern InputManager inputManager;
-
-// Multi-Draw Indirect Enums and Struct
-enum
-{
-	NUM_DRAWS = 50000
-};
-// Starfield Enum
-enum
-{
-	NUM_STARS = 2000
-};
-
-struct DrawArraysIndirectCommand
-{
-	GLuint count;
-	GLuint primCount;
-	GLuint first;
-	GLuint baseInstance;
-};
+// GLM Mathematics
+#include <glm/gtc/type_ptr.hpp>
 
 GLuint loadCubemap(vector<const GLchar*>);
 GLuint loadTexture(GLchar*);

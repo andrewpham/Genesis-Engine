@@ -1,15 +1,9 @@
 #pragma once
-// Std. Includes
-#include <string>
-#include <algorithm>
-#include <vector>
 #include "Camera.h"
 using namespace std;
 
 // GLM Mathematics
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 // GLFW
 #include <GLFW/glfw3.h>
@@ -22,76 +16,79 @@ enum MODE
 	MODE_MAX = MODE_SEPARATE_DRAWS
 };
 
-class InputManager
-{
-public:
-	InputManager();
-	~InputManager();
+namespace genesis {
 
-	void checkKeysPressed();
+	class InputManager
+	{
+	public:
+		InputManager();
+		~InputManager();
 
-	Camera _camera;
-	bool _keys[1024];
+		void checkKeysPressed();
 
-	GLfloat getLastX();
-	void setLastX(GLfloat);
-	GLfloat getLastY();
-	void setLastY(GLfloat);
-	bool getFirstMouse();
-	void setFirstMouse(bool);
+		Camera _camera;
+		bool _keys[1024];
 
-	void setDeltaTime(GLfloat);
-	GLfloat getLastFrame();
-	void setLastFrame(GLfloat);
+		GLfloat getLastX();
+		void setLastX(GLfloat);
+		GLfloat getLastY();
+		void setLastY(GLfloat);
+		bool getFirstMouse();
+		void setFirstMouse(bool);
 
-	MODE getMode();
-	bool getPaused();
+		void setDeltaTime(GLfloat);
+		GLfloat getLastFrame();
+		void setLastFrame(GLfloat);
 
-	float getDmapDepth();
-	void setDmapDepth(float);
-	bool getEnableDisplacement();
-	bool getWireframe();
-	bool getEnableFog();
+		MODE getMode();
+		bool getPaused();
 
-	bool getShowPoints();
-	bool getShowCage();
+		float getDmapDepth();
+		void setDmapDepth(float);
+		bool getEnableDisplacement();
+		bool getWireframe();
+		bool getEnableFog();
 
-	int getModeNo();
-	int getVidOffset();
+		bool getShowPoints();
+		bool getShowCage();
 
-	bool getUsePerspective();
+		int getModeNo();
+		int getVidOffset();
 
-	float getExposure();
-private:
-	// Camera
-	GLfloat _lastX, _lastY;
-	bool _firstMouse;
+		bool getUsePerspective();
 
-	GLfloat _deltaTime;
-	GLfloat _lastFrame;
+		float getExposure();
+	private:
+		// Camera
+		GLfloat _lastX, _lastY;
+		bool _firstMouse;
 
-	// Multi-Draw Indirect Controls
-	MODE _mode;
-	bool _paused;
+		GLfloat _deltaTime;
+		GLfloat _lastFrame;
 
-	// Additional Displacement Mapping Controls
-	float _dmapDepth;
-	bool _enableDisplacement;
-	bool _wireframe;
-	bool _enableFog;
+		// Multi-Draw Indirect Controls
+		MODE _mode;
+		bool _paused;
 
-	// Additional Cubic Bezier Controls
-	bool _showPoints;
-	bool _showCage;
+		// Additional Displacement Mapping Controls
+		float _dmapDepth;
+		bool _enableDisplacement;
+		bool _wireframe;
+		bool _enableFog;
 
-	// Additional GS Quads Controls
-	int _modeNo;
-	int _vidOffset;
+		// Additional Cubic Bezier Controls
+		bool _showPoints;
+		bool _showCage;
 
-	// Additional No Perspective Controls
-	bool _usePerspective;
+		// Additional GS Quads Controls
+		int _modeNo;
+		int _vidOffset;
 
-	// Additional HDR Tone Mapping Controls
-	float _exposure;
-};
+		// Additional No Perspective Controls
+		bool _usePerspective;
 
+		// Additional HDR Tone Mapping Controls
+		float _exposure;
+	};
+
+}
