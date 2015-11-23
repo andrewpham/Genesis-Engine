@@ -203,16 +203,16 @@ void render_superbible_hdrtonemap(GLFWwindow* window)
 
 		switch (inputManager.getModeNo())
 		{
-			case 0:
-				shaderNaive.Use();
-				break;
-			case 1:
-				shaderExposure.Use();
-				glUniform1f(uniforms.exposure.exposure, inputManager.getExposure());
-				break;
-			case 2:
-				shaderAdaptive.Use();
-				break;
+		case 0:
+			shaderNaive.Use();
+			break;
+		case 1:
+			shaderExposure.Use();
+			glUniform1f(uniforms.exposure.exposure, inputManager.getExposure());
+			break;
+		case 2:
+			shaderAdaptive.Use();
+			break;
 		}
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -472,7 +472,7 @@ void render_superbible_basicfbo(GLFWwindow* window)
 
 	mv_location = glGetUniformLocation(shader1.Program, "mv_matrix");
 	proj_location = glGetUniformLocation(shader1.Program, "proj_matrix");
-	
+
 	shader2.Use();
 
 	mv_location2 = glGetUniformLocation(shader2.Program, "mv_matrix");
@@ -1172,18 +1172,18 @@ void render_superbible_gsquads(GLFWwindow* window)
 
 		switch (inputManager.getModeNo())
 		{
-			case 0:
-				shaderFans.Use();
-				glUniformMatrix4fv(mvp_loc_fans, 1, GL_FALSE, glm::value_ptr(mvp));
-				glUniform1i(vid_offset_loc_fans, inputManager.getVidOffset());
-				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-				break;
-			case 1:
-				shaderLinesAdj.Use();
-				glUniformMatrix4fv(mvp_loc_linesadj, 1, GL_FALSE, glm::value_ptr(mvp));
-				glUniform1i(vid_offset_loc_linesadj, inputManager.getVidOffset());
-				glDrawArrays(GL_LINES_ADJACENCY, 0, 4);
-				break;
+		case 0:
+			shaderFans.Use();
+			glUniformMatrix4fv(mvp_loc_fans, 1, GL_FALSE, glm::value_ptr(mvp));
+			glUniform1i(vid_offset_loc_fans, inputManager.getVidOffset());
+			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+			break;
+		case 1:
+			shaderLinesAdj.Use();
+			glUniformMatrix4fv(mvp_loc_linesadj, 1, GL_FALSE, glm::value_ptr(mvp));
+			glUniform1i(vid_offset_loc_linesadj, inputManager.getVidOffset());
+			glDrawArrays(GL_LINES_ADJACENCY, 0, 4);
+			break;
 		}
 
 		// Swap the buffers
@@ -1436,7 +1436,7 @@ void render_superbible_gsculling(GLFWwindow* window)
 	viewpoint_location = glGetUniformLocation(shader.Program, "viewpoint");
 
 	object.load("sb7objects/dragon.sbm");
-	
+
 	glDisable(GL_CULL_FACE);
 
 	glEnable(GL_DEPTH_TEST);
@@ -1493,7 +1493,7 @@ void render_superbible_cubicbezier(GLFWwindow* window)
 	// Setup and compile our shaders
 	Shader tess_shader("Shaders/cubicbezier.vs", "Shaders/cubicbezier.frag", "Shaders/cubicbezier.tcs", "Shaders/cubicbezier.tes");
 	Shader draw_cp_shader("Shaders/draw-control-points.vs", "Shaders/draw-control-points.frag");
-	
+
 	GLuint patch_vao;
 	GLuint patch_buffer;
 	GLuint cage_indices;
@@ -1932,10 +1932,10 @@ void render_superbible_multidrawindirect(GLFWwindow* window)
 	glBindBuffer(GL_ARRAY_BUFFER, draw_index_buffer);
 	glBufferData(GL_ARRAY_BUFFER, NUM_DRAWS * sizeof(GLuint), NULL, GL_STATIC_DRAW);
 
-	GLuint * draw_index = 
+	GLuint * draw_index =
 		(GLuint *)glMapBufferRange(GL_ARRAY_BUFFER,
-								   0, 
-								   NUM_DRAWS * sizeof(GLuint), 
+			0,
+			NUM_DRAWS * sizeof(GLuint),
 			GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
 
 	for (i = 0; i < NUM_DRAWS; i++)
@@ -2000,11 +2000,11 @@ void render_superbible_multidrawindirect(GLFWwindow* window)
 
 		glBindVertexArray(object.get_vao());
 
-		if (inputManager.getMode() == MODE_MULTIDRAW)
+		if (inputManager.getMode() == genesis::MODE_MULTIDRAW)
 		{
 			glMultiDrawArraysIndirect(GL_TRIANGLES, NULL, NUM_DRAWS, 0);
 		}
-		else if (inputManager.getMode() == MODE_SEPARATE_DRAWS)
+		else if (inputManager.getMode() == genesis::MODE_SEPARATE_DRAWS)
 		{
 			for (j = 0; j < NUM_DRAWS; j++)
 			{
@@ -2212,7 +2212,7 @@ void render_superbible_fragmentlist(GLFWwindow* window)
 		resolveShader.Use();
 
 		glBindVertexArray(dummy_vao);
-		
+
 		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

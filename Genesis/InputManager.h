@@ -8,6 +8,8 @@ using namespace std;
 // GLFW
 #include <GLFW/glfw3.h>
 
+namespace genesis {
+
 enum MODE
 {
 	MODE_FIRST,
@@ -15,8 +17,6 @@ enum MODE
 	MODE_SEPARATE_DRAWS,
 	MODE_MAX = MODE_SEPARATE_DRAWS
 };
-
-namespace genesis {
 
 	class InputManager
 	{

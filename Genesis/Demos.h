@@ -8,6 +8,8 @@
 // GLM Mathematics
 #include <glm/gtc/type_ptr.hpp>
 
+extern genesis::InputManager inputManager;
+
 GLuint loadCubemap(vector<const GLchar*>);
 GLuint loadTexture(GLchar*);
 static inline float random_float();

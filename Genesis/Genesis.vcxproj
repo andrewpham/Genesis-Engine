@@ -129,6 +129,7 @@
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="sb7ktx.cpp" />
     <ClCompile Include="sb7object.cpp" />
+    <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Callbacks.h" />
@@ -143,6 +144,7 @@
     <ClInclude Include="sb7ktx.h" />
     <ClInclude Include="sb7object.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

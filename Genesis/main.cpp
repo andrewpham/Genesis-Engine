@@ -16,7 +16,7 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "Genesis", nullptr, nullptr); // Windowed
+	GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_NAME, nullptr, nullptr); // Windowed
 	glfwMakeContextCurrent(window);
 
 	// Set the required callback functions
@@ -31,15 +31,15 @@ int main()
 	glewInit();
 
 	// Define the viewport dimensions
-	glViewport(0, 0, screenWidth, screenHeight);
+	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	// Setup some OpenGL options - disable when rendering SB code!
-	//glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
 
 	// Render demo
 	//render_superbible_shapedpoints(window);
 	//render_superbible_starfield(window);
-	render_superbible_hdrtonemap(window);
+	//render_superbible_hdrtonemap(window);
 	//render_superbible_polygonsmooth(window);
 	//render_superbible_linesmooth(window);
 	//render_superbible_basicfbo(window);
@@ -60,7 +60,7 @@ int main()
 	//render_superbible_instancedattribs(window);
 	//render_superbible_fragmentlist(window);
 	//render_skybox_demo(window);
-	//render_exploding_demo(window);
+	render_exploding_demo(window);
 	//render_instancing_demo(window);
 
 	return 0;
