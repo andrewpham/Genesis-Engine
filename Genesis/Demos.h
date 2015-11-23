@@ -10,8 +10,8 @@
 // GLM Mathematics
 #include <glm/gtc/type_ptr.hpp>
 
-extern genesis::InputManager inputManager;
-extern genesis::ResourceManager resourceManager;
+extern genesis::InputManager _inputManager;
+extern genesis::ResourceManager _resourceManager;
 
 void render_superbible_shapedpoints(GLFWwindow*);
 void render_superbible_hdrtonemap(GLFWwindow*);

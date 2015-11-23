@@ -19,8 +19,8 @@ namespace genesis {
 		GLuint getTexture();
 		void loadTexture(GLchar*);
 	private:
-		GLuint cubemapID;
-		GLuint textureID;
+		GLuint _cubemapID;
+		GLuint _textureID;
 	};
 
 }

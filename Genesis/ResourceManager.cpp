@@ -14,18 +14,18 @@ namespace genesis {
 
 	GLuint ResourceManager::getCubemap()
 	{
-		return this->cubemapID;
+		return this->_cubemapID;
 	}
 
 	// Loads a cubemap texture
 	void ResourceManager::loadCubemap(vector<const GLchar*> faces)
 	{
-		glGenTextures(1, &this->cubemapID);
+		glGenTextures(1, &this->_cubemapID);
 
 		int width, height;
 		unsigned char* image;
 
-		glBindTexture(GL_TEXTURE_CUBE_MAP, this->cubemapID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, this->_cubemapID);
 		for (GLuint i = 0; i < faces.size(); i++)
 		{
 			image = SOIL_load_image(faces[i], &width, &height, 0, SOIL_LOAD_RGB);
@@ -42,18 +42,18 @@ namespace genesis {
 
 	GLuint ResourceManager::getTexture()
 	{
-		return this->textureID;
+		return this->_textureID;
 	}
 
 	// Loads a texture from file.
 	void ResourceManager::loadTexture(GLchar* path)
 	{
 		//Generate texture ID and load texture data 
-		glGenTextures(1, &this->textureID);
+		glGenTextures(1, &this->_textureID);
 		int width, height;
 		unsigned char* image = SOIL_load_image(path, &width, &height, 0, SOIL_LOAD_RGB);
 		// Assign texture to ID
-		glBindTexture(GL_TEXTURE_2D, this->textureID);
+		glBindTexture(GL_TEXTURE_2D, this->_textureID);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 		glGenerateMipmap(GL_TEXTURE_2D);
 

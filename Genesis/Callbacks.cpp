@@ -8,26 +8,26 @@ namespace genesis {
 			glfwSetWindowShouldClose(window, GL_TRUE);
 
 		if (action == GLFW_PRESS)
-			inputManager._keys[key] = true;
+			_inputManager._keys[key] = true;
 		else if (action == GLFW_RELEASE)
-			inputManager._keys[key] = false;
+			_inputManager._keys[key] = false;
 	}
 
 	void mouseCallback(GLFWwindow* window, double xpos, double ypos)
 	{
-		if (inputManager.getFirstMouse())
+		if (_inputManager.getFirstMouse())
 		{
-			inputManager.setLastX(xpos);
-			inputManager.setLastY(ypos);
-			inputManager.setFirstMouse(false);
+			_inputManager.setLastX(xpos);
+			_inputManager.setLastY(ypos);
+			_inputManager.setFirstMouse(false);
 		}
 
-		GLfloat xoffset = xpos - inputManager.getLastX();
-		GLfloat yoffset = inputManager.getLastY() - ypos;
+		GLfloat xoffset = xpos - _inputManager.getLastX();
+		GLfloat yoffset = _inputManager.getLastY() - ypos;
 
-		inputManager.setLastX(xpos);
-		inputManager.setLastY(ypos);
+		_inputManager.setLastX(xpos);
+		_inputManager.setLastY(ypos);
 
-		inputManager._camera.ProcessMouseMovement(xoffset, yoffset);
+		_inputManager._camera.ProcessMouseMovement(xoffset, yoffset);
 	}
 }
