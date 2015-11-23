@@ -134,16 +134,16 @@
   <ItemGroup>
     <ClInclude Include="Callbacks.h" />
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="ResourceManager.h" />
-    <ClInclude Include="Variables.h" />
     <ClInclude Include="Demos.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="sb6mfile.h" />
     <ClInclude Include="sb7ktx.h" />
     <ClInclude Include="sb7object.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="Variables.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

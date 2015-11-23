@@ -1,17 +1,14 @@
 // GL includes
-#include "Shader.h"
 #include "Model.h"
 #include "Demos.h"
 
-// Properties
-GLuint screenWidth = 800, screenHeight = 600;
-
 genesis::InputManager inputManager;
+genesis::ResourceManager resourceManager;
 
 void render_superbible_shapedpoints(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shader("Shaders/shapedpoints.vs", "Shaders/shapedpoints.frag");
+	genesis::Shader shader("Shaders/shapedpoints.vs", "Shaders/shapedpoints.frag");
 
 	GLuint VAO;
 
@@ -44,108 +41,12 @@ void render_superbible_shapedpoints(GLFWwindow* window)
 	glfwTerminate();
 }
 
-void render_superbible_starfield(GLFWwindow* window)
-{
-	// Setup and compile our shaders
-	Shader shader("Shaders/starfield.vs", "Shaders/starfield.frag");
-
-	GLuint star_texture;
-	GLuint star_vao;
-	GLuint star_buffer;
-
-	struct
-	{
-		int time;
-		int proj_matrix;
-	} uniforms;
-
-	shader.Use();
-
-	uniforms.time = glGetUniformLocation(shader.Program, "time");
-	uniforms.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
-
-	star_texture = sb7::ktx::file::load("Textures/star.ktx");
-
-	glGenVertexArrays(1, &star_vao);
-	glBindVertexArray(star_vao);
-
-	struct star_t
-	{
-		glm::vec3 position;
-		glm::vec3 color;
-	};
-
-	glGenBuffers(1, &star_buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, star_buffer);
-	glBufferData(GL_ARRAY_BUFFER, NUM_STARS * sizeof(star_t), NULL, GL_STATIC_DRAW);
-
-	star_t * star = (star_t *)glMapBufferRange(GL_ARRAY_BUFFER, 0, NUM_STARS * sizeof(star_t), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
-	int i;
-
-	for (i = 0; i < 1000; i++)
-	{
-		star[i].position[0] = (random_float() * 2.0f - 1.0f) * 100.0f;
-		star[i].position[1] = (random_float() * 2.0f - 1.0f) * 100.0f;
-		star[i].position[2] = random_float();
-		star[i].color[0] = 0.8f + random_float() * 0.2f;
-		star[i].color[1] = 0.8f + random_float() * 0.2f;
-		star[i].color[2] = 0.8f + random_float() * 0.2f;
-	}
-
-	glUnmapBuffer(GL_ARRAY_BUFFER);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(star_t), NULL);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(star_t), (void *)sizeof(glm::vec3));
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-
-	// Game loop
-	while (!glfwWindowShouldClose(window))
-	{
-		// Check and call events
-		glfwPollEvents();
-
-		// Clear buffers
-		static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-		static const GLfloat one[] = { 1.0f };
-		float t = (float)glfwGetTime();
-		glm::mat4 proj_matrix = glm::perspective(50.0f,
-			(float)screenWidth / (float)screenHeight,
-			0.1f,
-			1000.0f);
-
-		t *= 0.1f;
-		t -= floor(t);
-
-		glClearBufferfv(GL_COLOR, 0, black);
-		glClearBufferfv(GL_DEPTH, 0, one);
-
-		shader.Use();
-
-		glUniform1f(uniforms.time, t);
-		glUniformMatrix4fv(uniforms.proj_matrix, 1, GL_FALSE, glm::value_ptr(proj_matrix));
-
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_ONE, GL_ONE);
-
-		glBindVertexArray(star_vao);
-
-		glEnable(GL_PROGRAM_POINT_SIZE);
-		glDrawArrays(GL_POINTS, 0, NUM_STARS);
-
-		// Swap the buffers
-		glfwSwapBuffers(window);
-	}
-
-	glfwTerminate();
-}
-
 void render_superbible_hdrtonemap(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shaderNaive("Shaders/tonemap.vs", "Shaders/tonemap_naive.frag");
-	Shader shaderExposure("Shaders/tonemap.vs", "Shaders/tonemap_exposure.frag");
-	Shader shaderAdaptive("Shaders/tonemap.vs", "Shaders/tonemap_adaptive.frag");
+	genesis::Shader shaderNaive("Shaders/tonemap.vs", "Shaders/tonemap_naive.frag");
+	genesis::Shader shaderExposure("Shaders/tonemap.vs", "Shaders/tonemap_exposure.frag");
+	genesis::Shader shaderAdaptive("Shaders/tonemap.vs", "Shaders/tonemap_adaptive.frag");
 
 	GLuint tex_src;
 	GLuint tex_lut;
@@ -233,7 +134,7 @@ void render_superbible_hdrtonemap(GLFWwindow* window)
 void render_superbible_polygonsmooth(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shader("Shaders/linesmooth.vs", "Shaders/linesmooth.frag");
+	genesis::Shader shader("Shaders/linesmooth.vs", "Shaders/linesmooth.frag");
 
 	GLuint VAO;
 	GLuint position_buffer;
@@ -310,7 +211,7 @@ void render_superbible_polygonsmooth(GLFWwindow* window)
 		shader.Use();
 
 		glm::mat4 proj_matrix = glm::perspective(50.0f,
-			(float)screenWidth / (float)screenHeight,
+			(float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,
 			0.1f,
 			1000.0f);
 		glUniformMatrix4fv(proj_location, 1, GL_FALSE, glm::value_ptr(proj_matrix));
@@ -343,7 +244,7 @@ void render_superbible_polygonsmooth(GLFWwindow* window)
 void render_superbible_linesmooth(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shader("Shaders/linesmooth.vs", "Shaders/linesmooth.frag");
+	genesis::Shader shader("Shaders/linesmooth.vs", "Shaders/linesmooth.frag");
 
 	GLuint VAO;
 	GLuint position_buffer;
@@ -420,7 +321,7 @@ void render_superbible_linesmooth(GLFWwindow* window)
 		shader.Use();
 
 		glm::mat4 proj_matrix = glm::perspective(50.0f,
-			(float)screenWidth / (float)screenHeight,
+			(float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,
 			0.1f,
 			1000.0f);
 		glUniformMatrix4fv(proj_location, 1, GL_FALSE, glm::value_ptr(proj_matrix));
@@ -454,8 +355,8 @@ void render_superbible_linesmooth(GLFWwindow* window)
 void render_superbible_basicfbo(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shader1("Shaders/basicfbo.vs", "Shaders/basicfbo.frag");
-	Shader shader2("Shaders/basicfbo.vs", "Shaders/basicfbo2.frag");
+	genesis::Shader shader1("Shaders/basicfbo.vs", "Shaders/basicfbo.frag");
+	genesis::Shader shader2("Shaders/basicfbo.vs", "Shaders/basicfbo2.frag");
 
 	GLuint VAO;
 	GLuint position_buffer;
@@ -596,7 +497,7 @@ void render_superbible_basicfbo(GLFWwindow* window)
 		static const GLfloat one = 1.0f;
 
 		glm::mat4 proj_matrix = glm::perspective(50.0f,
-			(float)screenWidth / (float)screenHeight,
+			(float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,
 			0.1f,
 			1000.0f);
 
@@ -625,7 +526,7 @@ void render_superbible_basicfbo(GLFWwindow* window)
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		glViewport(0, 0, screenWidth, screenHeight);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		glClearBufferfv(GL_COLOR, 0, blue);
 		glClearBufferfv(GL_DEPTH, 0, &one);
 
@@ -657,7 +558,7 @@ void render_superbible_basicfbo(GLFWwindow* window)
 void render_superbible_depthclamp(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shader("Shaders/depthclamp.vs", "Shaders/depthclamp.frag");
+	genesis::Shader shader("Shaders/depthclamp.vs", "Shaders/depthclamp.frag");
 
 	GLint mv_location;
 	GLint proj_location;
@@ -690,14 +591,14 @@ void render_superbible_depthclamp(GLFWwindow* window)
 		GLfloat currentTime = glfwGetTime();
 		float f = (float)currentTime;
 
-		glViewport(0, 0, screenWidth, screenHeight);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		glClearBufferfv(GL_COLOR, 0, black);
 		glClearBufferfv(GL_DEPTH, 0, &one);
 
 		shader.Use();
 
 		glm::mat4 proj_matrix = glm::perspective(50.0f,
-			(float)screenWidth / (float)screenHeight,
+			(float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,
 			1.8f,
 			1000.0f);
 		glUniformMatrix4fv(proj_location, 1, GL_FALSE, glm::value_ptr(proj_matrix));
@@ -727,7 +628,7 @@ void render_superbible_depthclamp(GLFWwindow* window)
 void render_superbible_multiscissor(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shader("Shaders/multiscissor.vs", "Shaders/multiscissor.frag", "Shaders/multiscissor.gs");
+	genesis::Shader shader("Shaders/multiscissor.vs", "Shaders/multiscissor.frag", "Shaders/multiscissor.gs");
 
 	GLuint          VAO;
 	GLuint          position_buffer;
@@ -810,7 +711,7 @@ void render_superbible_multiscissor(GLFWwindow* window)
 
 		glDisable(GL_SCISSOR_TEST);
 
-		glViewport(0, 0, screenWidth, screenHeight);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		glClearBufferfv(GL_COLOR, 0, black);
 		glClearBufferfv(GL_DEPTH, 0, &one);
 
@@ -818,8 +719,8 @@ void render_superbible_multiscissor(GLFWwindow* window)
 		glEnable(GL_SCISSOR_TEST);
 
 		// Each rectangle will be 7/16 of the screen
-		int scissor_width = (7 * screenWidth) / 16;
-		int scissor_height = (7 * screenHeight) / 16;
+		int scissor_width = (7 * SCREEN_WIDTH) / 16;
+		int scissor_height = (7 * SCREEN_HEIGHT) / 16;
 
 		// Four rectangles - lower left first...
 		glScissorIndexed(0,
@@ -828,24 +729,24 @@ void render_superbible_multiscissor(GLFWwindow* window)
 
 		// Lower right...
 		glScissorIndexed(1,
-			screenWidth - scissor_width, 0,
+			SCREEN_WIDTH - scissor_width, 0,
 			scissor_width, scissor_height);
 
 		// Upper left...
 		glScissorIndexed(2,
-			0, screenHeight - scissor_height,
+			0, SCREEN_HEIGHT - scissor_height,
 			scissor_width, scissor_height);
 
 		// Upper right...
 		glScissorIndexed(3,
-			screenWidth - scissor_width,
-			screenHeight - scissor_height,
+			SCREEN_WIDTH - scissor_width,
+			SCREEN_HEIGHT - scissor_height,
 			scissor_width, scissor_height);
 
 		shader.Use();
 
 		glm::mat4 proj_matrix = glm::perspective(50.0f,
-			(float)screenWidth / (float)screenHeight,
+			(float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,
 			0.1f,
 			1000.0f);
 
@@ -886,7 +787,7 @@ void render_superbible_multiscissor(GLFWwindow* window)
 void render_superbible_noperspective(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shader("Shaders/noperspective.vs", "Shaders/noperspective.frag");
+	genesis::Shader shader("Shaders/noperspective.vs", "Shaders/noperspective.frag");
 
 	GLuint VAO;
 	GLuint tex_checker;
@@ -946,7 +847,7 @@ void render_superbible_noperspective(GLFWwindow* window)
 
 		float t = (float)total_time * 14.3f;
 
-		glViewport(0, 0, screenWidth, screenHeight);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		glClearBufferfv(GL_COLOR, 0, black);
 		glClearBufferfv(GL_DEPTH, 0, &one);
 
@@ -954,7 +855,7 @@ void render_superbible_noperspective(GLFWwindow* window)
 		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -0.4f));
 		mv_matrix = glm::rotate(mv_matrix, t * PI_F / 60.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 proj_matrix = glm::perspective(60.0f,
-			(float)screenWidth / (float)screenHeight,
+			(float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,
 			0.1f, 1000.0f);
 
 		shader.Use();
@@ -977,7 +878,7 @@ void render_superbible_noperspective(GLFWwindow* window)
 void render_superbible_multiviewport(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shader("Shaders/multiviewport.vs", "Shaders/multiviewport.frag", "Shaders/multiviewport.gs");
+	genesis::Shader shader("Shaders/multiviewport.vs", "Shaders/multiviewport.frag", "Shaders/multiviewport.gs");
 
 	GLuint VAO;
 	GLuint position_buffer;
@@ -1047,35 +948,35 @@ void render_superbible_multiviewport(GLFWwindow* window)
 		static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 		static const GLfloat one = 1.0f;
 
-		glViewport(0, 0, screenWidth, screenHeight);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		glClearBufferfv(GL_COLOR, 0, black);
 		glClearBufferfv(GL_DEPTH, 0, &one);
 
 		// Each rectangle will be 7/16 of the screen
-		float viewport_width = (float)(7 * screenWidth) / 16.0f;
-		float viewport_height = (float)(7 * screenHeight) / 16.0f;
+		float viewport_width = (float)(7 * SCREEN_WIDTH) / 16.0f;
+		float viewport_height = (float)(7 * SCREEN_HEIGHT) / 16.0f;
 
 		// Four rectangles - lower left first...
 		glViewportIndexedf(0, 0, 0, viewport_width, viewport_height);
 
 		// Lower right...
 		glViewportIndexedf(1,
-			screenWidth - viewport_width, 0,
+			SCREEN_WIDTH - viewport_width, 0,
 			viewport_width, viewport_height);
 
 		// Upper left...
 		glViewportIndexedf(2,
-			0, screenHeight - viewport_height,
+			0, SCREEN_HEIGHT - viewport_height,
 			viewport_width, viewport_height);
 
 		// Upper right...
 		glViewportIndexedf(3,
-			screenWidth - viewport_width,
-			screenHeight - viewport_height,
+			SCREEN_WIDTH - viewport_width,
+			SCREEN_HEIGHT - viewport_height,
 			viewport_width, viewport_height);
 
 		glm::mat4 proj_matrix = glm::perspective(50.0f,
-			(float)screenWidth / (float)screenHeight,
+			(float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,
 			0.1f,
 			1000.0f);
 
@@ -1118,8 +1019,8 @@ void render_superbible_multiviewport(GLFWwindow* window)
 void render_superbible_gsquads(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shaderFans("Shaders/quadsasfans.vs", "Shaders/quadsasfans.frag");
-	Shader shaderLinesAdj("Shaders/quadsaslinesadj.vs", "Shaders/quadsaslinesadj.frag", "Shaders/quadsaslinesadj.gs");
+	genesis::Shader shaderFans("Shaders/quadsasfans.vs", "Shaders/quadsasfans.frag");
+	genesis::Shader shaderLinesAdj("Shaders/quadsaslinesadj.vs", "Shaders/quadsaslinesadj.frag", "Shaders/quadsaslinesadj.gs");
 
 	GLuint VAO;
 	int mvp_loc_fans;
@@ -1149,7 +1050,7 @@ void render_superbible_gsquads(GLFWwindow* window)
 
 		// Clear buffers
 		static const GLfloat black[] = { 0.0f, 0.25f, 0.0f, 1.0f };
-		glViewport(0, 0, screenWidth, screenHeight);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 		static double last_time = 0.0;
 		static double total_time = 0.0;
@@ -1167,7 +1068,7 @@ void render_superbible_gsquads(GLFWwindow* window)
 		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -10.0f));
 		mv_matrix = glm::rotate(mv_matrix, (float)t * 5.0f * PI_F / 180.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 		mv_matrix = glm::rotate(mv_matrix, (float)t * 30.0f * PI_F / 180.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-		glm::mat4 proj_matrix = glm::perspective(50.0f, (float)screenWidth / (float)screenHeight, 0.1f, 1000.0f);
+		glm::mat4 proj_matrix = glm::perspective(50.0f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 1000.0f);
 		glm::mat4 mvp = proj_matrix * mv_matrix;
 
 		switch (inputManager.getModeNo())
@@ -1200,7 +1101,7 @@ void render_superbible_gsquads(GLFWwindow* window)
 void render_superbible_normalviewer(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shader("Shaders/normalviewer.vs", "Shaders/normalviewer.frag", "Shaders/normalviewer.gs");
+	genesis::Shader shader("Shaders/normalviewer.vs", "Shaders/normalviewer.frag", "Shaders/normalviewer.gs");
 
 	GLint mv_location;
 	GLint proj_location;
@@ -1231,14 +1132,14 @@ void render_superbible_normalviewer(GLFWwindow* window)
 		GLfloat currentTime = glfwGetTime();
 		float f = (float)currentTime;
 
-		glViewport(0, 0, screenWidth, screenHeight);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		glClearBufferfv(GL_COLOR, 0, black);
 		glClearBufferfv(GL_DEPTH, 0, &one);
 
 		shader.Use();
 
 		glm::mat4 proj_matrix = glm::perspective(50.0f,
-			(float)screenWidth / (float)screenHeight,
+			(float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,
 			0.1f,
 			1000.0f);
 		glUniformMatrix4fv(proj_location, 1, GL_FALSE, glm::value_ptr(proj_matrix));
@@ -1263,7 +1164,7 @@ void render_superbible_normalviewer(GLFWwindow* window)
 void render_superbible_gstessellate(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shader("Shaders/gstessellate.vs", "Shaders/gstessellate.frag", "Shaders/gstessellate.gs");
+	genesis::Shader shader("Shaders/gstessellate.vs", "Shaders/gstessellate.frag", "Shaders/gstessellate.gs");
 
 	GLint mv_location;
 	GLint mvp_location;
@@ -1323,14 +1224,14 @@ void render_superbible_gstessellate(GLFWwindow* window)
 		GLfloat currentTime = glfwGetTime();
 		float f = (float)currentTime;
 
-		glViewport(0, 0, screenWidth, screenHeight);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		glClearBufferfv(GL_COLOR, 0, black);
 		glClearBufferfv(GL_DEPTH, 0, &one);
 
 		shader.Use();
 
 		glm::mat4 proj_matrix = glm::perspective(50.0f,
-			(float)screenWidth / (float)screenHeight,
+			(float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,
 			0.1f,
 			1000.0f);
 
@@ -1358,7 +1259,7 @@ void render_superbible_gstessellate(GLFWwindow* window)
 void render_superbible_objectexploder(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shader("Shaders/objectexploder.vs", "Shaders/objectexploder.frag", "Shaders/objectexploder.gs");
+	genesis::Shader shader("Shaders/objectexploder.vs", "Shaders/objectexploder.frag", "Shaders/objectexploder.gs");
 
 	GLint mv_location;
 	GLint proj_location;
@@ -1389,14 +1290,14 @@ void render_superbible_objectexploder(GLFWwindow* window)
 		GLfloat currentTime = glfwGetTime();
 		float f = (float)currentTime;
 
-		glViewport(0, 0, screenWidth, screenHeight);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		glClearBufferfv(GL_COLOR, 0, black);
 		glClearBufferfv(GL_DEPTH, 0, &one);
 
 		shader.Use();
 
 		glm::mat4 proj_matrix = glm::perspective(50.0f,
-			(float)screenWidth / (float)screenHeight,
+			(float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,
 			0.1f,
 			1000.0f);
 		glUniformMatrix4fv(proj_location, 1, GL_FALSE, glm::value_ptr(proj_matrix));
@@ -1421,7 +1322,7 @@ void render_superbible_objectexploder(GLFWwindow* window)
 void render_superbible_gsculling(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shader("Shaders/gsculling.vs", "Shaders/gsculling.frag", "Shaders/gsculling.gs");
+	genesis::Shader shader("Shaders/gsculling.vs", "Shaders/gsculling.frag", "Shaders/gsculling.gs");
 
 	GLint mv_location;
 	GLint mvp_location;
@@ -1454,14 +1355,14 @@ void render_superbible_gsculling(GLFWwindow* window)
 		GLfloat currentTime = glfwGetTime();
 		float f = (float)currentTime;
 
-		glViewport(0, 0, screenWidth, screenHeight);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		glClearBufferfv(GL_COLOR, 0, black);
 		glClearBufferfv(GL_DEPTH, 0, &one);
 
 		shader.Use();
 
 		glm::mat4 proj_matrix = glm::perspective(50.0f,
-			(float)screenWidth / (float)screenHeight,
+			(float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,
 			0.1f,
 			1000.0f);
 
@@ -1491,8 +1392,8 @@ void render_superbible_gsculling(GLFWwindow* window)
 void render_superbible_cubicbezier(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader tess_shader("Shaders/cubicbezier.vs", "Shaders/cubicbezier.frag", "Shaders/cubicbezier.tcs", "Shaders/cubicbezier.tes");
-	Shader draw_cp_shader("Shaders/draw-control-points.vs", "Shaders/draw-control-points.frag");
+	genesis::Shader tess_shader("Shaders/cubicbezier.vs", "Shaders/cubicbezier.frag", "Shaders/cubicbezier.tcs", "Shaders/cubicbezier.tes");
+	genesis::Shader draw_cp_shader("Shaders/draw-control-points.vs", "Shaders/draw-control-points.frag");
 
 	GLuint patch_vao;
 	GLuint patch_buffer;
@@ -1597,7 +1498,7 @@ void render_superbible_cubicbezier(GLFWwindow* window)
 			1.0f,   1.0f,  0.0f,
 		};
 
-		glViewport(0, 0, screenWidth, screenHeight);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		glClearBufferfv(GL_COLOR, 0, gray);
 		glClearBufferfv(GL_DEPTH, 0, &one);
 
@@ -1619,7 +1520,7 @@ void render_superbible_cubicbezier(GLFWwindow* window)
 		tess_shader.Use();
 
 		glm::mat4 proj_matrix = glm::perspective(50.0f,
-			(float)screenWidth / (float)screenHeight,
+			(float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,
 			1.0f, 1000.0f);
 
 		glm::mat4 mv_matrix;
@@ -1671,7 +1572,7 @@ void render_superbible_cubicbezier(GLFWwindow* window)
 void render_superbible_dispmap(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shader("Shaders/dispmap.vs", "Shaders/dispmap.frag", "Shaders/dispmap.tcs", "Shaders/dispmap.tes");
+	genesis::Shader shader("Shaders/dispmap.vs", "Shaders/dispmap.frag", "Shaders/dispmap.tcs", "Shaders/dispmap.tes");
 
 	GLuint VAO;
 	GLuint tex_displacement;
@@ -1728,12 +1629,12 @@ void render_superbible_dispmap(GLFWwindow* window)
 		float r = sinf(t * 5.37f) * 15.0f + 16.0f;
 		float h = cosf(t * 4.79f) * 2.0f + 3.2f;
 
-		glViewport(0, 0, screenWidth, screenHeight);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		glClearBufferfv(GL_COLOR, 0, black);
 		glClearBufferfv(GL_DEPTH, 0, &one);
 
 		glm::mat4 mv_matrix = glm::lookAt(glm::vec3(sinf(t) * r, h, cosf(t) * r), glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-		glm::mat4 proj_matrix = glm::perspective(60.0f, (float)screenWidth / (float)screenHeight, 0.1f, 1000.0f);
+		glm::mat4 proj_matrix = glm::perspective(60.0f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 1000.0f);
 
 		shader.Use();
 
@@ -1765,10 +1666,10 @@ void render_superbible_dispmap(GLFWwindow* window)
 void render_superbible_tessmodes(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shader0("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_quads.tcs", "Shaders/tessmodes_quads.tes");
-	Shader shader1("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_triangles.tcs", "Shaders/tessmodes_triangles.tes");
-	Shader shader2("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_triangles.tcs", "Shaders/tessmodes_triangles_as_points.tes");
-	Shader shader3("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_isolines.tcs", "Shaders/tessmodes_isolines.tes");
+	genesis::Shader shader0("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_quads.tcs", "Shaders/tessmodes_quads.tes");
+	genesis::Shader shader1("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_triangles.tcs", "Shaders/tessmodes_triangles.tes");
+	genesis::Shader shader2("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_triangles.tcs", "Shaders/tessmodes_triangles_as_points.tes");
+	genesis::Shader shader3("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_isolines.tcs", "Shaders/tessmodes_isolines.tes");
 
 	GLuint VAO;
 	glGenVertexArrays(1, &VAO);
@@ -1800,7 +1701,7 @@ void render_superbible_tessmodes(GLFWwindow* window)
 void render_superbible_clipdistance(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shader("Shaders/clipdistance.vs", "Shaders/clipdistance.frag");
+	genesis::Shader shader("Shaders/clipdistance.vs", "Shaders/clipdistance.frag");
 
 	sb7::object object;
 
@@ -1847,7 +1748,7 @@ void render_superbible_clipdistance(GLFWwindow* window)
 
 		shader.Use();
 
-		glm::mat4 proj_matrix = glm::perspective(50.0f, (float)screenWidth / (float)screenHeight, 0.1f, 1000.0f);
+		glm::mat4 proj_matrix = glm::perspective(50.0f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 1000.0f);
 		glm::mat4 mv_matrix;
 		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -80.0f));
 		mv_matrix = glm::rotate(mv_matrix, f * 0.34f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -1884,7 +1785,7 @@ void render_superbible_clipdistance(GLFWwindow* window)
 void render_superbible_multidrawindirect(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shader("Shaders/multidrawindirect.vs", "Shaders/multidrawindirect.frag");
+	genesis::Shader shader("Shaders/multidrawindirect.vs", "Shaders/multidrawindirect.frag");
 
 	sb7::object         object;
 
@@ -1979,7 +1880,7 @@ void render_superbible_multidrawindirect(GLFWwindow* window)
 		int i = int(total_time * 3.0f);
 
 		// Clear buffers
-		glViewport(0, 0, (float)screenWidth, (float)screenHeight);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		glClearBufferfv(GL_COLOR, 0, black);
 		glClearBufferfv(GL_DEPTH, 0, &one);
 
@@ -1987,7 +1888,7 @@ void render_superbible_multidrawindirect(GLFWwindow* window)
 			glm::vec3(0.0f, 0.0f, 260.0f),
 			glm::normalize(glm::vec3(0.1f - cosf(t * 0.1f) * 0.3f, 1.0f, 0.0f)));
 		const glm::mat4 proj_matrix = glm::perspective(50.0f,
-			(float)screenWidth / (float)screenHeight,
+			(float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,
 			1.0f,
 			2000.0f);
 
@@ -2027,7 +1928,7 @@ void render_superbible_multidrawindirect(GLFWwindow* window)
 void render_superbible_instancedattribs(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shader("Shaders/instancedattribs.vs", "Shaders/instancedattribs.frag");
+	genesis::Shader shader("Shaders/instancedattribs.vs", "Shaders/instancedattribs.frag");
 
 	static const GLfloat square_vertices[] =
 	{
@@ -2133,9 +2034,9 @@ void render_superbible_fragmentlist(GLFWwindow* window)
 	GLuint dummy_vao;
 
 	// Setup and compile our shaders
-	Shader clearShader("Shaders/clear.vs", "Shaders/clear.frag");
-	Shader appendShader("Shaders/append.vs", "Shaders/append.frag");
-	Shader resolveShader("Shaders/resolve.vs", "Shaders/resolve.frag");
+	genesis::Shader clearShader("Shaders/clear.vs", "Shaders/clear.frag");
+	genesis::Shader appendShader("Shaders/append.vs", "Shaders/append.frag");
+	genesis::Shader resolveShader("Shaders/resolve.vs", "Shaders/resolve.frag");
 
 	appendShader.Use();
 	uniforms.mvp = glGetUniformLocation(appendShader.Program, "mvp");
@@ -2175,7 +2076,7 @@ void render_superbible_fragmentlist(GLFWwindow* window)
 		static const GLfloat gray[] = { 0.1f, 0.1f, 0.1f, 0.0f };
 		static const GLfloat ones[] = { 1.0f };
 
-		glViewport(0, 0, (float)screenWidth, (float)screenHeight);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 
@@ -2191,7 +2092,7 @@ void render_superbible_fragmentlist(GLFWwindow* window)
 			sinf(currentFrame * 0.35f) * 120.0f * 2.3f);
 		glm::mat4 view_matrix = glm::lookAt(view_position, glm::vec3(0.0f, 30.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 		glm::mat4 mv_matrix = view_matrix * model_matrix;
-		glm::mat4 proj_matrix = glm::perspective(50.0f, (float)screenWidth / (float)screenHeight, 0.1f, 1000.0f);
+		glm::mat4 proj_matrix = glm::perspective(50.0f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 1000.0f);
 
 		glUniformMatrix4fv(uniforms.mvp, 1, GL_FALSE, glm::value_ptr(proj_matrix * mv_matrix));
 
@@ -2227,8 +2128,8 @@ void render_superbible_fragmentlist(GLFWwindow* window)
 void render_skybox_demo(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shader("Shaders/advanced.vs", "Shaders/advanced.frag");
-	Shader skyboxShader("Shaders/skybox.vs", "Shaders/skybox.frag");
+	genesis::Shader shader("Shaders/advanced.vs", "Shaders/advanced.frag");
+	genesis::Shader skyboxShader("Shaders/skybox.vs", "Shaders/skybox.frag");
 
 #pragma region "object_initialization"
 	GLfloat cubeVertices[] = {
@@ -2344,7 +2245,8 @@ void render_skybox_demo(GLFWwindow* window)
 	glBindVertexArray(0);
 
 	// Load textures
-	GLuint cubeTexture = loadTexture("Textures/container.jpg");
+	resourceManager.loadTexture("Textures/container.jpg");
+	GLuint cubeTexture = resourceManager.getTexture();
 #pragma endregion
 
 	// Cubemap (Skybox)
@@ -2355,7 +2257,10 @@ void render_skybox_demo(GLFWwindow* window)
 	faces.push_back("Skybox/bottom.jpg");
 	faces.push_back("Skybox/back.jpg");
 	faces.push_back("Skybox/front.jpg");
-	GLuint cubemapTexture = loadCubemap(faces);
+	resourceManager.loadCubemap(faces);
+	GLuint cubemapTexture = resourceManager.getCubemap();
+
+	glEnable(GL_DEPTH_TEST);
 
 	// Game loop
 	while (!glfwWindowShouldClose(window))
@@ -2377,7 +2282,7 @@ void render_skybox_demo(GLFWwindow* window)
 		glDepthMask(GL_FALSE);// Remember to turn depth writing off
 		skyboxShader.Use();
 		glm::mat4 view = glm::mat4(glm::mat3(inputManager._camera.GetViewMatrix()));	// Remove any translation component of the view matrix
-		glm::mat4 projection = glm::perspective(inputManager._camera.Zoom, (GLfloat)screenWidth / (GLfloat)screenHeight, 0.1f, 100.0f);
+		glm::mat4 projection = glm::perspective(inputManager._camera.Zoom, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
 		glUniformMatrix4fv(glGetUniformLocation(skyboxShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(glGetUniformLocation(skyboxShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 		// Draw cube
@@ -2416,15 +2321,17 @@ void render_skybox_demo(GLFWwindow* window)
 void render_exploding_demo(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader shader("Shaders/geometry.vs", "Shaders/geometry.frag", "Shaders/geometry.gs");
+	genesis::Shader shader("Shaders/geometry.vs", "Shaders/geometry.frag", "Shaders/geometry.gs");
 
 	// Load models
-	Model katarina("Katarina/Lol_Katarina_Default.obj");
+	genesis::Model katarina("Katarina/Lol_Katarina_Default.obj");
 
 	// Set projection matrix
-	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)screenWidth / (GLfloat)screenHeight, 1.0f, 100.0f);
+	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 1.0f, 100.0f);
 	shader.Use();
 	glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
+	glEnable(GL_DEPTH_TEST);
 
 	// Game loop
 	while (!glfwWindowShouldClose(window))
@@ -2463,15 +2370,15 @@ void render_exploding_demo(GLFWwindow* window)
 void render_instancing_demo(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	Shader planetShader("Shaders/advanced.vs", "Shaders/advanced.frag");
-	Shader instanceShader("Shaders/instancing.vs", "Shaders/instancing.frag");
+	genesis::Shader planetShader("Shaders/advanced.vs", "Shaders/advanced.frag");
+	genesis::Shader instanceShader("Shaders/instancing.vs", "Shaders/instancing.frag");
 
 	// Load models
-	Model planet("objects/planet.obj");
-	Model rock("objects/rock.obj");
+	genesis::Model planet("objects/planet.obj");
+	genesis::Model rock("objects/rock.obj");
 
 	// Set projection matrix
-	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)screenWidth / (GLfloat)screenHeight, 1.0f, 10000.0f);
+	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 1.0f, 10000.0f);
 	planetShader.Use();
 	glUniformMatrix4fv(glGetUniformLocation(planetShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 	// Also one for instance shader
@@ -2541,6 +2448,8 @@ void render_instancing_demo(GLFWwindow* window)
 
 #pragma endregion
 
+	glEnable(GL_DEPTH_TEST);
+
 	// Game loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -2589,67 +2498,4 @@ void render_instancing_demo(GLFWwindow* window)
 	delete[] modelMatrices;
 
 	glfwTerminate();
-}
-
-// Loads a cubemap texture
-GLuint loadCubemap(vector<const GLchar*> faces)
-{
-	GLuint textureID;
-	glGenTextures(1, &textureID);
-
-	int width, height;
-	unsigned char* image;
-
-	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-	for (GLuint i = 0; i < faces.size(); i++)
-	{
-		image = SOIL_load_image(faces[i], &width, &height, 0, SOIL_LOAD_RGB);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-		SOIL_free_image_data(image);
-	}
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-
-	return textureID;
-}
-
-// Loads a texture from file.
-GLuint loadTexture(GLchar* path)
-{
-	//Generate texture ID and load texture data 
-	GLuint textureID;
-	glGenTextures(1, &textureID);
-	int width, height;
-	unsigned char* image = SOIL_load_image(path, &width, &height, 0, SOIL_LOAD_RGB);
-	// Assign texture to ID
-	glBindTexture(GL_TEXTURE_2D, textureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-
-	// Parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	SOIL_free_image_data(image);
-	return textureID;
-}
-
-static inline float random_float()
-{
-	float res;
-	unsigned int tmp;
-
-	seed *= 16807;
-
-	tmp = seed ^ (seed >> 4) ^ (seed << 15);
-
-	*((unsigned int *)&res) = (tmp >> 9) | 0x3F800000;
-
-	return (res - 1.0f);
 }

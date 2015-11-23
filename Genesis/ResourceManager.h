@@ -14,8 +14,13 @@ namespace genesis {
 		ResourceManager();
 		~ResourceManager();
 
-		GLuint loadCubemap(vector<const GLchar*>);
-		GLuint loadTexture(GLchar*);
+		GLuint getCubemap();
+		void loadCubemap(vector<const GLchar*>);
+		GLuint getTexture();
+		void loadTexture(GLchar*);
+	private:
+		GLuint cubemapID;
+		GLuint textureID;
 	};
 
 }

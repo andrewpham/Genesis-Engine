@@ -1,21 +1,19 @@
 #pragma once
 // Std. Includes
+#include "Shader.h"
 #include "sb7ktx.h"
 #include "sb7object.h"
 #include "InputManager.h"
+#include "ResourceManager.h"
 #include "Variables.h"
 
 // GLM Mathematics
 #include <glm/gtc/type_ptr.hpp>
 
 extern genesis::InputManager inputManager;
-
-GLuint loadCubemap(vector<const GLchar*>);
-GLuint loadTexture(GLchar*);
-static inline float random_float();
+extern genesis::ResourceManager resourceManager;
 
 void render_superbible_shapedpoints(GLFWwindow*);
-void render_superbible_starfield(GLFWwindow*);
 void render_superbible_hdrtonemap(GLFWwindow*);
 void render_superbible_polygonsmooth(GLFWwindow*);
 void render_superbible_linesmooth(GLFWwindow*);

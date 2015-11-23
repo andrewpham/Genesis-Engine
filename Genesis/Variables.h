@@ -1,5 +1,4 @@
 #pragma once
-#include <GL/glew.h>
 
 #define PI_F			3.14159265358979f
 #define WINDOW_NAME		"Genesis"

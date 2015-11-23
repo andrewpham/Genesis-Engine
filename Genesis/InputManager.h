@@ -1,22 +1,18 @@
 #pragma once
 #include "Camera.h"
-using namespace std;
-
-// GLM Mathematics
-#include <glm/glm.hpp>
 
 // GLFW
 #include <GLFW/glfw3.h>
 
 namespace genesis {
 
-enum MODE
-{
-	MODE_FIRST,
-	MODE_MULTIDRAW = 0,
-	MODE_SEPARATE_DRAWS,
-	MODE_MAX = MODE_SEPARATE_DRAWS
-};
+	enum MODE
+	{
+		MODE_FIRST,
+		MODE_MULTIDRAW = 0,
+		MODE_SEPARATE_DRAWS,
+		MODE_MAX = MODE_SEPARATE_DRAWS
+	};
 
 	class InputManager
 	{
