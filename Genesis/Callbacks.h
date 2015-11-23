@@ -1,7 +1,7 @@
 #pragma once
 #include "Demos.h"
 
-namespace genesis {
+namespace gwindow {
 	void keyCallback(GLFWwindow*, int, int, int, int);
 	void mouseCallback(GLFWwindow*, double, double);
 }

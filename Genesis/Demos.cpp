@@ -1,5 +1,5 @@
 // GL includes
-#include "Model.h"
+#include <gengine/Model.h>
 #include "Demos.h"
 
 genesis::InputManager _inputManager;
@@ -1901,11 +1901,11 @@ void render_superbible_multidrawindirect(GLFWwindow* window)
 
 		glBindVertexArray(object.get_vao());
 
-		if (_inputManager.getMode() == genesis::MODE_MULTIDRAW)
+		if (_inputManager.getMode() == MODE_MULTIDRAW)
 		{
 			glMultiDrawArraysIndirect(GL_TRIANGLES, NULL, NUM_DRAWS, 0);
 		}
-		else if (_inputManager.getMode() == genesis::MODE_SEPARATE_DRAWS)
+		else if (_inputManager.getMode() == MODE_SEPARATE_DRAWS)
 		{
 			for (j = 0; j < NUM_DRAWS; j++)
 			{

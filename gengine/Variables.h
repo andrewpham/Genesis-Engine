@@ -7,7 +7,13 @@
 #define NUM_DRAWS		50000
 #define NUM_STARS		2000
 
-static unsigned int seed = 0x13371337;
+enum MODE
+{
+	MODE_FIRST,
+	MODE_MULTIDRAW = 0,
+	MODE_SEPARATE_DRAWS,
+	MODE_MAX = MODE_SEPARATE_DRAWS
+};
 
 struct DrawArraysIndirectCommand
 {

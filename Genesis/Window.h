@@ -1,7 +1,7 @@
 #pragma once
 #include "Callbacks.h"
 
-namespace genesis {
+namespace gwindow {
 
 	class Window
 	{

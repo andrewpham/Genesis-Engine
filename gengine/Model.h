@@ -27,8 +27,8 @@ namespace genesis {
 	{
 	public:
 		/*  Model Data  */
-		vector<genesis::Mesh> meshes;
-		vector<genesis::Texture> textures_loaded;	// Stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
+		vector<Mesh> meshes;
+		vector<Texture> textures_loaded;	// Stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
 		/*  Functions   */
 		// Constructor, expects a filepath to a 3D model.
 		Model(GLchar* path)
@@ -86,17 +86,17 @@ namespace genesis {
 
 		}
 
-		genesis::Mesh processMesh(aiMesh* mesh, const aiScene* scene)
+		Mesh processMesh(aiMesh* mesh, const aiScene* scene)
 		{
 			// Data to fill
-			vector<genesis::Vertex> vertices;
+			vector<Vertex> vertices;
 			vector<GLuint> indices;
-			vector<genesis::Texture> textures;
+			vector<Texture> textures;
 
 			// Walk through each of the mesh's vertices
 			for (GLuint i = 0; i < mesh->mNumVertices; i++)
 			{
-				genesis::Vertex vertex;
+				Vertex vertex;
 				glm::vec3 vector; // We declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
 								  // Positions
 				vector.x = mesh->mVertices[i].x;
@@ -142,22 +142,22 @@ namespace genesis {
 				// Normal: texture_normalN
 
 				// 1. Diffuse maps
-				vector<genesis::Texture> diffuseMaps = this->loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+				vector<Texture> diffuseMaps = this->loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 				textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 				// 2. Specular maps
-				vector<genesis::Texture> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+				vector<Texture> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 				textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 			}
 
 			// Return a mesh object created from the extracted mesh data
-			return genesis::Mesh(vertices, indices, textures);
+			return Mesh(vertices, indices, textures);
 		}
 
 		// Checks all material textures of a given type and loads the textures if they're not loaded yet.
 		// The required info is returned as a Texture struct.
-		vector<genesis::Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName)
+		vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName)
 		{
-			vector<genesis::Texture> textures;
+			vector<Texture> textures;
 			for (GLuint i = 0; i < mat->GetTextureCount(type); i++)
 			{
 				aiString str;
@@ -175,7 +175,7 @@ namespace genesis {
 				}
 				if (!skip)
 				{   // If texture hasn't been loaded already, load it
-					genesis::Texture texture;
+					Texture texture;
 					texture.id = TextureFromFile(str.C_Str(), this->directory);
 					texture.type = typeName;
 					texture.path = str;

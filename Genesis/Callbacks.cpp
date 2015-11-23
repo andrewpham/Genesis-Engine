@@ -1,6 +1,6 @@
 #include "Callbacks.h"
 
-namespace genesis {
+namespace gwindow {
 	// Is called whenever a key is pressed/released via GLFW
 	void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode)
 	{

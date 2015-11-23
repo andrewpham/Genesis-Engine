@@ -6,7 +6,7 @@
 #include "Demos.h"
 #include "Window.h"
 
-genesis::Window window;
+gwindow::Window window;
 
 // The MAIN function, from here we start our application and run our Game loop
 int main()
@@ -38,9 +38,9 @@ int main()
 	//render_superbible_multidrawindirect(window.getWindow());
 	//render_superbible_instancedattribs(window.getWindow());
 	//render_superbible_fragmentlist(window.getWindow());
-	//render_skybox_demo(window.getWindow());
+	render_skybox_demo(window.getWindow());
 	//render_exploding_demo(window.getWindow());
-	render_instancing_demo(window.getWindow());
+	//render_instancing_demo(window.getWindow());
 
 	return 0;
 }

@@ -4,6 +4,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Genesis", "Genesis\Genesis.vcxproj", "{F5E8E0D2-00CE-4308-91D7-4CFA18C3A4BC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{72D6A38E-ADD2-48D1-8797-3832C22E44DD} = {72D6A38E-ADD2-48D1-8797-3832C22E44DD}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gengine", "gengine\gengine.vcxproj", "{72D6A38E-ADD2-48D1-8797-3832C22E44DD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +26,14 @@ Global
 		{F5E8E0D2-00CE-4308-91D7-4CFA18C3A4BC}.Release|x64.Build.0 = Release|x64
 		{F5E8E0D2-00CE-4308-91D7-4CFA18C3A4BC}.Release|x86.ActiveCfg = Release|Win32
 		{F5E8E0D2-00CE-4308-91D7-4CFA18C3A4BC}.Release|x86.Build.0 = Release|Win32
+		{72D6A38E-ADD2-48D1-8797-3832C22E44DD}.Debug|x64.ActiveCfg = Debug|x64
+		{72D6A38E-ADD2-48D1-8797-3832C22E44DD}.Debug|x64.Build.0 = Debug|x64
+		{72D6A38E-ADD2-48D1-8797-3832C22E44DD}.Debug|x86.ActiveCfg = Debug|Win32
+		{72D6A38E-ADD2-48D1-8797-3832C22E44DD}.Debug|x86.Build.0 = Debug|Win32
+		{72D6A38E-ADD2-48D1-8797-3832C22E44DD}.Release|x64.ActiveCfg = Release|x64
+		{72D6A38E-ADD2-48D1-8797-3832C22E44DD}.Release|x64.Build.0 = Release|x64
+		{72D6A38E-ADD2-48D1-8797-3832C22E44DD}.Release|x86.ActiveCfg = Release|Win32
+		{72D6A38E-ADD2-48D1-8797-3832C22E44DD}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

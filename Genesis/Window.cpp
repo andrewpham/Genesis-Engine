@@ -1,7 +1,7 @@
 #include "Window.h"
 
 
-namespace genesis {
+namespace gwindow {
 
 
 	Window::Window()
@@ -26,8 +26,8 @@ namespace genesis {
 		glfwMakeContextCurrent(_window);
 
 		// Set the required callback functions
-		glfwSetKeyCallback(_window, genesis::keyCallback);
-		glfwSetCursorPosCallback(_window, genesis::mouseCallback);
+		glfwSetKeyCallback(_window, keyCallback);
+		glfwSetCursorPosCallback(_window, mouseCallback);
 
 		// Options
 		glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);

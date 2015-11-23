@@ -1,18 +1,11 @@
 #pragma once
 #include "Camera.h"
+#include "Variables.h"
 
 // GLFW
 #include <GLFW/glfw3.h>
 
 namespace genesis {
-
-	enum MODE
-	{
-		MODE_FIRST,
-		MODE_MULTIDRAW = 0,
-		MODE_SEPARATE_DRAWS,
-		MODE_MAX = MODE_SEPARATE_DRAWS
-	};
 
 	class InputManager
 	{
