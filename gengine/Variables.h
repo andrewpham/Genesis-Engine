@@ -6,6 +6,7 @@
 #define SCREEN_HEIGHT	600
 #define NUM_DRAWS		50000
 #define NUM_STARS		2000
+#define NUM_ELEMENTS	2048
 
 enum MODE
 {

@@ -5,6 +5,61 @@
 genesis::InputManager _inputManager;
 genesis::ResourceManager _resourceManager;
 
+static inline float random_float()
+{
+	static unsigned int seed = 0x13371337;
+
+	float res;
+	unsigned int tmp;
+
+	seed *= 16807;
+
+	tmp = seed ^ (seed >> 4) ^ (seed << 15);
+
+	*((unsigned int *)&res) = (tmp >> 9) | 0x3F800000;
+
+	return (res - 1.0f);
+}
+
+void render_superbible_prefix2d(GLFWwindow* window)
+{
+	// Setup and compile our shaders
+	genesis::Shader computeShader("Shaders/prefixsum2d.cs");
+	genesis::Shader shader("Shaders/prefixsum2d.vs", "Shaders/prefixsum2d.frag");
+
+	GLuint images[3];
+
+	GLuint dummy_vao;
+
+	int i;
+
+	glGenTextures(3, images);
+
+	images[0] = sb7::ktx::file::load("Textures/salad-gray.ktx");
+
+	for (i = 1; i < 3; i++)
+	{
+		glBindTexture(GL_TEXTURE_2D, images[i]);
+		glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, NUM_ELEMENTS, NUM_ELEMENTS);
+	}
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Check and call events
+		glfwPollEvents();
+
+		// Clear buffers
+		static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		static const GLfloat one[] = { 1.0f };
+
+		glClearBufferfv(GL_COLOR, 0, black);
+		glClearBufferfv(GL_DEPTH, 0, one);
+	}
+
+	glfwTerminate();
+}
+
 void render_superbible_shapedpoints(GLFWwindow* window)
 {
 	// Setup and compile our shaders

@@ -15,6 +15,61 @@ namespace genesis {
 	public:
 		GLuint Program;
 		// Constructor generates the shader on the fly
+		Shader(const GLchar* computePath)
+		{
+			// 1. Retrieve the compute source code from filePath
+			std::string computeCode;
+			std::ifstream cShaderFile;
+			// ensures ifstream object can throw exceptions:
+			cShaderFile.exceptions(std::ifstream::badbit);
+			try
+			{
+				// Open file
+				cShaderFile.open(computePath);
+				std::stringstream cShaderStream;
+				// Read file's buffer contents into stream
+				cShaderStream << cShaderFile.rdbuf();
+				// close file handler
+				cShaderFile.close();
+				// Convert stream into string
+				computeCode = cShaderStream.str();
+			}
+			catch (std::ifstream::failure e)
+			{
+				std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+			}
+			const GLchar* cShaderCode = computeCode.c_str();
+			// 2. Compile shader
+			GLuint compute;
+			GLint success;
+			GLchar infoLog[512];
+			// Compute Shader
+			compute = glCreateShader(GL_COMPUTE_SHADER);
+			glShaderSource(compute, 1, &cShaderCode, NULL);
+			glCompileShader(compute);
+			// Print compile errors if any
+			glGetShaderiv(compute, GL_COMPILE_STATUS, &success);
+			if (!success)
+			{
+				glGetShaderInfoLog(compute, 512, NULL, infoLog);
+				std::cout << "ERROR::SHADER::COMPUTE::COMPILATION_FAILED\n" << infoLog << std::endl;
+			}
+			// Shader Program
+			this->Program = glCreateProgram();
+			glAttachShader(this->Program, compute);
+			glLinkProgram(this->Program);
+			// Print linking errors if any
+			glGetProgramiv(this->Program, GL_LINK_STATUS, &success);
+			if (!success)
+			{
+				glGetProgramInfoLog(this->Program, 512, NULL, infoLog);
+				std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+			}
+			// Delete the shaders as they're linked into our program now and no longer necessery
+			glDeleteShader(compute);
+
+		}
+		// Constructor generates the shader on the fly
 		Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
 		{
 			// 1. Retrieve the vertex/fragment source code from filePath
