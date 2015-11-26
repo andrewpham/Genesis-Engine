@@ -17,7 +17,7 @@ int main()
 	glewExperimental = GL_TRUE;
 	glewInit();
 
-	render_superbible_prefixsum2d(window.getWindow());
+	render_superbible_csflocking(window.getWindow());
 	//render_superbible_shapedpoints(window.getWindow());
 	//render_superbible_hdrtonemap(window.getWindow());
 	//render_superbible_polygonsmooth(window.getWindow());

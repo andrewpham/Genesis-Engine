@@ -78,6 +78,10 @@ namespace genesis {
 
 		// Additional HDR Tone Mapping Controls
 		float _exposure;
+
+		// Additional DOF Controls
+		float _focalDistance;
+		float _focalDepth;
 	};
 
 }
