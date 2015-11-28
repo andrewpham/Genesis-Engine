@@ -13,6 +13,8 @@
 extern genesis::InputManager _inputManager;
 extern genesis::ResourceManager _resourceManager;
 
+void render_superbible_rimlight(GLFWwindow*);
+void render_superbible_phonglighting(GLFWwindow*);
 void render_superbible_csflocking(GLFWwindow*);
 void render_superbible_shapedpoints(GLFWwindow*);
 void render_superbible_hdrtonemap(GLFWwindow*);

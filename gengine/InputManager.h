@@ -47,6 +47,8 @@ namespace genesis {
 		bool getUsePerspective();
 
 		float getExposure();
+
+		bool getPerVertex();
 	private:
 		// Camera
 		GLfloat _lastX, _lastY;
@@ -82,6 +84,9 @@ namespace genesis {
 		// Additional DOF Controls
 		float _focalDistance;
 		float _focalDepth;
+
+		// Additional Phong Lighting Controls
+		bool _perVertex;
 	};
 
 }
