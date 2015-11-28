@@ -49,6 +49,8 @@ namespace genesis {
 		float getExposure();
 
 		bool getPerVertex();
+
+		float getRimPower();
 	private:
 		// Camera
 		GLfloat _lastX, _lastY;
@@ -87,6 +89,9 @@ namespace genesis {
 
 		// Additional Phong Lighting Controls
 		bool _perVertex;
+
+		// Additional Rim Lighting Controls
+		float _rimPower;
 	};
 
 }

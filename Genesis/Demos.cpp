@@ -24,9 +24,33 @@ static inline float random_float()
 void render_superbible_rimlight(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/shapedpoints.vs", "Shaders/shapedpoints.frag");
+	genesis::Shader shader("Shaders/rimlight.vs", "Shaders/rimlight.frag");
 
+	struct
+	{
+		GLint mv_matrix;
+		GLint proj_matrix;
+		GLint rim_color;
+		GLint rim_power;
+	} uniforms;
+
+	glm::mat4 mat_rotation;
+
+	sb7::object object;
 	
+	shader.Use();
+
+	uniforms.mv_matrix = glGetUniformLocation(shader.Program, "mv_matrix");
+	uniforms.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
+	uniforms.rim_color = glGetUniformLocation(shader.Program, "rim_color");
+	uniforms.rim_power = glGetUniformLocation(shader.Program, "rim_power");
+
+	object.load("sb7objects/dragon.sbm");
+
+	glEnable(GL_CULL_FACE);
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
 
 	// Game loop
 	while (!glfwWindowShouldClose(window))
@@ -37,13 +61,46 @@ void render_superbible_rimlight(GLFWwindow* window)
 
 		// Clear buffers
 		static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-		static const GLfloat one[] = { 1.0f };
+		static const GLfloat one = 1.0f;
+		static double last_time = 0.0f;
+		static double total_time = 0.0f;
 
-		
+		double currentTime = glfwGetTime();
+		if (!_inputManager.getPaused())
+			total_time += (currentTime - last_time);
+		last_time = currentTime;
+
+		float f = (float)total_time;
+
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		glClearBufferfv(GL_COLOR, 0, black);
+		glClearBufferfv(GL_DEPTH, 0, &one);
+
+		shader.Use();
+
+		glm::mat4 proj_matrix = glm::perspective(50.0f,
+			(float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,
+			0.1f,
+			1000.0f);
+		glUniformMatrix4fv(uniforms.proj_matrix, 1, GL_FALSE, glm::value_ptr(proj_matrix));
+
+		glm::mat4 mv_matrix;
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, -5.0f, -60.0f));
+		mv_matrix = glm::rotate(mv_matrix, f * 5.0f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniforms.mv_matrix, 1, GL_FALSE, glm::value_ptr(mv_matrix));
+
+		GLfloat value[] = { 0.3f, 0.3f, 0.3f };
+		glUniform3fv(uniforms.rim_color, 1, value);
+		glUniform1f(uniforms.rim_power, _inputManager.getRimPower());
+
+		object.render();
 
 		// Swap the buffers
 		glfwSwapBuffers(window);
 	}
+
+	object.free();
+	glDeleteProgram(shader.Program);
 
 	glfwTerminate();
 }
@@ -107,7 +164,6 @@ void render_superbible_phonglighting(GLFWwindow* window)
 		glfwPollEvents();
 		_inputManager.checkKeysPressed();
 
-		static const GLfloat zeros[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		static const GLfloat gray[] = { 0.1f, 0.1f, 0.1f, 0.0f };
 		static const GLfloat ones[] = { 1.0f };
 
@@ -115,7 +171,7 @@ void render_superbible_phonglighting(GLFWwindow* window)
 			perVertexShader.Use();
 		else
 			perFragmentShader.Use();
-		glViewport(0, 0, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 		glClearBufferfv(GL_COLOR, 0, gray);
 		glClearBufferfv(GL_DEPTH, 0, ones);
@@ -2433,11 +2489,6 @@ void render_superbible_fragmentlist(GLFWwindow* window)
 
 		// Check and call events
 		glfwPollEvents();
-
-		// Clear buffers
-		static const GLfloat zeros[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		static const GLfloat gray[] = { 0.1f, 0.1f, 0.1f, 0.0f };
-		static const GLfloat ones[] = { 1.0f };
 
 		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 

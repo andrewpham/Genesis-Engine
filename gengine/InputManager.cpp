@@ -7,7 +7,7 @@ namespace genesis {
 	InputManager::InputManager() : _camera(glm::vec3(0.0f, 0.0f, 3.0f)), _lastX(400), _lastY(300), _firstMouse(true), _deltaTime(0.0f), _lastFrame(0.0f),
 		_mode(MODE_MULTIDRAW), _paused(false), _dmapDepth(false), _enableDisplacement(false), _wireframe(false), _enableFog(false),
 		_showPoints(false), _showCage(false), _modeNo(0), _vidOffset(0), _usePerspective(true), _exposure(1.0f), _focalDistance(40.0f),
-		_focalDepth(50.0f), _perVertex(false)
+		_focalDepth(50.0f), _perVertex(false), _rimPower(2.5f)
 	{
 
 	}
@@ -58,7 +58,11 @@ namespace genesis {
 		}
 
 		if (_keys[GLFW_KEY_F])
+		{
 			_enableFog = !_enableFog;
+
+			_rimPower /= 1.5f;
+		}
 
 		if (_keys[GLFW_KEY_C])
 			_showCage = !_showCage;
@@ -103,6 +107,10 @@ namespace genesis {
 		// New Keybind for Phong Lighting
 		if (_keys[GLFW_KEY_V])
 			_perVertex = !_perVertex;
+
+		// New Keybinds for Rim Lighting
+		if (_keys[GLFW_KEY_R])
+			_rimPower *= 1.5f;
 	}
 
 #pragma endregion
@@ -220,6 +228,11 @@ namespace genesis {
 	bool InputManager::getPerVertex()
 	{
 		return this->_perVertex;
+	}
+
+	float InputManager::getRimPower()
+	{
+		return this->_rimPower;
 	}
 
 }
