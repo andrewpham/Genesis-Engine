@@ -21,6 +21,91 @@ static inline float random_float()
 	return (res - 1.0f);
 }
 
+void render_superbible_perpixelgloss(GLFWwindow* window)
+{
+	// Setup and compile our shaders
+	genesis::Shader shader("Shaders/perpixelgloss.vs", "Shaders/perpixelgloss.frag");
+
+	GLuint tex_envmap;
+	GLuint tex_glossmap;
+
+	struct 
+	{
+		GLint mv_matrix;
+		GLint proj_matrix;
+	} uniforms;
+
+	sb7::object object;
+
+	shader.Use();
+
+	uniforms.mv_matrix = glGetUniformLocation(shader.Program, "mv_matrix");
+	uniforms.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
+
+	glActiveTexture(GL_TEXTURE0);
+	tex_envmap = sb7::ktx::file::load("Textures/mountains3d.ktx");
+
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	glActiveTexture(GL_TEXTURE1);
+	tex_glossmap = sb7::ktx::file::load("Textures/pattern1.ktx");
+
+	object.load("sb7objects/torus_nrms_tc.sbm");
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Check and call events
+		glfwPollEvents();
+		_inputManager.checkKeysPressed();
+
+		// Clear buffers
+		static const GLfloat gray[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+		static const GLfloat ones[] = { 1.0f };
+
+		glClearBufferfv(GL_COLOR, 0, gray);
+		glClearBufferfv(GL_DEPTH, 0, ones);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_3D, tex_envmap);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, tex_glossmap);
+
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+		shader.Use();
+
+		float currentTime = glfwGetTime();
+		glm::mat4 proj_matrix = glm::perspective(60.0f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 1000.0f);
+		glm::mat4 mv_matrix;
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -2.0f));
+		mv_matrix = glm::rotate(mv_matrix, currentTime * 13.75f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		mv_matrix = glm::rotate(mv_matrix, currentTime * 7.75f * PI_F / 180.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+		mv_matrix = glm::rotate(mv_matrix, currentTime * 15.3f * PI_F / 180.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+
+		glUniformMatrix4fv(uniforms.mv_matrix, 1, GL_FALSE, glm::value_ptr(mv_matrix));
+		glUniformMatrix4fv(uniforms.proj_matrix, 1, GL_FALSE, glm::value_ptr(proj_matrix));
+
+		object.render();
+
+		// Swap the buffers
+		glfwSwapBuffers(window);
+	}
+
+	glDeleteProgram(shader.Program);
+	glDeleteTextures(1, &tex_envmap);
+
+	glfwTerminate();
+}
+
 void render_superbible_cubemapenv(GLFWwindow* window)
 {
 	// Setup and compile our shaders

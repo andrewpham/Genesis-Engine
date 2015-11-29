@@ -17,7 +17,8 @@ int main()
 	glewExperimental = GL_TRUE;
 	glewInit();
 
-	render_superbible_cubemapenv(window.getWindow());
+	render_superbible_perpixelgloss(window.getWindow());
+	//render_superbible_cubemapenv(window.getWindow());
 	//render_superbible_equirectangular(window.getWindow());
 	//render_superbible_envmapsphere(window.getWindow());
 	//render_superbible_rimlight(window.getWindow());
