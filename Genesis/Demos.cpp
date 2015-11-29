@@ -21,6 +21,186 @@ static inline float random_float()
 	return (res - 1.0f);
 }
 
+void render_superbible_cubemapenv(GLFWwindow* window)
+{
+	// Setup and compile our shaders
+	genesis::Shader shader("Shaders/cubemapenv_render.vs", "Shaders/cubemapenv_render.frag");
+	genesis::Shader skyboxShader("Shaders/cubemapenv_skybox.vs", "Shaders/cubemapenv_skybox.frag");
+	
+	GLuint tex_envmap;
+	GLuint envmaps[3];
+
+	struct 
+	{
+		struct 
+		{
+			GLint mv_matrix;
+			GLint proj_matrix;
+		} render;
+		struct 
+		{
+			GLint view_matrix;
+		} skybox;
+	} uniforms;
+	
+	sb7::object object;
+
+	GLuint skybox_vao;
+
+	shader.Use();
+
+	uniforms.render.mv_matrix = glGetUniformLocation(shader.Program, "mv_matrix");
+	uniforms.render.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
+
+	skyboxShader.Use();
+
+	uniforms.skybox.view_matrix = glGetUniformLocation(skyboxShader.Program, "view_matrix");
+
+	envmaps[0] = sb7::ktx::file::load("Textures/mountaincube.ktx");
+	tex_envmap = envmaps[_inputManager.getEnvmapIndex()];
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+	object.load("sb7objects/dragon.sbm");
+
+	glGenVertexArrays(1, &skybox_vao);
+	glBindVertexArray(skybox_vao);
+
+	glDepthFunc(GL_LEQUAL);
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Check and call events
+		glfwPollEvents();
+		_inputManager.checkKeysPressed();
+
+		// Clear buffers
+		static const GLfloat gray[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+		static const GLfloat ones[] = { 1.0f };
+		const float t = (float)glfwGetTime() * 0.1f;
+
+		glm::mat4 proj_matrix = glm::perspective(60.0f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 1000.0f);
+		glm::mat4 view_matrix = glm::lookAt(glm::vec3(15.0f * sinf(t), 0.0f, 15.0f * cosf(t)),
+			glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 mv_matrix;
+		mv_matrix = view_matrix * mv_matrix;
+		mv_matrix = glm::rotate(mv_matrix, t, glm::vec3(1.0f, 0.0f, 0.0f));
+		mv_matrix = glm::rotate(mv_matrix, t * 130.1f, glm::vec3(0.0f, 1.0f, 0.0f));
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, -4.0f, 0.0f));
+
+		glClearBufferfv(GL_COLOR, 0, gray);
+		glClearBufferfv(GL_DEPTH, 0, ones);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, tex_envmap);
+
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+		skyboxShader.Use();
+		glBindVertexArray(skybox_vao);
+
+		glUniformMatrix4fv(uniforms.skybox.view_matrix, 1, GL_FALSE, glm::value_ptr(view_matrix));
+
+		glDisable(GL_DEPTH_TEST);
+
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+		shader.Use();
+
+		glUniformMatrix4fv(uniforms.render.mv_matrix, 1, GL_FALSE, glm::value_ptr(mv_matrix));
+		glUniformMatrix4fv(uniforms.render.proj_matrix, 1, GL_FALSE, glm::value_ptr(proj_matrix));
+
+		glEnable(GL_DEPTH_TEST);
+
+		object.render();
+
+		// Swap the buffers
+		glfwSwapBuffers(window);
+	}
+
+	glDeleteProgram(shader.Program);
+	glDeleteTextures(3, envmaps);
+
+	glfwTerminate();
+}
+
+void render_superbible_equirectangular(GLFWwindow* window)
+{
+	// Setup and compile our shaders
+	genesis::Shader shader("Shaders/equirectangular.vs", "Shaders/equirectangular.frag");
+
+	GLuint tex_envmap;
+	GLuint envmaps[3];
+
+	struct
+	{
+		GLint mv_matrix;
+		GLint proj_matrix;
+	} uniforms;
+
+	sb7::object object;
+
+	shader.Use();
+
+	uniforms.mv_matrix = glGetUniformLocation(shader.Program, "mv_matrix");
+	uniforms.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
+
+	envmaps[0] = sb7::ktx::file::load("Textures/equirectangularmap1.ktx");
+	tex_envmap = envmaps[_inputManager.getEnvmapIndex()];
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	object.load("sb7objects/dragon.sbm");
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Check and call events
+		glfwPollEvents();
+		_inputManager.checkKeysPressed();
+
+		// Clear buffers
+		static const GLfloat gray[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+		static const GLfloat ones[] = { 1.0f };
+
+		glClearBufferfv(GL_COLOR, 0, gray);
+		glClearBufferfv(GL_DEPTH, 0, ones);
+		tex_envmap = envmaps[_inputManager.getEnvmapIndex()];
+		glBindTexture(GL_TEXTURE_2D, tex_envmap);
+
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+		shader.Use();
+
+		float currentTime = glfwGetTime();
+		glm::mat4 proj_matrix = glm::perspective(60.0f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 1000.0f);
+		glm::mat4 mv_matrix;
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -15.0f));
+		mv_matrix = glm::rotate(mv_matrix, currentTime, glm::vec3(1.0f, 0.0f, 0.0f));
+		mv_matrix = glm::rotate(mv_matrix, currentTime * 1.1f, glm::vec3(0.0f, 1.0f, 0.0f));
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, -4.0f, 0.0f));
+
+		glUniformMatrix4fv(uniforms.mv_matrix, 1, GL_FALSE, glm::value_ptr(mv_matrix));
+		glUniformMatrix4fv(uniforms.proj_matrix, 1, GL_FALSE, glm::value_ptr(proj_matrix));
+
+		object.render();
+
+		// Swap the buffers
+		glfwSwapBuffers(window);
+	}
+
+	glDeleteProgram(shader.Program);
+	glDeleteTextures(3, envmaps);
+
+	glfwTerminate();
+}
+
 void render_superbible_envmapsphere(GLFWwindow* window)
 {
 	// Setup and compile our shaders

@@ -13,6 +13,8 @@
 extern genesis::InputManager _inputManager;
 extern genesis::ResourceManager _resourceManager;
 
+void render_superbible_cubemapenv(GLFWwindow*);
+void render_superbible_equirectangular(GLFWwindow*);
 void render_superbible_envmapsphere(GLFWwindow*);
 void render_superbible_rimlight(GLFWwindow*);
 void render_superbible_phonglighting(GLFWwindow*);
