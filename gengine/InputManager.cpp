@@ -7,7 +7,7 @@ namespace genesis {
 	InputManager::InputManager() : _camera(glm::vec3(0.0f, 0.0f, 3.0f)), _lastX(400), _lastY(300), _firstMouse(true), _deltaTime(0.0f), _lastFrame(0.0f),
 		_mode(MODE_MULTIDRAW), _paused(false), _dmapDepth(false), _enableDisplacement(false), _wireframe(false), _enableFog(false),
 		_showPoints(false), _showCage(false), _modeNo(0), _vidOffset(0), _usePerspective(true), _exposure(1.0f), _focalDistance(40.0f),
-		_focalDepth(50.0f), _perVertex(false), _rimPower(2.5f)
+		_focalDepth(50.0f), _perVertex(false), _rimPower(2.5f), _envmapIndex(0)
 	{
 
 	}
@@ -111,6 +111,10 @@ namespace genesis {
 		// New Keybinds for Rim Lighting
 		if (_keys[GLFW_KEY_R])
 			_rimPower *= 1.5f;
+
+		// New Spherical Environment Mapping Lighting
+		if (_keys[GLFW_KEY_E])
+			_envmapIndex = (_envmapIndex + 1) % 3;
 	}
 
 #pragma endregion
@@ -233,6 +237,11 @@ namespace genesis {
 	float InputManager::getRimPower()
 	{
 		return this->_rimPower;
+	}
+
+	int InputManager::getEnvmapIndex()
+	{
+		return this->_envmapIndex;
 	}
 
 }

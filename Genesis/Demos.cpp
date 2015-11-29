@@ -21,6 +21,80 @@ static inline float random_float()
 	return (res - 1.0f);
 }
 
+void render_superbible_envmapsphere(GLFWwindow* window)
+{
+	// Setup and compile our shaders
+	genesis::Shader shader("Shaders/envmapsphere.vs", "Shaders/envmapsphere.frag");
+
+	GLuint tex_envmap;
+	GLuint envmaps[3];
+
+	struct
+	{
+		GLint mv_matrix;
+		GLint proj_matrix;
+	} uniforms;
+	
+	sb7::object object;
+
+	shader.Use();
+
+	uniforms.mv_matrix = glGetUniformLocation(shader.Program, "mv_matrix");
+	uniforms.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
+
+	envmaps[0] = sb7::ktx::file::load("Textures/spheremap1.ktx");
+	envmaps[1] = sb7::ktx::file::load("Textures/spheremap2.ktx");
+	envmaps[2] = sb7::ktx::file::load("Textures/spheremap3.ktx");
+	tex_envmap = envmaps[_inputManager.getEnvmapIndex()];
+
+	object.load("sb7objects/dragon.sbm");
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+
+	// Game loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Check and call events
+		glfwPollEvents();
+		_inputManager.checkKeysPressed();
+
+		// Clear buffers
+		static const GLfloat gray[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+		static const GLfloat ones[] = { 1.0f };
+
+		glClearBufferfv(GL_COLOR, 0, gray);
+		glClearBufferfv(GL_DEPTH, 0, ones);
+		tex_envmap = envmaps[_inputManager.getEnvmapIndex()];
+		glBindTexture(GL_TEXTURE_2D, tex_envmap);
+		
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+		shader.Use();
+
+		float currentTime = glfwGetTime();
+		glm::mat4 proj_matrix = glm::perspective(60.0f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 1000.0f);
+		glm::mat4 mv_matrix;
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, 0.0f, -15.0f));
+		mv_matrix = glm::rotate(mv_matrix, currentTime, glm::vec3(1.0f, 0.0f, 0.0f));
+		mv_matrix = glm::rotate(mv_matrix, currentTime * 1.1f, glm::vec3(0.0f, 1.0f, 0.0f));
+		mv_matrix = glm::translate(mv_matrix, glm::vec3(0.0f, -4.0f, 0.0f));
+
+		glUniformMatrix4fv(uniforms.mv_matrix, 1, GL_FALSE, glm::value_ptr(mv_matrix));
+		glUniformMatrix4fv(uniforms.proj_matrix, 1, GL_FALSE, glm::value_ptr(proj_matrix));
+
+		object.render();
+
+		// Swap the buffers
+		glfwSwapBuffers(window);
+	}
+
+	glDeleteProgram(shader.Program);
+	glDeleteTextures(3, envmaps);
+
+	glfwTerminate();
+}
+
 void render_superbible_rimlight(GLFWwindow* window)
 {
 	// Setup and compile our shaders

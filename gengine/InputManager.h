@@ -51,6 +51,8 @@ namespace genesis {
 		bool getPerVertex();
 
 		float getRimPower();
+
+		int getEnvmapIndex();
 	private:
 		// Camera
 		GLfloat _lastX, _lastY;
@@ -92,6 +94,9 @@ namespace genesis {
 
 		// Additional Rim Lighting Controls
 		float _rimPower;
+
+		// Additional Spherical Environment Mapping Controls
+		int _envmapIndex;
 	};
 
 }
