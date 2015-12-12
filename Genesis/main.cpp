@@ -17,7 +17,7 @@ int main()
 	glewExperimental = GL_TRUE;
 	glewInit();
 
-	render_superbible_perpixelgloss(window.getWindow());
+	//render_superbible_perpixelgloss(window.getWindow());
 	//render_superbible_cubemapenv(window.getWindow());
 	//render_superbible_equirectangular(window.getWindow());
 	//render_superbible_envmapsphere(window.getWindow());
@@ -46,7 +46,7 @@ int main()
 	//render_superbible_instancedattribs(window.getWindow());
 	//render_superbible_fragmentlist(window.getWindow());
 	//render_skybox_demo(window.getWindow());
-	//render_exploding_demo(window.getWindow());
+	render_exploding_demo(window.getWindow());
 	//render_instancing_demo(window.getWindow());
 
 	return 0;
