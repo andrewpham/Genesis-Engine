@@ -24,7 +24,8 @@ static inline float random_float()
 void render_superbible_perpixelgloss(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/perpixelgloss.vs", "Shaders/perpixelgloss.frag");
+	genesis::Shader shader;
+	shader.Compile("Shaders/perpixelgloss.vs", "Shaders/perpixelgloss.frag");
 
 	GLuint tex_envmap;
 	GLuint tex_glossmap;
@@ -39,8 +40,8 @@ void render_superbible_perpixelgloss(GLFWwindow* window)
 
 	shader.Use();
 
-	uniforms.mv_matrix = glGetUniformLocation(shader.Program, "mv_matrix");
-	uniforms.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
+	uniforms.mv_matrix = glGetUniformLocation(shader.ID, "mv_matrix");
+	uniforms.proj_matrix = glGetUniformLocation(shader.ID, "proj_matrix");
 
 	glActiveTexture(GL_TEXTURE0);
 	tex_envmap = sb7::ktx::file::load("Textures/mountains3d.ktx");
@@ -100,7 +101,7 @@ void render_superbible_perpixelgloss(GLFWwindow* window)
 		glfwSwapBuffers(window);
 	}
 
-	glDeleteProgram(shader.Program);
+	glDeleteProgram(shader.ID);
 	glDeleteTextures(1, &tex_envmap);
 
 	glfwTerminate();
@@ -109,8 +110,10 @@ void render_superbible_perpixelgloss(GLFWwindow* window)
 void render_superbible_cubemapenv(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/cubemapenv_render.vs", "Shaders/cubemapenv_render.frag");
-	genesis::Shader skyboxShader("Shaders/cubemapenv_skybox.vs", "Shaders/cubemapenv_skybox.frag");
+	genesis::Shader shader;
+	shader.Compile("Shaders/cubemapenv_render.vs", "Shaders/cubemapenv_render.frag");
+	genesis::Shader skyboxShader;
+	shader.Compile("Shaders/cubemapenv_skybox.vs", "Shaders/cubemapenv_skybox.frag");
 	
 	GLuint tex_envmap;
 	GLuint envmaps[3];
@@ -134,12 +137,12 @@ void render_superbible_cubemapenv(GLFWwindow* window)
 
 	shader.Use();
 
-	uniforms.render.mv_matrix = glGetUniformLocation(shader.Program, "mv_matrix");
-	uniforms.render.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
+	uniforms.render.mv_matrix = glGetUniformLocation(shader.ID, "mv_matrix");
+	uniforms.render.proj_matrix = glGetUniformLocation(shader.ID, "proj_matrix");
 
 	skyboxShader.Use();
 
-	uniforms.skybox.view_matrix = glGetUniformLocation(skyboxShader.Program, "view_matrix");
+	uniforms.skybox.view_matrix = glGetUniformLocation(skyboxShader.ID, "view_matrix");
 
 	envmaps[0] = sb7::ktx::file::load("Textures/mountaincube.ktx");
 	tex_envmap = envmaps[_inputManager.getEnvmapIndex()];
@@ -206,7 +209,7 @@ void render_superbible_cubemapenv(GLFWwindow* window)
 		glfwSwapBuffers(window);
 	}
 
-	glDeleteProgram(shader.Program);
+	glDeleteProgram(shader.ID);
 	glDeleteTextures(3, envmaps);
 
 	glfwTerminate();
@@ -215,7 +218,8 @@ void render_superbible_cubemapenv(GLFWwindow* window)
 void render_superbible_equirectangular(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/equirectangular.vs", "Shaders/equirectangular.frag");
+	genesis::Shader shader;
+	shader.Compile("Shaders/equirectangular.vs", "Shaders/equirectangular.frag");
 
 	GLuint tex_envmap;
 	GLuint envmaps[3];
@@ -230,8 +234,8 @@ void render_superbible_equirectangular(GLFWwindow* window)
 
 	shader.Use();
 
-	uniforms.mv_matrix = glGetUniformLocation(shader.Program, "mv_matrix");
-	uniforms.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
+	uniforms.mv_matrix = glGetUniformLocation(shader.ID, "mv_matrix");
+	uniforms.proj_matrix = glGetUniformLocation(shader.ID, "proj_matrix");
 
 	envmaps[0] = sb7::ktx::file::load("Textures/equirectangularmap1.ktx");
 	tex_envmap = envmaps[_inputManager.getEnvmapIndex()];
@@ -280,7 +284,7 @@ void render_superbible_equirectangular(GLFWwindow* window)
 		glfwSwapBuffers(window);
 	}
 
-	glDeleteProgram(shader.Program);
+	glDeleteProgram(shader.ID);
 	glDeleteTextures(3, envmaps);
 
 	glfwTerminate();
@@ -289,7 +293,8 @@ void render_superbible_equirectangular(GLFWwindow* window)
 void render_superbible_envmapsphere(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/envmapsphere.vs", "Shaders/envmapsphere.frag");
+	genesis::Shader shader;
+	shader.Compile("Shaders/envmapsphere.vs", "Shaders/envmapsphere.frag");
 
 	GLuint tex_envmap;
 	GLuint envmaps[3];
@@ -304,8 +309,8 @@ void render_superbible_envmapsphere(GLFWwindow* window)
 
 	shader.Use();
 
-	uniforms.mv_matrix = glGetUniformLocation(shader.Program, "mv_matrix");
-	uniforms.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
+	uniforms.mv_matrix = glGetUniformLocation(shader.ID, "mv_matrix");
+	uniforms.proj_matrix = glGetUniformLocation(shader.ID, "proj_matrix");
 
 	envmaps[0] = sb7::ktx::file::load("Textures/spheremap1.ktx");
 	envmaps[1] = sb7::ktx::file::load("Textures/spheremap2.ktx");
@@ -354,7 +359,7 @@ void render_superbible_envmapsphere(GLFWwindow* window)
 		glfwSwapBuffers(window);
 	}
 
-	glDeleteProgram(shader.Program);
+	glDeleteProgram(shader.ID);
 	glDeleteTextures(3, envmaps);
 
 	glfwTerminate();
@@ -363,7 +368,8 @@ void render_superbible_envmapsphere(GLFWwindow* window)
 void render_superbible_rimlight(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/rimlight.vs", "Shaders/rimlight.frag");
+	genesis::Shader shader;
+	shader.Compile("Shaders/rimlight.vs", "Shaders/rimlight.frag");
 
 	struct
 	{
@@ -379,10 +385,10 @@ void render_superbible_rimlight(GLFWwindow* window)
 	
 	shader.Use();
 
-	uniforms.mv_matrix = glGetUniformLocation(shader.Program, "mv_matrix");
-	uniforms.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
-	uniforms.rim_color = glGetUniformLocation(shader.Program, "rim_color");
-	uniforms.rim_power = glGetUniformLocation(shader.Program, "rim_power");
+	uniforms.mv_matrix = glGetUniformLocation(shader.ID, "mv_matrix");
+	uniforms.proj_matrix = glGetUniformLocation(shader.ID, "proj_matrix");
+	uniforms.rim_color = glGetUniformLocation(shader.ID, "rim_color");
+	uniforms.rim_power = glGetUniformLocation(shader.ID, "rim_power");
 
 	object.load("sb7objects/dragon.sbm");
 
@@ -439,7 +445,7 @@ void render_superbible_rimlight(GLFWwindow* window)
 	}
 
 	object.free();
-	glDeleteProgram(shader.Program);
+	glDeleteProgram(shader.ID);
 
 	glfwTerminate();
 }
@@ -447,8 +453,10 @@ void render_superbible_rimlight(GLFWwindow* window)
 void render_superbible_phonglighting(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader perFragmentShader("Shaders/per-fragment-phong.vs", "Shaders/per-fragment-phong.frag");
-	genesis::Shader perVertexShader("Shaders/per-vertex-phong.vs", "Shaders/per-vertex-phong.frag");
+	genesis::Shader perFragmentShader;
+	perFragmentShader.Compile("Shaders/per-fragment-phong.vs", "Shaders/per-fragment-phong.frag");
+	genesis::Shader perVertexShader;
+	perVertexShader.Compile("Shaders/per-vertex-phong.vs", "Shaders/per-vertex-phong.frag");
 
 	struct
 	{
@@ -476,15 +484,15 @@ void render_superbible_phonglighting(GLFWwindow* window)
 
 	perFragmentShader.Use();
 
-	uniforms[0].diffuse_albedo = glGetUniformLocation(perFragmentShader.Program, "diffuse_albedo");
-	uniforms[0].specular_albedo = glGetUniformLocation(perFragmentShader.Program, "specular_albedo");
-	uniforms[0].specular_power = glGetUniformLocation(perFragmentShader.Program, "specular_power");
+	uniforms[0].diffuse_albedo = glGetUniformLocation(perFragmentShader.ID, "diffuse_albedo");
+	uniforms[0].specular_albedo = glGetUniformLocation(perFragmentShader.ID, "specular_albedo");
+	uniforms[0].specular_power = glGetUniformLocation(perFragmentShader.ID, "specular_power");
 
 	perVertexShader.Use();
 
-	uniforms[1].diffuse_albedo = glGetUniformLocation(perFragmentShader.Program, "diffuse_albedo");
-	uniforms[1].specular_albedo = glGetUniformLocation(perFragmentShader.Program, "specular_albedo");
-	uniforms[1].specular_power = glGetUniformLocation(perFragmentShader.Program, "specular_power");
+	uniforms[1].diffuse_albedo = glGetUniformLocation(perFragmentShader.ID, "diffuse_albedo");
+	uniforms[1].specular_albedo = glGetUniformLocation(perFragmentShader.ID, "specular_albedo");
+	uniforms[1].specular_power = glGetUniformLocation(perFragmentShader.ID, "specular_power");
 
 	glGenBuffers(1, &uniforms_buffer);
 	glBindBuffer(GL_UNIFORM_BUFFER, uniforms_buffer);
@@ -595,8 +603,10 @@ void render_superbible_phonglighting(GLFWwindow* window)
 void render_superbible_csflocking(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/csflocking.vs", "Shaders/csflocking.frag");
-	genesis::Shader updateShader("Shaders/csflocking.comp");
+	genesis::Shader shader;
+	shader.Compile("Shaders/csflocking.vs", "Shaders/csflocking.frag");
+	genesis::Shader updateShader;
+	updateShader.Compile("Shaders/csflocking.comp");
 
 	GLuint flock_buffer[2];
 
@@ -627,11 +637,11 @@ void render_superbible_csflocking(GLFWwindow* window)
 
 	updateShader.Use();
 
-	uniforms.update.goal = glGetUniformLocation(updateShader.Program, "goal");
+	uniforms.update.goal = glGetUniformLocation(updateShader.ID, "goal");
 
 	shader.Use();
 
-	uniforms.render.mvp = glGetUniformLocation(shader.Program, "mvp");
+	uniforms.render.mvp = glGetUniformLocation(shader.ID, "mvp");
 
 	static const glm::vec3 geometry[] =
 	{
@@ -765,7 +775,8 @@ void render_superbible_csflocking(GLFWwindow* window)
 void render_superbible_shapedpoints(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/shapedpoints.vs", "Shaders/shapedpoints.frag");
+	genesis::Shader shader;
+	shader.Compile("Shaders/shapedpoints.vs", "Shaders/shapedpoints.frag");
 
 	GLuint VAO;
 
@@ -802,9 +813,12 @@ void render_superbible_shapedpoints(GLFWwindow* window)
 void render_superbible_hdrtonemap(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shaderNaive("Shaders/tonemap.vs", "Shaders/tonemap_naive.frag");
-	genesis::Shader shaderExposure("Shaders/tonemap.vs", "Shaders/tonemap_exposure.frag");
-	genesis::Shader shaderAdaptive("Shaders/tonemap.vs", "Shaders/tonemap_adaptive.frag");
+	genesis::Shader shaderNaive;
+	shaderNaive.Compile("Shaders/tonemap.vs", "Shaders/tonemap_naive.frag");
+	genesis::Shader shaderExposure;
+	shaderExposure.Compile("Shaders/tonemap.vs", "Shaders/tonemap_exposure.frag");
+	genesis::Shader shaderAdaptive;
+	shaderAdaptive.Compile("Shaders/tonemap.vs", "Shaders/tonemap_adaptive.frag");
 
 	GLuint tex_src;
 	GLuint tex_lut;
@@ -821,7 +835,7 @@ void render_superbible_hdrtonemap(GLFWwindow* window)
 
 	shaderExposure.Use();
 
-	uniforms.exposure.exposure = glGetUniformLocation(shaderExposure.Program, "exposure");
+	uniforms.exposure.exposure = glGetUniformLocation(shaderExposure.ID, "exposure");
 
 	// Load texture from file
 	tex_src = sb7::ktx::file::load("Textures/treelights_2k.ktx");
@@ -879,9 +893,9 @@ void render_superbible_hdrtonemap(GLFWwindow* window)
 		glfwSwapBuffers(window);
 	}
 
-	glDeleteProgram(shaderNaive.Program);
-	glDeleteProgram(shaderExposure.Program);
-	glDeleteProgram(shaderAdaptive.Program);
+	glDeleteProgram(shaderNaive.ID);
+	glDeleteProgram(shaderExposure.ID);
+	glDeleteProgram(shaderAdaptive.ID);
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteTextures(1, &tex_src);
 	glDeleteTextures(1, &tex_lut);
@@ -892,7 +906,8 @@ void render_superbible_hdrtonemap(GLFWwindow* window)
 void render_superbible_polygonsmooth(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/linesmooth.vs", "Shaders/linesmooth.frag");
+	genesis::Shader shader;
+	shader.Compile("Shaders/linesmooth.vs", "Shaders/linesmooth.frag");
 
 	GLuint VAO;
 	GLuint position_buffer;
@@ -902,8 +917,8 @@ void render_superbible_polygonsmooth(GLFWwindow* window)
 
 	shader.Use();
 
-	mv_location = glGetUniformLocation(shader.Program, "mv_matrix");
-	proj_location = glGetUniformLocation(shader.Program, "proj_matrix");
+	mv_location = glGetUniformLocation(shader.ID, "mv_matrix");
+	proj_location = glGetUniformLocation(shader.ID, "proj_matrix");
 
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
@@ -993,7 +1008,7 @@ void render_superbible_polygonsmooth(GLFWwindow* window)
 	}
 
 	glDeleteVertexArrays(1, &VAO);
-	glDeleteProgram(shader.Program);
+	glDeleteProgram(shader.ID);
 	glDeleteBuffers(1, &position_buffer);
 
 	glfwTerminate();
@@ -1002,7 +1017,8 @@ void render_superbible_polygonsmooth(GLFWwindow* window)
 void render_superbible_linesmooth(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/linesmooth.vs", "Shaders/linesmooth.frag");
+	genesis::Shader shader;
+	shader.Compile("Shaders/linesmooth.vs", "Shaders/linesmooth.frag");
 
 	GLuint VAO;
 	GLuint position_buffer;
@@ -1012,8 +1028,8 @@ void render_superbible_linesmooth(GLFWwindow* window)
 
 	shader.Use();
 
-	mv_location = glGetUniformLocation(shader.Program, "mv_matrix");
-	proj_location = glGetUniformLocation(shader.Program, "proj_matrix");
+	mv_location = glGetUniformLocation(shader.ID, "mv_matrix");
+	proj_location = glGetUniformLocation(shader.ID, "proj_matrix");
 
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
@@ -1104,7 +1120,7 @@ void render_superbible_linesmooth(GLFWwindow* window)
 	}
 
 	glDeleteVertexArrays(1, &VAO);
-	glDeleteProgram(shader.Program);
+	glDeleteProgram(shader.ID);
 	glDeleteBuffers(1, &position_buffer);
 
 	glfwTerminate();
@@ -1113,8 +1129,10 @@ void render_superbible_linesmooth(GLFWwindow* window)
 void render_superbible_basicfbo(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader1("Shaders/basicfbo.vs", "Shaders/basicfbo.frag");
-	genesis::Shader shader2("Shaders/basicfbo.vs", "Shaders/basicfbo2.frag");
+	genesis::Shader shader1;
+	shader1.Compile("Shaders/basicfbo.vs", "Shaders/basicfbo.frag");
+	genesis::Shader shader2;
+	shader2.Compile("Shaders/basicfbo.vs", "Shaders/basicfbo2.frag");
 
 	GLuint VAO;
 	GLuint position_buffer;
@@ -1129,13 +1147,13 @@ void render_superbible_basicfbo(GLFWwindow* window)
 
 	shader1.Use();
 
-	mv_location = glGetUniformLocation(shader1.Program, "mv_matrix");
-	proj_location = glGetUniformLocation(shader1.Program, "proj_matrix");
+	mv_location = glGetUniformLocation(shader1.ID, "mv_matrix");
+	proj_location = glGetUniformLocation(shader1.ID, "proj_matrix");
 
 	shader2.Use();
 
-	mv_location2 = glGetUniformLocation(shader2.Program, "mv_matrix");
-	proj_location2 = glGetUniformLocation(shader2.Program, "proj_matrix");
+	mv_location2 = glGetUniformLocation(shader2.ID, "mv_matrix");
+	proj_location2 = glGetUniformLocation(shader2.ID, "proj_matrix");
 
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
@@ -1304,8 +1322,8 @@ void render_superbible_basicfbo(GLFWwindow* window)
 	}
 
 	glDeleteVertexArrays(1, &VAO);
-	glDeleteProgram(shader1.Program);
-	glDeleteProgram(shader2.Program);
+	glDeleteProgram(shader1.ID);
+	glDeleteProgram(shader2.ID);
 	glDeleteBuffers(1, &position_buffer);
 	glDeleteFramebuffers(1, &FBO);
 	glDeleteTextures(1, &color_texture);
@@ -1316,7 +1334,8 @@ void render_superbible_basicfbo(GLFWwindow* window)
 void render_superbible_depthclamp(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/depthclamp.vs", "Shaders/depthclamp.frag");
+	genesis::Shader shader;
+	shader.Compile("Shaders/depthclamp.vs", "Shaders/depthclamp.frag");
 
 	GLint mv_location;
 	GLint proj_location;
@@ -1326,9 +1345,9 @@ void render_superbible_depthclamp(GLFWwindow* window)
 
 	shader.Use();
 
-	mv_location = glGetUniformLocation(shader.Program, "mv_matrix");
-	proj_location = glGetUniformLocation(shader.Program, "proj_matrix");
-	explode_factor_location = glGetUniformLocation(shader.Program, "explode_factor");
+	mv_location = glGetUniformLocation(shader.ID, "mv_matrix");
+	proj_location = glGetUniformLocation(shader.ID, "proj_matrix");
+	explode_factor_location = glGetUniformLocation(shader.ID, "explode_factor");
 
 	object.load("sb7objects/dragon.sbm");
 
@@ -1378,7 +1397,7 @@ void render_superbible_depthclamp(GLFWwindow* window)
 	}
 
 	object.free();
-	glDeleteProgram(shader.Program);
+	glDeleteProgram(shader.ID);
 
 	glfwTerminate();
 }
@@ -1386,7 +1405,8 @@ void render_superbible_depthclamp(GLFWwindow* window)
 void render_superbible_multiscissor(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/multiscissor.vs", "Shaders/multiscissor.frag", "Shaders/multiscissor.gs");
+	genesis::Shader shader;
+	shader.Compile("Shaders/multiscissor.vs", "Shaders/multiscissor.frag", "Shaders/multiscissor.gs");
 
 	GLuint          VAO;
 	GLuint          position_buffer;
@@ -1397,8 +1417,8 @@ void render_superbible_multiscissor(GLFWwindow* window)
 
 	shader.Use();
 
-	mv_location = glGetUniformLocation(shader.Program, "mv_matrix");
-	proj_location = glGetUniformLocation(shader.Program, "proj_matrix");
+	mv_location = glGetUniformLocation(shader.ID, "mv_matrix");
+	proj_location = glGetUniformLocation(shader.ID, "proj_matrix");
 
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
@@ -1536,7 +1556,7 @@ void render_superbible_multiscissor(GLFWwindow* window)
 	}
 
 	glDeleteVertexArrays(1, &VAO);
-	glDeleteProgram(shader.Program);
+	glDeleteProgram(shader.ID);
 	glDeleteBuffers(1, &position_buffer);
 
 	glfwTerminate();
@@ -1545,7 +1565,8 @@ void render_superbible_multiscissor(GLFWwindow* window)
 void render_superbible_noperspective(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/noperspective.vs", "Shaders/noperspective.frag");
+	genesis::Shader shader;
+	shader.Compile("Shaders/noperspective.vs", "Shaders/noperspective.frag");
 
 	GLuint VAO;
 	GLuint tex_checker;
@@ -1558,8 +1579,8 @@ void render_superbible_noperspective(GLFWwindow* window)
 
 	shader.Use();
 
-	uniforms.mvp = glGetUniformLocation(shader.Program, "mvp");
-	uniforms.use_perspective = glGetUniformLocation(shader.Program, "use_perspective");
+	uniforms.mvp = glGetUniformLocation(shader.ID, "mvp");
+	uniforms.use_perspective = glGetUniformLocation(shader.ID, "use_perspective");
 
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
@@ -1628,7 +1649,7 @@ void render_superbible_noperspective(GLFWwindow* window)
 	}
 
 	glDeleteVertexArrays(1, &VAO);
-	glDeleteProgram(shader.Program);
+	glDeleteProgram(shader.ID);
 
 	glfwTerminate();
 }
@@ -1636,7 +1657,8 @@ void render_superbible_noperspective(GLFWwindow* window)
 void render_superbible_multiviewport(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/multiviewport.vs", "Shaders/multiviewport.frag", "Shaders/multiviewport.gs");
+	genesis::Shader shader;
+	shader.Compile("Shaders/multiviewport.vs", "Shaders/multiviewport.frag", "Shaders/multiviewport.gs");
 
 	GLuint VAO;
 	GLuint position_buffer;
@@ -1768,7 +1790,7 @@ void render_superbible_multiviewport(GLFWwindow* window)
 	}
 
 	glDeleteVertexArrays(1, &VAO);
-	glDeleteProgram(shader.Program);
+	glDeleteProgram(shader.ID);
 	glDeleteBuffers(1, &position_buffer);
 
 	glfwTerminate();
@@ -1777,8 +1799,10 @@ void render_superbible_multiviewport(GLFWwindow* window)
 void render_superbible_gsquads(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shaderFans("Shaders/quadsasfans.vs", "Shaders/quadsasfans.frag");
-	genesis::Shader shaderLinesAdj("Shaders/quadsaslinesadj.vs", "Shaders/quadsaslinesadj.frag", "Shaders/quadsaslinesadj.gs");
+	genesis::Shader shaderFans;
+	shaderFans.Compile("Shaders/quadsasfans.vs", "Shaders/quadsasfans.frag");
+	genesis::Shader shaderLinesAdj;
+	shaderLinesAdj.Compile("Shaders/quadsaslinesadj.vs", "Shaders/quadsaslinesadj.frag", "Shaders/quadsaslinesadj.gs");
 
 	GLuint VAO;
 	int mvp_loc_fans;
@@ -1788,13 +1812,13 @@ void render_superbible_gsquads(GLFWwindow* window)
 
 	shaderFans.Use();
 
-	mvp_loc_fans = glGetUniformLocation(shaderFans.Program, "mvp");
-	vid_offset_loc_fans = glGetUniformLocation(shaderFans.Program, "vid_offset");
+	mvp_loc_fans = glGetUniformLocation(shaderFans.ID, "mvp");
+	vid_offset_loc_fans = glGetUniformLocation(shaderFans.ID, "vid_offset");
 
 	shaderLinesAdj.Use();
 
-	mvp_loc_linesadj = glGetUniformLocation(shaderLinesAdj.Program, "mvp");
-	vid_offset_loc_linesadj = glGetUniformLocation(shaderLinesAdj.Program, "vid_offset");
+	mvp_loc_linesadj = glGetUniformLocation(shaderLinesAdj.ID, "mvp");
+	vid_offset_loc_linesadj = glGetUniformLocation(shaderLinesAdj.ID, "vid_offset");
 
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
@@ -1849,8 +1873,8 @@ void render_superbible_gsquads(GLFWwindow* window)
 		glfwSwapBuffers(window);
 	}
 
-	glDeleteProgram(shaderFans.Program);
-	glDeleteProgram(shaderLinesAdj.Program);
+	glDeleteProgram(shaderFans.ID);
+	glDeleteProgram(shaderLinesAdj.ID);
 	glDeleteVertexArrays(1, &VAO);
 
 	glfwTerminate();
@@ -1859,7 +1883,8 @@ void render_superbible_gsquads(GLFWwindow* window)
 void render_superbible_normalviewer(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/normalviewer.vs", "Shaders/normalviewer.frag", "Shaders/normalviewer.gs");
+	genesis::Shader shader;
+	shader.Compile("Shaders/normalviewer.vs", "Shaders/normalviewer.frag", "Shaders/normalviewer.gs");
 
 	GLint mv_location;
 	GLint proj_location;
@@ -1869,9 +1894,9 @@ void render_superbible_normalviewer(GLFWwindow* window)
 
 	shader.Use();
 
-	mv_location = glGetUniformLocation(shader.Program, "mv_matrix");
-	proj_location = glGetUniformLocation(shader.Program, "proj_matrix");
-	normal_length_location = glGetUniformLocation(shader.Program, "normal_length");
+	mv_location = glGetUniformLocation(shader.ID, "mv_matrix");
+	proj_location = glGetUniformLocation(shader.ID, "proj_matrix");
+	normal_length_location = glGetUniformLocation(shader.ID, "normal_length");
 
 	object.load("sb7objects/torus.sbm");
 
@@ -1922,7 +1947,8 @@ void render_superbible_normalviewer(GLFWwindow* window)
 void render_superbible_gstessellate(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/gstessellate.vs", "Shaders/gstessellate.frag", "Shaders/gstessellate.gs");
+	genesis::Shader shader;
+	shader.Compile("Shaders/gstessellate.vs", "Shaders/gstessellate.frag", "Shaders/gstessellate.gs");
 
 	GLint mv_location;
 	GLint mvp_location;
@@ -1932,9 +1958,9 @@ void render_superbible_gstessellate(GLFWwindow* window)
 
 	shader.Use();
 
-	mv_location = glGetUniformLocation(shader.Program, "mvMatrix");
-	mvp_location = glGetUniformLocation(shader.Program, "mvpMatrix");
-	stretch_location = glGetUniformLocation(shader.Program, "stretch");
+	mv_location = glGetUniformLocation(shader.ID, "mvMatrix");
+	mvp_location = glGetUniformLocation(shader.ID, "mvpMatrix");
+	stretch_location = glGetUniformLocation(shader.ID, "stretch");
 
 	static const GLfloat tetrahedron_verts[] =
 	{
@@ -2017,7 +2043,8 @@ void render_superbible_gstessellate(GLFWwindow* window)
 void render_superbible_objectexploder(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/objectexploder.vs", "Shaders/objectexploder.frag", "Shaders/objectexploder.gs");
+	genesis::Shader shader;
+	shader.Compile("Shaders/objectexploder.vs", "Shaders/objectexploder.frag", "Shaders/objectexploder.gs");
 
 	GLint mv_location;
 	GLint proj_location;
@@ -2027,9 +2054,9 @@ void render_superbible_objectexploder(GLFWwindow* window)
 
 	shader.Use();
 
-	mv_location = glGetUniformLocation(shader.Program, "mv_matrix");
-	proj_location = glGetUniformLocation(shader.Program, "proj_matrix");
-	explode_factor_location = glGetUniformLocation(shader.Program, "explode_factor");
+	mv_location = glGetUniformLocation(shader.ID, "mv_matrix");
+	proj_location = glGetUniformLocation(shader.ID, "proj_matrix");
+	explode_factor_location = glGetUniformLocation(shader.ID, "explode_factor");
 
 	object.load("sb7objects/torus.sbm");
 
@@ -2080,7 +2107,8 @@ void render_superbible_objectexploder(GLFWwindow* window)
 void render_superbible_gsculling(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/gsculling.vs", "Shaders/gsculling.frag", "Shaders/gsculling.gs");
+	genesis::Shader shader;
+	shader.Compile("Shaders/gsculling.vs", "Shaders/gsculling.frag", "Shaders/gsculling.gs");
 
 	GLint mv_location;
 	GLint mvp_location;
@@ -2090,9 +2118,9 @@ void render_superbible_gsculling(GLFWwindow* window)
 
 	shader.Use();
 
-	mv_location = glGetUniformLocation(shader.Program, "mvMatrix");
-	mvp_location = glGetUniformLocation(shader.Program, "mvpMatrix");
-	viewpoint_location = glGetUniformLocation(shader.Program, "viewpoint");
+	mv_location = glGetUniformLocation(shader.ID, "mvMatrix");
+	mvp_location = glGetUniformLocation(shader.ID, "mvpMatrix");
+	viewpoint_location = glGetUniformLocation(shader.ID, "viewpoint");
 
 	object.load("sb7objects/dragon.sbm");
 
@@ -2142,7 +2170,7 @@ void render_superbible_gsculling(GLFWwindow* window)
 	}
 
 	object.free();
-	glDeleteProgram(shader.Program);
+	glDeleteProgram(shader.ID);
 
 	glfwTerminate();
 }
@@ -2150,8 +2178,10 @@ void render_superbible_gsculling(GLFWwindow* window)
 void render_superbible_cubicbezier(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader tess_shader("Shaders/cubicbezier.vs", "Shaders/cubicbezier.frag", "Shaders/cubicbezier.tcs", "Shaders/cubicbezier.tes");
-	genesis::Shader draw_cp_shader("Shaders/draw-control-points.vs", "Shaders/draw-control-points.frag");
+	genesis::Shader tess_shader;
+	tess_shader.Compile("Shaders/cubicbezier.vs", "Shaders/cubicbezier.frag", "Shaders/cubicbezier.tcs", "Shaders/cubicbezier.tes");
+	genesis::Shader draw_cp_shader;
+	draw_cp_shader.Compile("Shaders/draw-control-points.vs", "Shaders/draw-control-points.frag");
 
 	GLuint patch_vao;
 	GLuint patch_buffer;
@@ -2175,14 +2205,14 @@ void render_superbible_cubicbezier(GLFWwindow* window)
 
 	tess_shader.Use();
 
-	uniforms.patch.mv_matrix = glGetUniformLocation(tess_shader.Program, "mv_matrix");
-	uniforms.patch.proj_matrix = glGetUniformLocation(tess_shader.Program, "proj_matrix");
-	uniforms.patch.mvp = glGetUniformLocation(tess_shader.Program, "mvp");
+	uniforms.patch.mv_matrix = glGetUniformLocation(tess_shader.ID, "mv_matrix");
+	uniforms.patch.proj_matrix = glGetUniformLocation(tess_shader.ID, "proj_matrix");
+	uniforms.patch.mvp = glGetUniformLocation(tess_shader.ID, "mvp");
 
 	draw_cp_shader.Use();
 
-	uniforms.control_point.draw_color = glGetUniformLocation(draw_cp_shader.Program, "draw_color");
-	uniforms.control_point.mvp = glGetUniformLocation(draw_cp_shader.Program, "mvp");
+	uniforms.control_point.draw_color = glGetUniformLocation(draw_cp_shader.ID, "draw_color");
+	uniforms.control_point.mvp = glGetUniformLocation(draw_cp_shader.ID, "mvp");
 
 	glGenVertexArrays(1, &patch_vao);
 	glBindVertexArray(patch_vao);
@@ -2330,7 +2360,8 @@ void render_superbible_cubicbezier(GLFWwindow* window)
 void render_superbible_dispmap(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/dispmap.vs", "Shaders/dispmap.frag", "Shaders/dispmap.tcs", "Shaders/dispmap.tes");
+	genesis::Shader shader;
+	shader.Compile("Shaders/dispmap.vs", "Shaders/dispmap.frag", "Shaders/dispmap.tcs", "Shaders/dispmap.tes");
 
 	GLuint VAO;
 	GLuint tex_displacement;
@@ -2347,11 +2378,11 @@ void render_superbible_dispmap(GLFWwindow* window)
 
 	shader.Use();
 
-	uniforms.mv_matrix = glGetUniformLocation(shader.Program, "mv_matrix");
-	uniforms.mvp_matrix = glGetUniformLocation(shader.Program, "mvp_matrix");
-	uniforms.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
-	uniforms.dmap_depth = glGetUniformLocation(shader.Program, "dmap_depth");
-	uniforms.enable_fog = glGetUniformLocation(shader.Program, "enable_fog");
+	uniforms.mv_matrix = glGetUniformLocation(shader.ID, "mv_matrix");
+	uniforms.mvp_matrix = glGetUniformLocation(shader.ID, "mvp_matrix");
+	uniforms.proj_matrix = glGetUniformLocation(shader.ID, "proj_matrix");
+	uniforms.dmap_depth = glGetUniformLocation(shader.ID, "dmap_depth");
+	uniforms.enable_fog = glGetUniformLocation(shader.ID, "enable_fog");
 	_inputManager.setDmapDepth(6.0f);
 
 	glGenVertexArrays(1, &VAO);
@@ -2416,7 +2447,7 @@ void render_superbible_dispmap(GLFWwindow* window)
 	}
 
 	glDeleteVertexArrays(1, &VAO);
-	glDeleteProgram(shader.Program);
+	glDeleteProgram(shader.ID);
 
 	glfwTerminate();
 }
@@ -2424,10 +2455,14 @@ void render_superbible_dispmap(GLFWwindow* window)
 void render_superbible_tessmodes(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader0("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_quads.tcs", "Shaders/tessmodes_quads.tes");
-	genesis::Shader shader1("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_triangles.tcs", "Shaders/tessmodes_triangles.tes");
-	genesis::Shader shader2("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_triangles.tcs", "Shaders/tessmodes_triangles_as_points.tes");
-	genesis::Shader shader3("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_isolines.tcs", "Shaders/tessmodes_isolines.tes");
+	genesis::Shader shader0;
+	shader0.Compile("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_quads.tcs", "Shaders/tessmodes_quads.tes");
+	genesis::Shader shader1;
+	shader1.Compile("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_triangles.tcs", "Shaders/tessmodes_triangles.tes");
+	genesis::Shader shader2;
+	shader2.Compile("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_triangles.tcs", "Shaders/tessmodes_triangles_as_points.tes");
+	genesis::Shader shader3;
+	shader3.Compile("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_isolines.tcs", "Shaders/tessmodes_isolines.tes");
 
 	GLuint VAO;
 	glGenVertexArrays(1, &VAO);
@@ -2459,7 +2494,8 @@ void render_superbible_tessmodes(GLFWwindow* window)
 void render_superbible_clipdistance(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/clipdistance.vs", "Shaders/clipdistance.frag");
+	genesis::Shader shader;
+	shader.Compile("Shaders/clipdistance.vs", "Shaders/clipdistance.frag");
 
 	sb7::object object;
 
@@ -2472,10 +2508,10 @@ void render_superbible_clipdistance(GLFWwindow* window)
 	} uniforms;
 
 	shader.Use();
-	uniforms.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
-	uniforms.mv_matrix = glGetUniformLocation(shader.Program, "mv_matrix");
-	uniforms.clip_plane = glGetUniformLocation(shader.Program, "clip_plane");
-	uniforms.clip_sphere = glGetUniformLocation(shader.Program, "clip_sphere");
+	uniforms.proj_matrix = glGetUniformLocation(shader.ID, "proj_matrix");
+	uniforms.mv_matrix = glGetUniformLocation(shader.ID, "mv_matrix");
+	uniforms.clip_plane = glGetUniformLocation(shader.ID, "clip_plane");
+	uniforms.clip_sphere = glGetUniformLocation(shader.ID, "clip_sphere");
 
 	object.load("sb7objects/dragon.sbm");
 
@@ -2543,7 +2579,8 @@ void render_superbible_clipdistance(GLFWwindow* window)
 void render_superbible_multidrawindirect(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/multidrawindirect.vs", "Shaders/multidrawindirect.frag");
+	genesis::Shader shader;
+	shader.Compile("Shaders/multidrawindirect.vs", "Shaders/multidrawindirect.frag");
 
 	sb7::object         object;
 
@@ -2560,10 +2597,10 @@ void render_superbible_multidrawindirect(GLFWwindow* window)
 
 	shader.Use();
 
-	uniforms.time = glGetUniformLocation(shader.Program, "time");
-	uniforms.view_matrix = glGetUniformLocation(shader.Program, "view_matrix");
-	uniforms.proj_matrix = glGetUniformLocation(shader.Program, "proj_matrix");
-	uniforms.viewproj_matrix = glGetUniformLocation(shader.Program, "viewproj_matrix");
+	uniforms.time = glGetUniformLocation(shader.ID, "time");
+	uniforms.view_matrix = glGetUniformLocation(shader.ID, "view_matrix");
+	uniforms.proj_matrix = glGetUniformLocation(shader.ID, "proj_matrix");
+	uniforms.viewproj_matrix = glGetUniformLocation(shader.ID, "viewproj_matrix");
 
 	int i;
 
@@ -2686,7 +2723,8 @@ void render_superbible_multidrawindirect(GLFWwindow* window)
 void render_superbible_instancedattribs(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/instancedattribs.vs", "Shaders/instancedattribs.frag");
+	genesis::Shader shader;
+	shader.Compile("Shaders/instancedattribs.vs", "Shaders/instancedattribs.frag");
 
 	static const GLfloat square_vertices[] =
 	{
@@ -2792,12 +2830,15 @@ void render_superbible_fragmentlist(GLFWwindow* window)
 	GLuint dummy_vao;
 
 	// Setup and compile our shaders
-	genesis::Shader clearShader("Shaders/clear.vs", "Shaders/clear.frag");
-	genesis::Shader appendShader("Shaders/append.vs", "Shaders/append.frag");
-	genesis::Shader resolveShader("Shaders/resolve.vs", "Shaders/resolve.frag");
+	genesis::Shader clearShader;
+	clearShader.Compile("Shaders/clear.vs", "Shaders/clear.frag");
+	genesis::Shader appendShader;
+	appendShader.Compile("Shaders/append.vs", "Shaders/append.frag");
+	genesis::Shader resolveShader;
+	resolveShader.Compile("Shaders/resolve.vs", "Shaders/resolve.frag");
 
 	appendShader.Use();
-	uniforms.mvp = glGetUniformLocation(appendShader.Program, "mvp");
+	uniforms.mvp = glGetUniformLocation(appendShader.ID, "mvp");
 
 	glGenBuffers(1, &uniforms_buffer);
 	glBindBuffer(GL_UNIFORM_BUFFER, uniforms_buffer);
@@ -2881,8 +2922,10 @@ void render_superbible_fragmentlist(GLFWwindow* window)
 void render_skybox_demo(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/advanced.vs", "Shaders/advanced.frag");
-	genesis::Shader skyboxShader("Shaders/skybox.vs", "Shaders/skybox.frag");
+	genesis::Shader shader;
+	shader.Compile("Shaders/advanced.vs", "Shaders/advanced.frag");
+	genesis::Shader skyboxShader;
+	skyboxShader.Compile("Shaders/skybox.vs", "Shaders/skybox.frag");
 
 #pragma region "object_initialization"
 	GLfloat cubeVertices[] = {
@@ -3036,12 +3079,12 @@ void render_skybox_demo(GLFWwindow* window)
 		skyboxShader.Use();
 		glm::mat4 view = glm::mat4(glm::mat3(_inputManager._camera.GetViewMatrix()));	// Remove any translation component of the view matrix
 		glm::mat4 projection = glm::perspective(_inputManager._camera.Zoom, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
-		glUniformMatrix4fv(glGetUniformLocation(skyboxShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(glGetUniformLocation(skyboxShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 		// Draw cube
 		glBindVertexArray(skyboxVAO);
 		glActiveTexture(GL_TEXTURE0);
-		glUniform1i(glGetUniformLocation(shader.Program, "skybox"), 0);
+		glUniform1i(glGetUniformLocation(shader.ID, "skybox"), 0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
@@ -3052,13 +3095,13 @@ void render_skybox_demo(GLFWwindow* window)
 		glm::mat4 model;
 		view = _inputManager._camera.GetViewMatrix();
 
-		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 		// Cubes
 		glBindVertexArray(cubeVAO);
 		glActiveTexture(GL_TEXTURE0);
-		glUniform1i(glGetUniformLocation(shader.Program, "texture_diffuse1"), 0);
+		glUniform1i(glGetUniformLocation(shader.ID, "texture_diffuse1"), 0);
 		glBindTexture(GL_TEXTURE_2D, cubeTexture);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
@@ -3074,7 +3117,8 @@ void render_skybox_demo(GLFWwindow* window)
 void render_exploding_demo(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader("Shaders/geometry.vs", "Shaders/geometry.frag", "Shaders/geometry.gs");
+	genesis::Shader shader;
+	shader.Compile("Shaders/geometry.vs", "Shaders/geometry.frag", "Shaders/geometry.gs");
 
 	// Load models
 	genesis::Model katarina("Katarina/Lol_Katarina_Default.obj");
@@ -3082,7 +3126,7 @@ void render_exploding_demo(GLFWwindow* window)
 	// Set projection matrix
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 1.0f, 100.0f);
 	shader.Use();
-	glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -3103,12 +3147,12 @@ void render_exploding_demo(GLFWwindow* window)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Add transformation matrices
-		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(_inputManager._camera.GetViewMatrix()));
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, glm::value_ptr(_inputManager._camera.GetViewMatrix()));
 		glm::mat4 model;
-		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
 		// Add time component to geometry shader in the form of a uniform
-		glUniform1f(glGetUniformLocation(shader.Program, "time"), currentFrame);
+		glUniform1f(glGetUniformLocation(shader.ID, "time"), currentFrame);
 
 		// Draw model
 		katarina.Draw(shader);
@@ -3123,8 +3167,10 @@ void render_exploding_demo(GLFWwindow* window)
 void render_instancing_demo(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader planetShader("Shaders/advanced.vs", "Shaders/advanced.frag");
-	genesis::Shader instanceShader("Shaders/instancing.vs", "Shaders/instancing.frag");
+	genesis::Shader planetShader;
+	planetShader.Compile("Shaders/advanced.vs", "Shaders/advanced.frag");
+	genesis::Shader instanceShader;
+	instanceShader.Compile("Shaders/instancing.vs", "Shaders/instancing.frag");
 
 	// Load models
 	genesis::Model planet("objects/planet.obj");
@@ -3133,10 +3179,10 @@ void render_instancing_demo(GLFWwindow* window)
 	// Set projection matrix
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 1.0f, 10000.0f);
 	planetShader.Use();
-	glUniformMatrix4fv(glGetUniformLocation(planetShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	glUniformMatrix4fv(glGetUniformLocation(planetShader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 	// Also one for instance shader
 	instanceShader.Use();
-	glUniformMatrix4fv(glGetUniformLocation(instanceShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	glUniformMatrix4fv(glGetUniformLocation(instanceShader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
 #pragma region "object_initialization"
 
@@ -3222,16 +3268,16 @@ void render_instancing_demo(GLFWwindow* window)
 		// Add transformation matrices
 		planetShader.Use();
 		glm::mat4 view = _inputManager._camera.GetViewMatrix();
-		glUniformMatrix4fv(glGetUniformLocation(planetShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(planetShader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		instanceShader.Use();
-		glUniformMatrix4fv(glGetUniformLocation(instanceShader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(instanceShader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
 
 		// Draw Planet
 		planetShader.Use();
 		glm::mat4 model;
 		model = glm::translate(model, glm::vec3(0.0f, -5.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
-		glUniformMatrix4fv(glGetUniformLocation(planetShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(glGetUniformLocation(planetShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		planet.Draw(planetShader);
 
 		// Draw meteorites
