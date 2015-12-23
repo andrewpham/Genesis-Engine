@@ -6,8 +6,7 @@
 ** Creative Commons, either version 4 of the License, or (at your
 ** option) any later version.
 ******************************************************************/
-#ifndef SHADER_H
-#define SHADER_H
+#pragma once
 
 #include <string>
 #include <iostream>
@@ -53,5 +52,3 @@ namespace genesis {
 	};
 
 }
-
-#endif

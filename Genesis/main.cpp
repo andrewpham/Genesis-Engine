@@ -16,8 +16,8 @@ gwindow::Window window;
 // The MAIN function, from here we start our application and run our Game loop
 int main()
 {
-	//window.create(WINDOW_NAME, SCREEN_WIDTH, SCREEN_HEIGHT);
 	window.create(GAME_NAME, SCREEN_WIDTH, SCREEN_HEIGHT);
+	//window.create(WINDOW_NAME, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	// Initialize GLEW to setup the OpenGL Function pointers
 	glewExperimental = GL_TRUE;

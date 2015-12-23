@@ -33,8 +33,8 @@ namespace genesis {
 		void loadTexture(GLchar*);
 
 		// Resource storage
-		static std::map<std::string, Shader> Shaders;
-		static std::map<std::string, Texture2D> Textures;
+		static std::map<std::string, Shader> _shaders;
+		static std::map<std::string, Texture2D> _textures;
 		// Loads (and generates) a shader program from file loading vertex, fragment and perhaps shader source code.
 		static Shader loadShader(const GLchar *vShaderPath, const GLchar *fShaderPath, std::string name);
 		static Shader loadShader(const GLchar *vShaderPath, const GLchar *fShaderPath, const GLchar *gShaderPath, std::string name);

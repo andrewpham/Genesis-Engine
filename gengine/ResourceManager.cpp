@@ -3,8 +3,8 @@
 namespace genesis {
 
 	// Instantiate static variables
-	std::map<std::string, Texture2D> ResourceManager::Textures;
-	std::map<std::string, Shader> ResourceManager::Shaders;
+	std::map<std::string, Texture2D> ResourceManager::_textures;
+	std::map<std::string, Shader> ResourceManager::_shaders;
 
 	ResourceManager::ResourceManager()
 	{
@@ -71,42 +71,42 @@ namespace genesis {
 
 	Shader ResourceManager::loadShader(const GLchar *vShaderFile, const GLchar *fShaderFile, std::string name)
 	{
-		Shaders[name] = loadShaderFromFile(vShaderFile, fShaderFile);
-		return Shaders[name];
+		_shaders[name] = loadShaderFromFile(vShaderFile, fShaderFile);
+		return _shaders[name];
 	}
 
 	Shader ResourceManager::loadShader(const GLchar *vShaderFile, const GLchar *fShaderFile, const GLchar *gShaderFile, std::string name)
 	{
-		Shaders[name] = loadShaderFromFile(vShaderFile, fShaderFile, gShaderFile);
-		return Shaders[name];
+		_shaders[name] = loadShaderFromFile(vShaderFile, fShaderFile, gShaderFile);
+		return _shaders[name];
 	}
 
 	Shader ResourceManager::loadShader(const GLchar *vShaderFile, const GLchar *fShaderFile, const GLchar *tcShaderFile, const GLchar *teShaderFile, std::string name)
 	{
-		Shaders[name] = loadShaderFromFile(vShaderFile, fShaderFile, tcShaderFile, teShaderFile);
-		return Shaders[name];
+		_shaders[name] = loadShaderFromFile(vShaderFile, fShaderFile, tcShaderFile, teShaderFile);
+		return _shaders[name];
 	}
 
 	Shader ResourceManager::loadShader(const GLchar *cShaderFile, std::string name)
 	{
-		Shaders[name] = loadShaderFromFile(cShaderFile);
-		return Shaders[name];
+		_shaders[name] = loadShaderFromFile(cShaderFile);
+		return _shaders[name];
 	}
 
 	Shader ResourceManager::getShader(std::string name)
 	{
-		return Shaders[name];
+		return _shaders[name];
 	}
 
 	Texture2D ResourceManager::loadTexture(const GLchar *file, GLboolean alpha, std::string name)
 	{
-		Textures[name] = loadTextureFromFile(file, alpha);
-		return Textures[name];
+		_textures[name] = loadTextureFromFile(file, alpha);
+		return _textures[name];
 	}
 
 	Texture2D ResourceManager::getTexture(std::string name)
 	{
-		return Textures[name];
+		return _textures[name];
 	}
 
 	Shader ResourceManager::loadShaderFromFile(const GLchar *vShaderFile, const GLchar *fShaderFile)
