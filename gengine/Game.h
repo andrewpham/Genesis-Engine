@@ -17,7 +17,8 @@
 namespace genesis {
 
 	// Represents the current state of the game
-	enum GameState {
+	enum GameState 
+	{
 		GAME_ACTIVE,
 		GAME_MENU,
 		GAME_WIN
@@ -30,18 +31,18 @@ namespace genesis {
 	{
 	public:
 		// Game state
-		GameState              State;
-		GLboolean              Keys[1024];
-		GLuint                 Width, Height;
+		GameState              _state;
+		GLboolean              _keys[1024];
+		GLuint                 _width, _height;
 		// Constructor/Destructor
-		Game(GLuint width, GLuint height);
+		Game(GLuint, GLuint);
 		~Game();
 		// Initialize game state (load all shaders/textures/levels)
-		void Init();
+		void init();
 		// GameLoop
-		void ProcessInput(GLfloat dt);
-		void Update(GLfloat dt);
-		void Render();
+		void processInput(GLfloat);
+		void update(GLfloat);
+		void render();
 	};
 
 }

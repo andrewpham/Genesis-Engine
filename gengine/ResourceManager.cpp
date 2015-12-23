@@ -69,42 +69,42 @@ namespace genesis {
 		SOIL_free_image_data(image);
 	}
 
-	Shader ResourceManager::LoadShader(const GLchar *vShaderFile, const GLchar *fShaderFile, std::string name)
+	Shader ResourceManager::loadShader(const GLchar *vShaderFile, const GLchar *fShaderFile, std::string name)
 	{
 		Shaders[name] = loadShaderFromFile(vShaderFile, fShaderFile);
 		return Shaders[name];
 	}
 
-	Shader ResourceManager::LoadShader(const GLchar *vShaderFile, const GLchar *fShaderFile, const GLchar *gShaderFile, std::string name)
+	Shader ResourceManager::loadShader(const GLchar *vShaderFile, const GLchar *fShaderFile, const GLchar *gShaderFile, std::string name)
 	{
 		Shaders[name] = loadShaderFromFile(vShaderFile, fShaderFile, gShaderFile);
 		return Shaders[name];
 	}
 
-	Shader ResourceManager::LoadShader(const GLchar *vShaderFile, const GLchar *fShaderFile, const GLchar *tcShaderFile, const GLchar *teShaderFile, std::string name)
+	Shader ResourceManager::loadShader(const GLchar *vShaderFile, const GLchar *fShaderFile, const GLchar *tcShaderFile, const GLchar *teShaderFile, std::string name)
 	{
 		Shaders[name] = loadShaderFromFile(vShaderFile, fShaderFile, tcShaderFile, teShaderFile);
 		return Shaders[name];
 	}
 
-	Shader ResourceManager::LoadShader(const GLchar *cShaderFile, std::string name)
+	Shader ResourceManager::loadShader(const GLchar *cShaderFile, std::string name)
 	{
 		Shaders[name] = loadShaderFromFile(cShaderFile);
 		return Shaders[name];
 	}
 
-	Shader ResourceManager::GetShader(std::string name)
+	Shader ResourceManager::getShader(std::string name)
 	{
 		return Shaders[name];
 	}
 
-	Texture2D ResourceManager::LoadTexture(const GLchar *file, GLboolean alpha, std::string name)
+	Texture2D ResourceManager::loadTexture(const GLchar *file, GLboolean alpha, std::string name)
 	{
 		Textures[name] = loadTextureFromFile(file, alpha);
 		return Textures[name];
 	}
 
-	Texture2D ResourceManager::GetTexture(std::string name)
+	Texture2D ResourceManager::getTexture(std::string name)
 	{
 		return Textures[name];
 	}
@@ -138,7 +138,7 @@ namespace genesis {
 		const GLchar *fShaderCode = fragmentCode.c_str();
 		// 2. Now create shader object from source code
 		Shader shader;
-		shader.Compile(vShaderCode, fShaderCode);
+		shader.compile(vShaderCode, fShaderCode);
 		return shader;
 	}
 
@@ -177,7 +177,7 @@ namespace genesis {
 		const GLchar *gShaderCode = geometryCode.c_str();
 		// 2. Now create shader object from source code
 		Shader shader;
-		shader.Compile(vShaderCode, fShaderCode, gShaderCode);
+		shader.compile(vShaderCode, fShaderCode, gShaderCode);
 		return shader;
 	}
 
@@ -222,7 +222,7 @@ namespace genesis {
 		const GLchar *teShaderCode = tessellationEvaluationCode.c_str();
 		// 2. Now create shader object from source code
 		Shader shader;
-		shader.Compile(vShaderCode, fShaderCode, tcShaderCode, teShaderCode);
+		shader.compile(vShaderCode, fShaderCode, tcShaderCode, teShaderCode);
 		return shader;
 	}
 
@@ -249,7 +249,7 @@ namespace genesis {
 		const GLchar *cShaderCode = computeCode.c_str();
 		// 2. Now create shader object from source code
 		Shader shader;
-		shader.Compile(cShaderCode);
+		shader.compile(cShaderCode);
 		return shader;
 	}
 
@@ -259,14 +259,14 @@ namespace genesis {
 		Texture2D texture;
 		if (alpha)
 		{
-			texture.Internal_Format = GL_RGBA;
-			texture.Image_Format = GL_RGBA;
+			texture._internalFormat = GL_RGBA;
+			texture._imageFormat = GL_RGBA;
 		}
 		// Load image
 		int width, height;
-		unsigned char* image = SOIL_load_image(file, &width, &height, 0, texture.Image_Format == GL_RGBA ? SOIL_LOAD_RGBA : SOIL_LOAD_RGB);
+		unsigned char* image = SOIL_load_image(file, &width, &height, 0, texture._imageFormat == GL_RGBA ? SOIL_LOAD_RGBA : SOIL_LOAD_RGB);
 		// Now generate texture
-		texture.Generate(width, height, image);
+		texture.generate(width, height, image);
 		// And finally free image data
 		SOIL_free_image_data(image);
 		return texture;

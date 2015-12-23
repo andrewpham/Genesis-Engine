@@ -24,7 +24,7 @@ static inline float random_float()
 void render_superbible_perpixelgloss(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/perpixelgloss.vs", "Shaders/perpixelgloss.frag", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/perpixelgloss.vs", "Shaders/perpixelgloss.frag", "shader");
 
 	GLuint tex_envmap;
 	GLuint tex_glossmap;
@@ -109,8 +109,8 @@ void render_superbible_perpixelgloss(GLFWwindow* window)
 void render_superbible_cubemapenv(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/cubemapenv_render.vs", "Shaders/cubemapenv_render.frag", "shader");
-	genesis::Shader skyboxShader = _resourceManager.LoadShader("Shaders/cubemapenv_skybox.vs", "Shaders/cubemapenv_skybox.frag", "shaderShader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/cubemapenv_render.vs", "Shaders/cubemapenv_render.frag", "shader");
+	genesis::Shader skyboxShader = _resourceManager.loadShader("Shaders/cubemapenv_skybox.vs", "Shaders/cubemapenv_skybox.frag", "shaderShader");
 	
 	GLuint tex_envmap;
 	GLuint envmaps[3];
@@ -215,7 +215,7 @@ void render_superbible_cubemapenv(GLFWwindow* window)
 void render_superbible_equirectangular(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/equirectangular.vs", "Shaders/equirectangular.frag", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/equirectangular.vs", "Shaders/equirectangular.frag", "shader");
 
 	GLuint tex_envmap;
 	GLuint envmaps[3];
@@ -289,7 +289,7 @@ void render_superbible_equirectangular(GLFWwindow* window)
 void render_superbible_envmapsphere(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/envmapsphere.vs", "Shaders/envmapsphere.frag", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/envmapsphere.vs", "Shaders/envmapsphere.frag", "shader");
 
 	GLuint tex_envmap;
 	GLuint envmaps[3];
@@ -363,7 +363,7 @@ void render_superbible_envmapsphere(GLFWwindow* window)
 void render_superbible_rimlight(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/rimlight.vs", "Shaders/rimlight.frag", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/rimlight.vs", "Shaders/rimlight.frag", "shader");
 
 	struct
 	{
@@ -447,8 +447,8 @@ void render_superbible_rimlight(GLFWwindow* window)
 void render_superbible_phonglighting(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader perFragmentShader = _resourceManager.LoadShader("Shaders/per-fragment-phong.vs", "Shaders/per-fragment-phong.frag", "perFragmentShader");
-	genesis::Shader perVertexShader = _resourceManager.LoadShader("Shaders/per-vertex-phong.vs", "Shaders/per-vertex-phong.frag", "perVertexShader");
+	genesis::Shader perFragmentShader = _resourceManager.loadShader("Shaders/per-fragment-phong.vs", "Shaders/per-fragment-phong.frag", "perFragmentShader");
+	genesis::Shader perVertexShader = _resourceManager.loadShader("Shaders/per-vertex-phong.vs", "Shaders/per-vertex-phong.frag", "perVertexShader");
 
 	struct
 	{
@@ -595,8 +595,8 @@ void render_superbible_phonglighting(GLFWwindow* window)
 void render_superbible_csflocking(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/csflocking.vs", "Shaders/csflocking.frag", "shader");
-	genesis::Shader updateShader = _resourceManager.LoadShader("Shaders/csflocking.comp", "updateShader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/csflocking.vs", "Shaders/csflocking.frag", "shader");
+	genesis::Shader updateShader = _resourceManager.loadShader("Shaders/csflocking.comp", "updateShader");
 
 	GLuint flock_buffer[2];
 
@@ -765,7 +765,7 @@ void render_superbible_csflocking(GLFWwindow* window)
 void render_superbible_shapedpoints(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/shapedpoints.vs", "Shaders/shapedpoints.frag", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/shapedpoints.vs", "Shaders/shapedpoints.frag", "shader");
 
 	GLuint VAO;
 
@@ -802,9 +802,9 @@ void render_superbible_shapedpoints(GLFWwindow* window)
 void render_superbible_hdrtonemap(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shaderNaive = _resourceManager.LoadShader("Shaders/tonemap.vs", "Shaders/tonemap_naive.frag", "shaderNaive");
-	genesis::Shader shaderExposure = _resourceManager.LoadShader("Shaders/tonemap.vs", "Shaders/tonemap_exposure.frag", "shaderExposure");
-	genesis::Shader shaderAdaptive = _resourceManager.LoadShader("Shaders/tonemap.vs", "Shaders/tonemap_adaptive.frag", "shaderAdaptive");
+	genesis::Shader shaderNaive = _resourceManager.loadShader("Shaders/tonemap.vs", "Shaders/tonemap_naive.frag", "shaderNaive");
+	genesis::Shader shaderExposure = _resourceManager.loadShader("Shaders/tonemap.vs", "Shaders/tonemap_exposure.frag", "shaderExposure");
+	genesis::Shader shaderAdaptive = _resourceManager.loadShader("Shaders/tonemap.vs", "Shaders/tonemap_adaptive.frag", "shaderAdaptive");
 
 	GLuint tex_src;
 	GLuint tex_lut;
@@ -892,7 +892,7 @@ void render_superbible_hdrtonemap(GLFWwindow* window)
 void render_superbible_polygonsmooth(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/linesmooth.vs", "Shaders/linesmooth.frag", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/linesmooth.vs", "Shaders/linesmooth.frag", "shader");
 
 	GLuint VAO;
 	GLuint position_buffer;
@@ -1002,7 +1002,7 @@ void render_superbible_polygonsmooth(GLFWwindow* window)
 void render_superbible_linesmooth(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/linesmooth.vs", "Shaders/linesmooth.frag", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/linesmooth.vs", "Shaders/linesmooth.frag", "shader");
 
 	GLuint VAO;
 	GLuint position_buffer;
@@ -1113,8 +1113,8 @@ void render_superbible_linesmooth(GLFWwindow* window)
 void render_superbible_basicfbo(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader1 = _resourceManager.LoadShader("Shaders/basicfbo.vs", "Shaders/basicfbo.frag", "shader1");
-	genesis::Shader shader2 = _resourceManager.LoadShader("Shaders/basicfbo.vs", "Shaders/basicfbo2.frag", "shader2");
+	genesis::Shader shader1 = _resourceManager.loadShader("Shaders/basicfbo.vs", "Shaders/basicfbo.frag", "shader1");
+	genesis::Shader shader2 = _resourceManager.loadShader("Shaders/basicfbo.vs", "Shaders/basicfbo2.frag", "shader2");
 
 	GLuint VAO;
 	GLuint position_buffer;
@@ -1316,7 +1316,7 @@ void render_superbible_basicfbo(GLFWwindow* window)
 void render_superbible_depthclamp(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/depthclamp.vs", "Shaders/depthclamp.frag", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/depthclamp.vs", "Shaders/depthclamp.frag", "shader");
 
 	GLint mv_location;
 	GLint proj_location;
@@ -1386,7 +1386,7 @@ void render_superbible_depthclamp(GLFWwindow* window)
 void render_superbible_multiscissor(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/multiscissor.vs", "Shaders/multiscissor.frag", "Shaders/multiscissor.gs", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/multiscissor.vs", "Shaders/multiscissor.frag", "Shaders/multiscissor.gs", "shader");
 
 	GLuint          VAO;
 	GLuint          position_buffer;
@@ -1545,7 +1545,7 @@ void render_superbible_multiscissor(GLFWwindow* window)
 void render_superbible_noperspective(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/noperspective.vs", "Shaders/noperspective.frag", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/noperspective.vs", "Shaders/noperspective.frag", "shader");
 
 	GLuint VAO;
 	GLuint tex_checker;
@@ -1636,7 +1636,7 @@ void render_superbible_noperspective(GLFWwindow* window)
 void render_superbible_multiviewport(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/multiviewport.vs", "Shaders/multiviewport.frag", "Shaders/multiviewport.gs", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/multiviewport.vs", "Shaders/multiviewport.frag", "Shaders/multiviewport.gs", "shader");
 
 	GLuint VAO;
 	GLuint position_buffer;
@@ -1777,8 +1777,8 @@ void render_superbible_multiviewport(GLFWwindow* window)
 void render_superbible_gsquads(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shaderFans = _resourceManager.LoadShader("Shaders/quadsasfans.vs", "Shaders/quadsasfans.frag", "shaderFans");
-	genesis::Shader shaderLinesAdj = _resourceManager.LoadShader("Shaders/quadsaslinesadj.vs", "Shaders/quadsaslinesadj.frag", "Shaders/quadsaslinesadj.gs", "shaderLinesAdj");
+	genesis::Shader shaderFans = _resourceManager.loadShader("Shaders/quadsasfans.vs", "Shaders/quadsasfans.frag", "shaderFans");
+	genesis::Shader shaderLinesAdj = _resourceManager.loadShader("Shaders/quadsaslinesadj.vs", "Shaders/quadsaslinesadj.frag", "Shaders/quadsaslinesadj.gs", "shaderLinesAdj");
 
 	GLuint VAO;
 	int mvp_loc_fans;
@@ -1859,7 +1859,7 @@ void render_superbible_gsquads(GLFWwindow* window)
 void render_superbible_normalviewer(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/normalviewer.vs", "Shaders/normalviewer.frag", "Shaders/normalviewer.gs", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/normalviewer.vs", "Shaders/normalviewer.frag", "Shaders/normalviewer.gs", "shader");
 
 	GLint mv_location;
 	GLint proj_location;
@@ -1922,7 +1922,7 @@ void render_superbible_normalviewer(GLFWwindow* window)
 void render_superbible_gstessellate(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/gstessellate.vs", "Shaders/gstessellate.frag", "Shaders/gstessellate.gs", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/gstessellate.vs", "Shaders/gstessellate.frag", "Shaders/gstessellate.gs", "shader");
 
 	GLint mv_location;
 	GLint mvp_location;
@@ -2017,7 +2017,7 @@ void render_superbible_gstessellate(GLFWwindow* window)
 void render_superbible_objectexploder(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/objectexploder.vs", "Shaders/objectexploder.frag", "Shaders/objectexploder.gs", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/objectexploder.vs", "Shaders/objectexploder.frag", "Shaders/objectexploder.gs", "shader");
 
 	GLint mv_location;
 	GLint proj_location;
@@ -2080,7 +2080,7 @@ void render_superbible_objectexploder(GLFWwindow* window)
 void render_superbible_gsculling(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/gsculling.vs", "Shaders/gsculling.frag", "Shaders/gsculling.gs", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/gsculling.vs", "Shaders/gsculling.frag", "Shaders/gsculling.gs", "shader");
 
 	GLint mv_location;
 	GLint mvp_location;
@@ -2150,8 +2150,8 @@ void render_superbible_gsculling(GLFWwindow* window)
 void render_superbible_cubicbezier(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader tess_shader = _resourceManager.LoadShader("Shaders/cubicbezier.vs", "Shaders/cubicbezier.frag", "Shaders/cubicbezier.tcs", "Shaders/cubicbezier.tes", "tess_shader");
-	genesis::Shader draw_cp_shader = _resourceManager.LoadShader("Shaders/draw-control-points.vs", "Shaders/draw-control-points.frag", "draw_cp_shader");
+	genesis::Shader tess_shader = _resourceManager.loadShader("Shaders/cubicbezier.vs", "Shaders/cubicbezier.frag", "Shaders/cubicbezier.tcs", "Shaders/cubicbezier.tes", "tess_shader");
+	genesis::Shader draw_cp_shader = _resourceManager.loadShader("Shaders/draw-control-points.vs", "Shaders/draw-control-points.frag", "draw_cp_shader");
 
 	GLuint patch_vao;
 	GLuint patch_buffer;
@@ -2330,7 +2330,7 @@ void render_superbible_cubicbezier(GLFWwindow* window)
 void render_superbible_dispmap(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/dispmap.vs", "Shaders/dispmap.frag", "Shaders/dispmap.tcs", "Shaders/dispmap.tes", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/dispmap.vs", "Shaders/dispmap.frag", "Shaders/dispmap.tcs", "Shaders/dispmap.tes", "shader");
 
 	GLuint VAO;
 	GLuint tex_displacement;
@@ -2424,10 +2424,10 @@ void render_superbible_dispmap(GLFWwindow* window)
 void render_superbible_tessmodes(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader0 = _resourceManager.LoadShader("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_quads.tcs", "Shaders/tessmodes_quads.tes", "shader0");
-	genesis::Shader shader1 = _resourceManager.LoadShader("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_triangles.tcs", "Shaders/tessmodes_triangles.tes", "shader1");
-	genesis::Shader shader2 = _resourceManager.LoadShader("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_triangles.tcs", "Shaders/tessmodes_triangles_as_points.tes", "shader2");
-	genesis::Shader shader3 = _resourceManager.LoadShader("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_isolines.tcs", "Shaders/tessmodes_isolines.tes", "shader3");
+	genesis::Shader shader0 = _resourceManager.loadShader("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_quads.tcs", "Shaders/tessmodes_quads.tes", "shader0");
+	genesis::Shader shader1 = _resourceManager.loadShader("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_triangles.tcs", "Shaders/tessmodes_triangles.tes", "shader1");
+	genesis::Shader shader2 = _resourceManager.loadShader("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_triangles.tcs", "Shaders/tessmodes_triangles_as_points.tes", "shader2");
+	genesis::Shader shader3 = _resourceManager.loadShader("Shaders/tessmodes.vs", "Shaders/tessmodes.frag", "Shaders/tessmodes_isolines.tcs", "Shaders/tessmodes_isolines.tes", "shader3");
 
 	GLuint VAO;
 	glGenVertexArrays(1, &VAO);
@@ -2459,7 +2459,7 @@ void render_superbible_tessmodes(GLFWwindow* window)
 void render_superbible_clipdistance(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/clipdistance.vs", "Shaders/clipdistance.frag", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/clipdistance.vs", "Shaders/clipdistance.frag", "shader");
 
 	sb7::object object;
 
@@ -2543,7 +2543,7 @@ void render_superbible_clipdistance(GLFWwindow* window)
 void render_superbible_multidrawindirect(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/multidrawindirect.vs", "Shaders/multidrawindirect.frag", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/multidrawindirect.vs", "Shaders/multidrawindirect.frag", "shader");
 
 	sb7::object         object;
 
@@ -2686,7 +2686,7 @@ void render_superbible_multidrawindirect(GLFWwindow* window)
 void render_superbible_instancedattribs(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/instancedattribs.vs", "Shaders/instancedattribs.frag", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/instancedattribs.vs", "Shaders/instancedattribs.frag", "shader");
 
 	static const GLfloat square_vertices[] =
 	{
@@ -2792,9 +2792,9 @@ void render_superbible_fragmentlist(GLFWwindow* window)
 	GLuint dummy_vao;
 
 	// Setup and compile our shaders
-	genesis::Shader clearShader = _resourceManager.LoadShader("Shaders/clear.vs", "Shaders/clear.frag", "clearShader");
-	genesis::Shader appendShader = _resourceManager.LoadShader("Shaders/append.vs", "Shaders/append.frag", "appendShader");
-	genesis::Shader resolveShader = _resourceManager.LoadShader("Shaders/resolve.vs", "Shaders/resolve.frag", "resolveShader");
+	genesis::Shader clearShader = _resourceManager.loadShader("Shaders/clear.vs", "Shaders/clear.frag", "clearShader");
+	genesis::Shader appendShader = _resourceManager.loadShader("Shaders/append.vs", "Shaders/append.frag", "appendShader");
+	genesis::Shader resolveShader = _resourceManager.loadShader("Shaders/resolve.vs", "Shaders/resolve.frag", "resolveShader");
 
 	appendShader.Use();
 	uniforms.mvp = glGetUniformLocation(appendShader.ID, "mvp");
@@ -2881,8 +2881,8 @@ void render_superbible_fragmentlist(GLFWwindow* window)
 void render_skybox_demo(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/advanced.vs", "Shaders/advanced.frag", "shader");
-	genesis::Shader skyboxShader = _resourceManager.LoadShader("Shaders/skybox.vs", "Shaders/skybox.frag", "skyboxShader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/advanced.vs", "Shaders/advanced.frag", "shader");
+	genesis::Shader skyboxShader = _resourceManager.loadShader("Shaders/skybox.vs", "Shaders/skybox.frag", "skyboxShader");
 
 #pragma region "object_initialization"
 	GLfloat cubeVertices[] = {
@@ -3074,7 +3074,7 @@ void render_skybox_demo(GLFWwindow* window)
 void render_exploding_demo(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader shader = _resourceManager.LoadShader("Shaders/geometry.vs", "Shaders/geometry.frag", "Shaders/geometry.gs", "shader");
+	genesis::Shader shader = _resourceManager.loadShader("Shaders/geometry.vs", "Shaders/geometry.frag", "Shaders/geometry.gs", "shader");
 
 	// Load models
 	genesis::Model katarina("Katarina/Lol_Katarina_Default.obj");
@@ -3123,8 +3123,8 @@ void render_exploding_demo(GLFWwindow* window)
 void render_instancing_demo(GLFWwindow* window)
 {
 	// Setup and compile our shaders
-	genesis::Shader planetShader = _resourceManager.LoadShader("Shaders/advanced.vs", "Shaders/advanced.frag", "planetShader");
-	genesis::Shader instanceShader = _resourceManager.LoadShader("Shaders/instancing.vs", "Shaders/instancing.frag", "instanceShader");
+	genesis::Shader planetShader = _resourceManager.loadShader("Shaders/advanced.vs", "Shaders/advanced.frag", "planetShader");
+	genesis::Shader instanceShader = _resourceManager.loadShader("Shaders/instancing.vs", "Shaders/instancing.frag", "instanceShader");
 
 	// Load models
 	genesis::Model planet("objects/planet.obj");

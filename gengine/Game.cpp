@@ -10,8 +10,8 @@
 
 namespace genesis {
 
-	Game::Game(GLuint width, GLuint height)
-		: State(GAME_ACTIVE), Keys(), Width(width), Height(height)
+	Game::Game(GLuint _width, GLuint _height)
+		: _state(GAME_ACTIVE), _keys(), _width(_width), _height(_height)
 	{
 
 	}
@@ -21,23 +21,23 @@ namespace genesis {
 
 	}
 
-	void Game::Init()
+	void Game::init()
 	{
 
 	}
 
-	void Game::Update(GLfloat dt)
+	void Game::update(GLfloat dt)
 	{
 
 	}
 
 
-	void Game::ProcessInput(GLfloat dt)
+	void Game::processInput(GLfloat dt)
 	{
 
 	}
 
-	void Game::Render()
+	void Game::render()
 	{
 
 	}

@@ -35,17 +35,17 @@ namespace genesis {
 		// Resource storage
 		static std::map<std::string, Shader> Shaders;
 		static std::map<std::string, Texture2D> Textures;
-		// Loads (and generates) a shader program from file loading vertex, fragment (and geometry) shader's source code.
-		static Shader LoadShader(const GLchar *vShaderPath, const GLchar *fShaderPath, std::string name);
-		static Shader LoadShader(const GLchar *vShaderPath, const GLchar *fShaderPath, const GLchar *gShaderPath, std::string name);
-		static Shader LoadShader(const GLchar *vShaderPath, const GLchar *fShaderPath, const GLchar *tcShaderPath, const GLchar *teShaderPath, std::string name);
-		static Shader LoadShader(const GLchar *cShaderPath, std::string name);
+		// Loads (and generates) a shader program from file loading vertex, fragment and perhaps shader source code.
+		static Shader loadShader(const GLchar *vShaderPath, const GLchar *fShaderPath, std::string name);
+		static Shader loadShader(const GLchar *vShaderPath, const GLchar *fShaderPath, const GLchar *gShaderPath, std::string name);
+		static Shader loadShader(const GLchar *vShaderPath, const GLchar *fShaderPath, const GLchar *tcShaderPath, const GLchar *teShaderPath, std::string name);
+		static Shader loadShader(const GLchar *cShaderPath, std::string name);
 		// Retrieves a stored shader
-		static Shader GetShader(std::string name);
+		static Shader getShader(std::string name);
 		// Loads (and generates) a texture from file
-		static Texture2D LoadTexture(const GLchar *file, GLboolean alpha, std::string name);
+		static Texture2D loadTexture(const GLchar *file, GLboolean alpha, std::string name);
 		// Retrieves a stored texture
-		static Texture2D GetTexture(std::string name);
+		static Texture2D getTexture(std::string name);
 	private:
 		GLuint _cubemapID;
 		GLuint _textureID;
