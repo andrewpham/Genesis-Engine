@@ -6,13 +6,13 @@
 ** Creative Commons, either version 4 of the License, or (at your
 ** option) any later version.
 ******************************************************************/
-#ifndef GAME_H
-#define GAME_H
+#pragma once
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #include "ResourceManager.h"
+#include "SpriteRenderer.h"
 
 namespace genesis {
 
@@ -46,5 +46,3 @@ namespace genesis {
 	};
 
 }
-
-#endif
