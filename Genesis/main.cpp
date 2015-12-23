@@ -1,8 +1,13 @@
-// GLEW
-#define GLEW_STATIC
-#include <GL/glew.h>
-
+/*******************************************************************
+** This code is part of Breakout.
+**
+** Breakout is free software: you can redistribute it and/or modify
+** it under the terms of the CC BY 4.0 license as published by
+** Creative Commons, either version 4 of the License, or (at your
+** option) any later version.
+******************************************************************/
 // GL includes
+#include "Breakout.h"
 #include "Demos.h"
 #include "Window.h"
 
@@ -11,11 +16,15 @@ gwindow::Window window;
 // The MAIN function, from here we start our application and run our Game loop
 int main()
 {
-	window.create(WINDOW_NAME, SCREEN_WIDTH, SCREEN_HEIGHT);
+	//window.create(WINDOW_NAME, SCREEN_WIDTH, SCREEN_HEIGHT);
+	window.create(GAME_NAME, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	// Initialize GLEW to setup the OpenGL Function pointers
 	glewExperimental = GL_TRUE;
 	glewInit();
+	glGetError(); // Call it once to catch glewInit() bug, all other errors are now from our application.
+
+	play(window.getWindow());
 
 	//render_superbible_perpixelgloss(window.getWindow());
 	//render_superbible_cubemapenv(window.getWindow());
@@ -46,7 +55,7 @@ int main()
 	//render_superbible_instancedattribs(window.getWindow());
 	//render_superbible_fragmentlist(window.getWindow());
 	//render_skybox_demo(window.getWindow());
-	render_exploding_demo(window.getWindow());
+	//render_exploding_demo(window.getWindow());
 	//render_instancing_demo(window.getWindow());
 
 	return 0;

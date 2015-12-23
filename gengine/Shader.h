@@ -10,6 +10,9 @@
 #define SHADER_H
 
 #include <string>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>

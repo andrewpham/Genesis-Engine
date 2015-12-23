@@ -128,12 +128,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Breakout.cpp" />
     <ClCompile Include="Callbacks.cpp" />
     <ClCompile Include="Demos.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Breakout.h" />
     <ClInclude Include="Callbacks.h" />
     <ClInclude Include="Demos.h" />
     <ClInclude Include="Window.h" />

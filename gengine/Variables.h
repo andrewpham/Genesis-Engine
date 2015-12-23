@@ -2,6 +2,7 @@
 
 #define PI_F			3.14159265358979f
 #define WINDOW_NAME		"Genesis"
+#define GAME_NAME		"Breakout"
 #define SCREEN_WIDTH	800
 #define SCREEN_HEIGHT	600
 #define NUM_DRAWS		50000

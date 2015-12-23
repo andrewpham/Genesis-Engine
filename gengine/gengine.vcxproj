@@ -161,6 +161,7 @@
     <ClInclude Include="sb7ktx.h" />
     <ClInclude Include="sb7object.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="Texture2D.h" />
     <ClInclude Include="Variables.h" />
   </ItemGroup>
   <ItemGroup>
@@ -170,6 +171,7 @@
     <ClCompile Include="sb7ktx.cpp" />
     <ClCompile Include="sb7object.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="Texture2D.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

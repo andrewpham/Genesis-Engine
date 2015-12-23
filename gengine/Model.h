@@ -8,6 +8,7 @@
 #include <vector>
 using namespace std;
 // GL Includes
+#define GLEW_STATIC
 #include <GL/glew.h> // Contains all the necessery OpenGL includes
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
