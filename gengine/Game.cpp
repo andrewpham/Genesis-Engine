@@ -13,6 +13,7 @@ namespace genesis {
 	// Game-related State data
 	SpriteRenderer *Renderer;
 	GameObject *Player;
+	BallObject *Ball;
 
 	Game::Game(GLuint _width, GLuint _height)
 		: _state(GAME_ACTIVE), _keys(), _width(_width), _height(_height)
@@ -39,7 +40,7 @@ namespace genesis {
 		ResourceManager::loadTexture("../Genesis/Textures/Breakout/awesomeface.png", GL_TRUE, "face");
 		ResourceManager::loadTexture("../Genesis/Textures/Breakout/block.png", GL_FALSE, "block");
 		ResourceManager::loadTexture("../Genesis/Textures/Breakout/block_solid.png", GL_FALSE, "block_solid");
-		ResourceManager::loadTexture("../Genesis/Textures/Breakout/paddle.png", true, "paddle");
+		ResourceManager::loadTexture("../Genesis/Textures/Breakout/paddle.png", GL_TRUE, "paddle");
 		// Set render-specific controls
 		Renderer = new SpriteRenderer(ResourceManager::getShader("sprite"));
 		// Load levels
@@ -55,30 +56,39 @@ namespace genesis {
 		// Configure game objects
 		glm::vec2 playerPos = glm::vec2(this->_width / 2 - PLAYER_SIZE.x / 2, this->_height - PLAYER_SIZE.y);
 		Player = new GameObject(playerPos, PLAYER_SIZE, ResourceManager::getTexture("paddle"));
+		glm::vec2 ballPos = playerPos + glm::vec2(PLAYER_SIZE.x / 2 - BALL_RADIUS, -BALL_RADIUS * 2);
+		Ball = new BallObject(ballPos, BALL_RADIUS, INITIAL_BALL_VELOCITY,
+			ResourceManager::getTexture("face"));
 	}
 
-	void Game::update(GLfloat dt)
+	void Game::update(GLfloat _dt)
 	{
-
+		Ball->move(_dt, this->_width);
 	}
 
 
-	void Game::processInput(GLfloat dt)
+	void Game::processInput(GLfloat _dt)
 	{
 		if (this->_state == GAME_ACTIVE)
 		{
-			GLfloat velocity = PLAYER_VELOCITY * dt;
+			GLfloat velocity = PLAYER_VELOCITY * _dt;
 			// Move playerboard
 			if (this->_keys[GLFW_KEY_A])
 			{
 				if (Player->_position.x >= 0)
 					Player->_position.x -= velocity;
+				if (Ball->_stuck)
+					Ball->_position.x -= velocity;
 			}
 			if (this->_keys[GLFW_KEY_D])
 			{
 				if (Player->_position.x <= this->_width - Player->_size.x)
 					Player->_position.x += velocity;
+				if (Ball->_stuck)
+					Ball->_position.x += velocity;
 			}
+			if (this->_keys[GLFW_KEY_SPACE])
+				Ball->_stuck = false;
 		}
 	}
 
@@ -92,6 +102,7 @@ namespace genesis {
 			this->_levels[this->_level].draw(*Renderer);
 			// Draw player
 			Player->draw(*Renderer);
+			Ball->draw(*Renderer);
 		}
 	}
 

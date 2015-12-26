@@ -15,6 +15,7 @@
 #include "ResourceManager.h"
 #include "SpriteRenderer.h"
 #include "GameLevel.h"
+#include "BallObject.h"
 
 namespace genesis {
 

@@ -14,6 +14,10 @@
 #define PLAYER_SIZE		glm::vec2(100, 20)
 // Initial velocity of the player paddle
 #define PLAYER_VELOCITY	500.0f
+// Initial velocity of the Ball
+#define INITIAL_BALL_VELOCITY glm::vec2(100.0f, -350.0f)
+// Radius of the ball object
+#define BALL_RADIUS		12.5f
 
 enum MODE
 {
