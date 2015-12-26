@@ -40,6 +40,11 @@ namespace genesis {
 		void processInput(GLfloat);
 		void update(GLfloat);
 		void render();
+		void doCollisions();
+		// Collision detection
+		GLboolean checkCollision(GameObject &_one, GameObject &_two);
+		Collision checkCollision(BallObject &_one, GameObject &_two);
+		Direction vectorDirection(glm::vec2 _closest);
 	};
 
 }

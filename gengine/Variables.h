@@ -10,6 +10,7 @@
 #define NUM_WORKGROUPS	64
 #define FLOCK_SIZE		NUM_WORKGROUPS * WORKGROUP_SIZE
 //#define MANY_OBJECTS	1
+/** Variables pertaining to the game Breakout */
 // Initial size of the player paddle
 #define PLAYER_SIZE		glm::vec2(100, 20)
 // Initial velocity of the player paddle
@@ -35,6 +36,8 @@ struct DrawArraysIndirectCommand
 	GLuint baseInstance;
 };
 
+/** Enumerations and definitions pertaining to the game Breakout */
+
 // Represents the current state of the game
 enum GameState
 {
@@ -42,3 +45,14 @@ enum GameState
 	GAME_MENU,
 	GAME_WIN
 };
+
+// Represents the four possible (collision) directions
+enum Direction {
+	UP,
+	RIGHT,
+	DOWN,
+	LEFT
+};
+
+// Defines a Collision typedef that represents collision data
+typedef std::tuple<GLboolean, Direction, glm::vec2> Collision; // <collision?, what direction?, difference vector center - closest point>

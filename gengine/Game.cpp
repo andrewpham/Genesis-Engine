@@ -25,6 +25,7 @@ namespace genesis {
 	{
 		delete Renderer;
 		delete Player;
+		delete Ball;
 	}
 
 	void Game::init()
@@ -63,7 +64,10 @@ namespace genesis {
 
 	void Game::update(GLfloat _dt)
 	{
+		// Update objects
 		Ball->move(_dt, this->_width);
+		// Check for collisions
+		this->doCollisions();
 	}
 
 
@@ -102,8 +106,81 @@ namespace genesis {
 			this->_levels[this->_level].draw(*Renderer);
 			// Draw player
 			Player->draw(*Renderer);
+			// Draw ball
 			Ball->draw(*Renderer);
 		}
+	}
+
+	// Collision detection
+
+	void Game::doCollisions()
+	{
+		for (GameObject &box : this->_levels[this->_level]._bricks)
+		{
+			Collision collision = checkCollision(*Ball, box);
+			if (std::get<0>(collision)) // If collision is true
+			{
+				// Destroy block if not solid
+				if (!box._isSolid)
+					box._destroyed = GL_TRUE;
+			}
+		}
+	}
+
+	GLboolean Game::checkCollision(GameObject &_one, GameObject &_two) // AABB - AABB collision
+	{
+		// Collision x-axis?
+		bool collisionX = _one._position.x + _one._size.x >= _two._position.x &&
+			_two._position.x + _two._size.x >= _one._position.x;
+		// Collision y-axis?
+		bool collisionY = _one._position.y + _one._size.y >= _two._position.y &&
+			_two._position.y + _two._size.y >= _one._position.y;
+		// Collision only if on both axes
+		return collisionX && collisionY;
+	}
+
+	Collision Game::checkCollision(BallObject &_one, GameObject &_two) // AABB - Circle collision
+	{
+		// Get center point circle first 
+		glm::vec2 center(_one._position + _one._radius);
+		// Calculate AABB info (center, half-extents)
+		glm::vec2 aabb_half_extents(_two._size.x / 2, _two._size.y / 2);
+		glm::vec2 aabb_center(_two._position.x + aabb_half_extents.x, _two._position.y + aabb_half_extents.y);
+		// Get difference vector between both centers
+		glm::vec2 difference = center - aabb_center;
+		glm::vec2 clamped = glm::clamp(difference, -aabb_half_extents, aabb_half_extents);
+		// Now that we know the the clamped values, add this to AABB_center and we get the value of box closest to circle
+		glm::vec2 closest = aabb_center + clamped;
+		// Now retrieve vector between center circle and closest point AABB and check if length < radius
+		difference = closest - center;
+
+		if (glm::length(difference) < _one._radius) // not <= since in that case a collision also occurs when object one exactly touches object two, which they are at the end of each collision resolution stage.
+			return std::make_tuple(GL_TRUE, vectorDirection(difference), difference);
+		else
+			return std::make_tuple(GL_FALSE, UP, glm::vec2(0, 0));
+	}
+
+	// Calculates which direction a vector is facing (N,E,S or W)
+	Direction Game::vectorDirection(glm::vec2 _target)
+	{
+		glm::vec2 compass[] = {
+			glm::vec2(0.0f, 1.0f),	// up
+			glm::vec2(1.0f, 0.0f),	// right
+			glm::vec2(0.0f, -1.0f),	// down
+			glm::vec2(-1.0f, 0.0f)	// left
+		};
+		GLfloat max = 0.0f;
+		GLuint best_match = -1;
+		for (GLuint i = 0; i < 4; i++)
+		{
+			GLfloat dot_product = glm::dot(glm::normalize(_target), compass[i]);
+			if (dot_product > max)
+			{
+				max = dot_product;
+				best_match = i;
+			}
+		}
+		return (Direction)best_match;
 	}
 
 }
