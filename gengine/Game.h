@@ -11,18 +11,12 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "InputManager.h"
 #include "ResourceManager.h"
 #include "SpriteRenderer.h"
+#include "GameLevel.h"
 
 namespace genesis {
-
-	// Represents the current state of the game
-	enum GameState 
-	{
-		GAME_ACTIVE,
-		GAME_MENU,
-		GAME_WIN
-	};
 
 	// Game holds all game-related state and functionality.
 	// Combines all game-related data into a single class for
@@ -34,6 +28,8 @@ namespace genesis {
 		GameState              _state;
 		GLboolean              _keys[1024];
 		GLuint                 _width, _height;
+		std::vector<GameLevel> _levels;
+		GLuint				   _level;
 		// Constructor/Destructor
 		Game(GLuint, GLuint);
 		~Game();

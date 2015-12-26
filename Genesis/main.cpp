@@ -24,8 +24,10 @@ int main()
 	glewInit();
 	glGetError(); // Call it once to catch glewInit() bug, all other errors are now from our application.
 
+	/** Uncomment this function to run Breakout... */
 	play(window.getWindow());
 
+	/** ...or uncomment ONE of these functions to display a demo showcasing some of the 3D rendering capabilities of this game engine */
 	//render_superbible_perpixelgloss(window.getWindow());
 	//render_superbible_cubemapenv(window.getWindow());
 	//render_superbible_equirectangular(window.getWindow());

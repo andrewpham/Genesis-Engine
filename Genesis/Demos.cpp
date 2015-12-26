@@ -3004,12 +3004,12 @@ void render_skybox_demo(GLFWwindow* window)
 
 	// Cubemap (Skybox)
 	vector<const GLchar*> faces;
-	faces.push_back("Skybox/right.jpg");
-	faces.push_back("Skybox/left.jpg");
-	faces.push_back("Skybox/top.jpg");
-	faces.push_back("Skybox/bottom.jpg");
-	faces.push_back("Skybox/back.jpg");
-	faces.push_back("Skybox/front.jpg");
+	faces.push_back("Textures/Skybox/right.jpg");
+	faces.push_back("Textures/Skybox/left.jpg");
+	faces.push_back("Textures/Skybox/top.jpg");
+	faces.push_back("Textures/Skybox/bottom.jpg");
+	faces.push_back("Textures/Skybox/back.jpg");
+	faces.push_back("Textures/Skybox/front.jpg");
 	_resourceManager.loadCubemap(faces);
 	GLuint cubemapTexture = _resourceManager.getCubemap();
 
@@ -3077,7 +3077,7 @@ void render_exploding_demo(GLFWwindow* window)
 	genesis::Shader shader = _resourceManager.loadShader("Shaders/geometry.vs", "Shaders/geometry.frag", "Shaders/geometry.gs", "shader");
 
 	// Load models
-	genesis::Model katarina("Katarina/Lol_Katarina_Default.obj");
+	genesis::Model katarina("Objects/Katarina/Lol_Katarina_Default.obj");
 
 	// Set projection matrix
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 1.0f, 100.0f);
@@ -3127,8 +3127,8 @@ void render_instancing_demo(GLFWwindow* window)
 	genesis::Shader instanceShader = _resourceManager.loadShader("Shaders/instancing.vs", "Shaders/instancing.frag", "instanceShader");
 
 	// Load models
-	genesis::Model planet("objects/planet.obj");
-	genesis::Model rock("objects/rock.obj");
+	genesis::Model planet("Objects/Planet/planet.obj");
+	genesis::Model rock("Objects/Planet/rock.obj");
 
 	// Set projection matrix
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 1.0f, 10000.0f);

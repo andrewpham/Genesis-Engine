@@ -10,6 +10,10 @@
 #define NUM_WORKGROUPS	64
 #define FLOCK_SIZE		NUM_WORKGROUPS * WORKGROUP_SIZE
 //#define MANY_OBJECTS	1
+// Initial size of the player paddle
+#define PLAYER_SIZE		glm::vec2(100, 20)
+// Initial velocity of the player paddle
+#define PLAYER_VELOCITY	500.0f
 
 enum MODE
 {
@@ -25,4 +29,12 @@ struct DrawArraysIndirectCommand
 	GLuint primCount;
 	GLuint first;
 	GLuint baseInstance;
+};
+
+// Represents the current state of the game
+enum GameState
+{
+	GAME_ACTIVE,
+	GAME_MENU,
+	GAME_WIN
 };
