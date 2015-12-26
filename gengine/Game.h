@@ -41,6 +41,9 @@ namespace genesis {
 		void update(GLfloat);
 		void render();
 		void doCollisions();
+		// Reset
+		void resetLevel();
+		void resetPlayer();
 		// Collision detection
 		GLboolean checkCollision(GameObject &_one, GameObject &_two);
 		Collision checkCollision(BallObject &_one, GameObject &_two);
