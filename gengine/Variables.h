@@ -19,6 +19,10 @@
 #define INITIAL_BALL_VELOCITY glm::vec2(100.0f, -350.0f)
 // Radius of the ball object
 #define BALL_RADIUS		12.5f
+// The size of a PowerUp block
+#define SIZE			glm::vec2(60, 20)
+// Velocity a PowerUp block has when spawned
+#define VELOCITY		glm::vec2(0.0f, 150.0f)
 
 enum MODE
 {

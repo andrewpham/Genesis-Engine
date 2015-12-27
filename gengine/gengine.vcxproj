@@ -161,6 +161,7 @@
     <ClInclude Include="Model.h" />
     <ClInclude Include="ParticleGenerator.h" />
     <ClInclude Include="PostProcessor.h" />
+    <ClInclude Include="PowerUp.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="sb6mfile.h" />
     <ClInclude Include="sb7ktx.h" />

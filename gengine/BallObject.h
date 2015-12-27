@@ -12,8 +12,7 @@
 #include <glm/glm.hpp>
 
 #include "Texture2D.h"
-#include "SpriteRenderer.h"
-#include "GameObject.h"
+#include "PowerUp.h"
 
 namespace genesis {
 
@@ -28,6 +27,7 @@ namespace genesis {
 		// Ball state
 		GLfloat _radius;
 		GLboolean _stuck;
+		GLboolean _sticky, _passThrough;
 		// Constructor(s)
 		BallObject();
 		BallObject(glm::vec2 _pos, GLfloat _radius, glm::vec2 _velocity, Texture2D _sprite);

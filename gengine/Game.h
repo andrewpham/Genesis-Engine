@@ -7,6 +7,7 @@
 ** option) any later version.
 ******************************************************************/
 #pragma once
+#include <algorithm>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -18,6 +19,7 @@
 #include "BallObject.h"
 #include "ParticleGenerator.h"
 #include "PostProcessor.h"
+#include "PowerUp.h"
 
 namespace genesis {
 
@@ -33,6 +35,7 @@ namespace genesis {
 		GLuint                 _width, _height;
 		std::vector<GameLevel> _levels;
 		GLuint				   _level;
+		std::vector<PowerUp>   _powerUps;
 		// Constructor/Destructor
 		Game(GLuint, GLuint);
 		~Game();
@@ -46,10 +49,17 @@ namespace genesis {
 		// Reset
 		void resetLevel();
 		void resetPlayer();
+		// Powerups
+		void spawnPowerUps(GameObject &_block);
+		void updatePowerUps(GLfloat _dt);
 		// Collision detection
 		GLboolean checkCollision(GameObject &_one, GameObject &_two);
 		Collision checkCollision(BallObject &_one, GameObject &_two);
 		Direction vectorDirection(glm::vec2 _closest);
+		// PowerUps helper functions
+		GLboolean isOtherPowerUpActive(std::vector<PowerUp> &_powerUps, std::string _type);
+		GLboolean shouldSpawn(GLuint _chance);
+		void activatePowerUp(PowerUp &_powerUp);
 	};
 
 }

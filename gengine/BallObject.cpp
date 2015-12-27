@@ -12,10 +12,10 @@
 namespace genesis {
 
 	BallObject::BallObject()
-		: GameObject(), _radius(12.5f), _stuck(true) { }
+		: GameObject(), _radius(12.5f), _stuck(true), _sticky(false), _passThrough(false) { }
 
 	BallObject::BallObject(glm::vec2 _pos, GLfloat _radius, glm::vec2 _velocity, Texture2D _sprite)
-		: GameObject(_pos, glm::vec2(_radius * 2, _radius * 2), _sprite, glm::vec3(1.0f), _velocity), _radius(_radius), _stuck(true) { }
+		: GameObject(_pos, glm::vec2(_radius * 2, _radius * 2), _sprite, glm::vec3(1.0f), _velocity), _radius(_radius), _stuck(true), _sticky(false), _passThrough(false) { }
 
 	glm::vec2 BallObject::move(GLfloat _dt, GLuint _windowWidth)
 	{
@@ -50,6 +50,8 @@ namespace genesis {
 		this->_position = _position;
 		this->_velocity = _velocity;
 		this->_stuck = true;
+		this->_sticky = false;
+		this->_passThrough = false;
 	}
 
 }
