@@ -11,9 +11,10 @@
 namespace genesis {
 
 	// Game-related State data
-	SpriteRenderer *Renderer;
-	GameObject *Player;
-	BallObject *Ball;
+	SpriteRenderer    *Renderer;
+	GameObject        *Player;
+	BallObject        *Ball;
+	ParticleGenerator *Particles;
 
 	Game::Game(GLuint _width, GLuint _height)
 		: _state(GAME_ACTIVE), _keys(), _width(_width), _height(_height)
@@ -26,24 +27,30 @@ namespace genesis {
 		delete Renderer;
 		delete Player;
 		delete Ball;
+		delete Particles;
 	}
 
 	void Game::init()
 	{
 		// Load shaders
 		ResourceManager::loadShader("../Genesis/Shaders/Breakout/sprite.vs", "../Genesis/Shaders/Breakout/sprite.frag", "sprite");
+		ResourceManager::loadShader("../Genesis/Shaders/Breakout/particle.vs", "../Genesis/Shaders/Breakout/particle.frag", "particle");
 		// Configure shaders
-		glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(_width), static_cast<GLfloat>(_height), 0.0f, -1.0f, 1.0f);
-		ResourceManager::getShader("sprite").Use().setInteger("image", 0);
+		glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(this->_width), static_cast<GLfloat>(this->_height), 0.0f, -1.0f, 1.0f);
+		ResourceManager::getShader("sprite").Use().setInteger("sprite", 0);
 		ResourceManager::getShader("sprite").setMatrix4("projection", projection);
+		ResourceManager::getShader("particle").Use().setInteger("sprite", 0);
+		ResourceManager::getShader("particle").setMatrix4("projection", projection);
 		// Load textures
 		ResourceManager::loadTexture("../Genesis/Textures/Breakout/background.jpg", GL_FALSE, "background");
-		ResourceManager::loadTexture("../Genesis/Textures/Breakout/awesomeface.png", GL_TRUE, "face");
+		ResourceManager::loadTexture("../Genesis/Textures/Breakout/ball.png", GL_TRUE, "ball");
 		ResourceManager::loadTexture("../Genesis/Textures/Breakout/block.png", GL_FALSE, "block");
 		ResourceManager::loadTexture("../Genesis/Textures/Breakout/block_solid.png", GL_FALSE, "block_solid");
 		ResourceManager::loadTexture("../Genesis/Textures/Breakout/paddle.png", GL_TRUE, "paddle");
+		ResourceManager::loadTexture("../Genesis/Textures/Breakout/particle.png", GL_TRUE, "particle");
 		// Set render-specific controls
 		Renderer = new SpriteRenderer(ResourceManager::getShader("sprite"));
+		Particles = new ParticleGenerator(ResourceManager::getShader("particle"), ResourceManager::getTexture("particle"), 500);
 		// Load levels
 		GameLevel one; one.load("../Genesis/Levels/Breakout/one.lvl", this->_width, this->_height * 0.5);
 		GameLevel two; two.load("../Genesis/Levels/Breakout/two.lvl", this->_width, this->_height * 0.5);
@@ -58,24 +65,8 @@ namespace genesis {
 		glm::vec2 playerPos = glm::vec2(this->_width / 2 - PLAYER_SIZE.x / 2, this->_height - PLAYER_SIZE.y);
 		Player = new GameObject(playerPos, PLAYER_SIZE, ResourceManager::getTexture("paddle"));
 		glm::vec2 ballPos = playerPos + glm::vec2(PLAYER_SIZE.x / 2 - BALL_RADIUS, -BALL_RADIUS * 2);
-		Ball = new BallObject(ballPos, BALL_RADIUS, INITIAL_BALL_VELOCITY,
-			ResourceManager::getTexture("face"));
+		Ball = new BallObject(ballPos, BALL_RADIUS, INITIAL_BALL_VELOCITY, ResourceManager::getTexture("ball"));
 	}
-
-	void Game::update(GLfloat _dt)
-	{
-		// Update objects
-		Ball->move(_dt, this->_width);
-		// Check for collisions
-		this->doCollisions();
-		// Check loss condition
-		if (Ball->_position.y >= this->_height) // Did ball reach bottom edge?
-		{
-			this->resetLevel();
-			this->resetPlayer();
-		}
-	}
-
 
 	void Game::processInput(GLfloat _dt)
 	{
@@ -86,19 +77,39 @@ namespace genesis {
 			if (this->_keys[GLFW_KEY_A])
 			{
 				if (Player->_position.x >= 0)
+				{
 					Player->_position.x -= velocity;
-				if (Ball->_stuck)
-					Ball->_position.x -= velocity;
+					if (Ball->_stuck)
+						Ball->_position.x -= velocity;
+				}
 			}
 			if (this->_keys[GLFW_KEY_D])
 			{
 				if (Player->_position.x <= this->_width - Player->_size.x)
+				{
 					Player->_position.x += velocity;
-				if (Ball->_stuck)
-					Ball->_position.x += velocity;
+					if (Ball->_stuck)
+						Ball->_position.x += velocity;
+				}
 			}
 			if (this->_keys[GLFW_KEY_SPACE])
 				Ball->_stuck = false;
+		}
+	}
+
+	void Game::update(GLfloat _dt)
+	{
+		// Update objects
+		Ball->move(_dt, this->_width);
+		// Check for collisions
+		this->doCollisions();
+		// Update particles
+		Particles->update(_dt, *Ball, 2, glm::vec2(Ball->_radius / 2));
+		// Check loss condition
+		if (Ball->_position.y >= this->_height) // Did ball reach bottom edge?
+		{
+			this->resetLevel();
+			this->resetPlayer();
 		}
 	}
 
@@ -112,6 +123,8 @@ namespace genesis {
 			this->_levels[this->_level].draw(*Renderer);
 			// Draw player
 			Player->draw(*Renderer);
+			// Draw particles	
+			Particles->draw();
 			// Draw ball
 			Ball->draw(*Renderer);
 		}

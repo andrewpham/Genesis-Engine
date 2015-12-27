@@ -56,3 +56,12 @@ enum Direction {
 
 // Defines a Collision typedef that represents collision data
 typedef std::tuple<GLboolean, Direction, glm::vec2> Collision; // <collision?, what direction?, difference vector center - closest point>
+
+// Represents a single particle and its state
+struct Particle {
+	glm::vec2 _position, _velocity;
+	glm::vec4 _color;
+	GLfloat _life;
+
+	Particle() : _position(0.0f), _velocity(0.0f), _color(1.0f), _life(0.0f) { }
+};

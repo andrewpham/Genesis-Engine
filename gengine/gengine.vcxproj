@@ -159,6 +159,7 @@
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="ParticleGenerator.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="sb6mfile.h" />
     <ClInclude Include="sb7ktx.h" />
@@ -174,6 +175,7 @@
     <ClCompile Include="GameLevel.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="InputManager.cpp" />
+    <ClCompile Include="ParticleGenerator.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="sb7ktx.cpp" />
     <ClCompile Include="sb7object.cpp" />
