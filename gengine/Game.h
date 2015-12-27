@@ -9,6 +9,9 @@
 #pragma once
 #include <algorithm>
 
+#include <irrklang/irrKlang.h>
+using namespace irrklang;
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 

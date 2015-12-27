@@ -16,6 +16,7 @@ namespace genesis {
 	BallObject        *Ball;
 	ParticleGenerator *Particles;
 	PostProcessor	  *Effects;
+	ISoundEngine      *SoundEngine = createIrrKlangDevice();
 	GLfloat			   ShakeTime = 0.0f;
 
 	Game::Game(GLuint _width, GLuint _height)
@@ -31,6 +32,7 @@ namespace genesis {
 		delete Ball;
 		delete Particles;
 		delete Effects;
+		SoundEngine->drop();
 	}
 
 	void Game::init()
@@ -77,6 +79,8 @@ namespace genesis {
 		Player = new GameObject(playerPos, PLAYER_SIZE, ResourceManager::getTexture("paddle"));
 		glm::vec2 ballPos = playerPos + glm::vec2(PLAYER_SIZE.x / 2 - BALL_RADIUS, -BALL_RADIUS * 2);
 		Ball = new BallObject(ballPos, BALL_RADIUS, INITIAL_BALL_VELOCITY, ResourceManager::getTexture("ball"));
+		// Audio
+		SoundEngine->play2D("../Genesis/Audio/Breakout/meteor.mp3", GL_TRUE);
 	}
 
 	void Game::processInput(GLfloat _dt)
@@ -175,11 +179,13 @@ namespace genesis {
 					{
 						box._destroyed = GL_TRUE;
 						this->spawnPowerUps(box);
+						SoundEngine->play2D("../Genesis/Audio/Breakout/bleep.mp3", GL_FALSE);
 					}
 					else
 					{   // if block is solid, enable shake effect
 						ShakeTime = 0.05f;
 						Effects->_shake = GL_TRUE;
+						SoundEngine->play2D("../Genesis/Audio/Breakout/solid.wav", GL_FALSE);
 					}
 					// Collision resolution
 					Direction dir = std::get<1>(collision);
@@ -225,6 +231,7 @@ namespace genesis {
 					activatePowerUp(powerUp);
 					powerUp._destroyed = GL_TRUE;
 					powerUp._activated = GL_TRUE;
+					SoundEngine->play2D("../Genesis/Audio/Breakout/powerup.wav", GL_FALSE);
 				}
 			}
 		}
@@ -248,6 +255,8 @@ namespace genesis {
 
 			// If Sticky powerup is activated, also stick ball to paddle once new velocity vectors were calculated
 			Ball->_stuck = Ball->_sticky;
+
+			SoundEngine->play2D("../Genesis/Audio/Breakout/bleep.wav", GL_FALSE);
 		}
 	}
 
