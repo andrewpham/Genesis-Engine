@@ -17,6 +17,7 @@
 #include "GameLevel.h"
 #include "BallObject.h"
 #include "ParticleGenerator.h"
+#include "PostProcessor.h"
 
 namespace genesis {
 

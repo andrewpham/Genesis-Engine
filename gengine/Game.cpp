@@ -15,6 +15,8 @@ namespace genesis {
 	GameObject        *Player;
 	BallObject        *Ball;
 	ParticleGenerator *Particles;
+	PostProcessor	  *Effects;
+	GLfloat			   ShakeTime = 0.0f;
 
 	Game::Game(GLuint _width, GLuint _height)
 		: _state(GAME_ACTIVE), _keys(), _width(_width), _height(_height)
@@ -28,6 +30,7 @@ namespace genesis {
 		delete Player;
 		delete Ball;
 		delete Particles;
+		delete Effects;
 	}
 
 	void Game::init()
@@ -35,6 +38,7 @@ namespace genesis {
 		// Load shaders
 		ResourceManager::loadShader("../Genesis/Shaders/Breakout/sprite.vs", "../Genesis/Shaders/Breakout/sprite.frag", "sprite");
 		ResourceManager::loadShader("../Genesis/Shaders/Breakout/particle.vs", "../Genesis/Shaders/Breakout/particle.frag", "particle");
+		ResourceManager::loadShader("../Genesis/Shaders/Breakout/post_processing.vs", "../Genesis/Shaders/Breakout/post_processing.frag", "postprocessing");
 		// Configure shaders
 		glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(this->_width), static_cast<GLfloat>(this->_height), 0.0f, -1.0f, 1.0f);
 		ResourceManager::getShader("sprite").Use().setInteger("sprite", 0);
@@ -51,6 +55,7 @@ namespace genesis {
 		// Set render-specific controls
 		Renderer = new SpriteRenderer(ResourceManager::getShader("sprite"));
 		Particles = new ParticleGenerator(ResourceManager::getShader("particle"), ResourceManager::getTexture("particle"), 500);
+		Effects = new PostProcessor(ResourceManager::getShader("postprocessing"), this->_width, this->_height);
 		// Load levels
 		GameLevel one; one.load("../Genesis/Levels/Breakout/one.lvl", this->_width, this->_height * 0.5);
 		GameLevel two; two.load("../Genesis/Levels/Breakout/two.lvl", this->_width, this->_height * 0.5);
@@ -66,6 +71,10 @@ namespace genesis {
 		Player = new GameObject(playerPos, PLAYER_SIZE, ResourceManager::getTexture("paddle"));
 		glm::vec2 ballPos = playerPos + glm::vec2(PLAYER_SIZE.x / 2 - BALL_RADIUS, -BALL_RADIUS * 2);
 		Ball = new BallObject(ballPos, BALL_RADIUS, INITIAL_BALL_VELOCITY, ResourceManager::getTexture("ball"));
+
+		//Effects->Shake = GL_TRUE;
+		//Effects->Confuse = GL_TRUE;
+		//Effects->Chaos = GL_TRUE;
 	}
 
 	void Game::processInput(GLfloat _dt)
@@ -105,6 +114,13 @@ namespace genesis {
 		this->doCollisions();
 		// Update particles
 		Particles->update(_dt, *Ball, 2, glm::vec2(Ball->_radius / 2));
+		// Reduce shake time
+		if (ShakeTime > 0.0f)
+		{
+			ShakeTime -= _dt;
+			if (ShakeTime <= 0.0f)
+				Effects->_shake = GL_FALSE;
+		}
 		// Check loss condition
 		if (Ball->_position.y >= this->_height) // Did ball reach bottom edge?
 		{
@@ -117,6 +133,8 @@ namespace genesis {
 	{
 		if (this->_state == GAME_ACTIVE)
 		{
+			// Begin rendering to postprocessing quad
+			Effects->beginRender();
 			// Draw background
 			Renderer->drawSprite(ResourceManager::getTexture("background"), glm::vec2(0, 0), glm::vec2(this->_width, this->_height), 0.0f);
 			// Draw level
@@ -127,6 +145,10 @@ namespace genesis {
 			Particles->draw();
 			// Draw ball
 			Ball->draw(*Renderer);
+			// End rendering to postprocessing quad
+			Effects->endRender();
+			// Render postprocessing quad
+			Effects->render(glfwGetTime());
 		}
 	}
 
@@ -143,6 +165,11 @@ namespace genesis {
 					// Destroy block if not solid
 					if (!box._isSolid)
 						box._destroyed = GL_TRUE;
+					else
+					{   // if block is solid, enable shake effect
+						ShakeTime = 0.05f;
+						Effects->_shake = GL_TRUE;
+					}
 					// Collision resolution
 					Direction dir = std::get<1>(collision);
 					glm::vec2 diff_vector = std::get<2>(collision);
