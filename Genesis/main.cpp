@@ -7,6 +7,7 @@
 ** option) any later version.
 ******************************************************************/
 // GL includes
+#include "LifeOfGaben.h"
 #include "Breakout.h"
 #include "Demos.h"
 #include "Window.h"
@@ -16,16 +17,18 @@ gwindow::Window window;
 // The MAIN function, from here we start our application and run our Game loop
 int main()
 {
-	window.create(GAME_NAME, SCREEN_WIDTH, SCREEN_HEIGHT);
-	//window.create(WINDOW_NAME, SCREEN_WIDTH, SCREEN_HEIGHT);
+	window.create(WINDOW_NAME, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	// Initialize GLEW to setup the OpenGL Function pointers
 	glewExperimental = GL_TRUE;
 	glewInit();
 	glGetError(); // Call it once to catch glewInit() bug, all other errors are now from our application.
 
-	/** Uncomment this function to run Breakout... */
-	play(window.getWindow());
+	/** Uncomment this function to play the Life of Gaben game... */
+	run_gaben_game(window.getWindow());
+
+	/** ...or uncomment this function to run Breakout... */
+	//play_breakout(window.getWindow());
 
 	/** ...or uncomment ONE of these functions to display a demo showcasing some of the 3D rendering capabilities of this game engine */
 	//render_superbible_perpixelgloss(window.getWindow());

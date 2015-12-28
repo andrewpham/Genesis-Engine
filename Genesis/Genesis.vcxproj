@@ -131,6 +131,7 @@
     <ClCompile Include="Breakout.cpp" />
     <ClCompile Include="Callbacks.cpp" />
     <ClCompile Include="Demos.cpp" />
+    <ClCompile Include="LifeOfGaben.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
@@ -138,6 +139,7 @@
     <ClInclude Include="Breakout.h" />
     <ClInclude Include="Callbacks.h" />
     <ClInclude Include="Demos.h" />
+    <ClInclude Include="LifeOfGaben.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
