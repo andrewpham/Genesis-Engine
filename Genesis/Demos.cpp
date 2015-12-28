@@ -3004,12 +3004,12 @@ void render_skybox_demo(GLFWwindow* window)
 
 	// Cubemap (Skybox)
 	vector<const GLchar*> faces;
-	faces.push_back("Textures/Skybox/right.jpg");
-	faces.push_back("Textures/Skybox/left.jpg");
-	faces.push_back("Textures/Skybox/top.jpg");
-	faces.push_back("Textures/Skybox/bottom.jpg");
-	faces.push_back("Textures/Skybox/back.jpg");
-	faces.push_back("Textures/Skybox/front.jpg");
+	faces.push_back("Textures/Skybox/Demo/right.jpg");
+	faces.push_back("Textures/Skybox/Demo/left.jpg");
+	faces.push_back("Textures/Skybox/Demo/top.jpg");
+	faces.push_back("Textures/Skybox/Demo/bottom.jpg");
+	faces.push_back("Textures/Skybox/Demo/back.jpg");
+	faces.push_back("Textures/Skybox/Demo/front.jpg");
 	_resourceManager.loadCubemap(faces);
 	GLuint cubemapTexture = _resourceManager.getCubemap();
 
