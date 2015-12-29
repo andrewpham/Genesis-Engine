@@ -51,9 +51,6 @@
     <ClInclude Include="Game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Texture2D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SpriteRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -73,6 +70,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PowerUp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

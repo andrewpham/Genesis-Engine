@@ -80,6 +80,8 @@ const GLfloat ZOOM = 45.0f;
 				this->Position -= this->Right * velocity;
 			if (direction == RIGHT)
 				this->Position += this->Right * velocity;
+			// Make sure the user stays at the ground level
+			this->Position.y = 0.0f;
 		}
 
 		// Processes input received from a mouse input system. Expects the offset value in both the x and y direction.

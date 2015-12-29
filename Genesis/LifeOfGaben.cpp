@@ -171,11 +171,11 @@ void run_gaben_game(GLFWwindow* window)
 	glBindVertexArray(0);
 
 	// Load textures
-	_gabenGameResourceManager.loadTexture("Textures/container.jpg", true, "box");
+	_gabenGameResourceManager.loadTexture("Textures/container.jpg", false, "box");
 	GLuint boxTexture = _gabenGameResourceManager.getTexture("box").ID;
-	_gabenGameResourceManager.loadTexture("Textures/Life of Gaben/grass.jpg", true, "floor");
+	_gabenGameResourceManager.loadTexture("Textures/Life of Gaben/grass.jpg", false, "floor");
 	GLuint floorTexture = _gabenGameResourceManager.getTexture("floor").ID;
-	_gabenGameResourceManager.loadTexture("Textures/Life of Gaben/wall.jpg", true, "wall");
+	_gabenGameResourceManager.loadTexture("Textures/Life of Gaben/wall.jpg", false, "wall");
 	GLuint wallTexture = _gabenGameResourceManager.getTexture("wall").ID;
 #pragma endregion
 
@@ -240,9 +240,59 @@ void run_gaben_game(GLFWwindow* window)
 		model = glm::scale(model, glm::vec3(0.55f, 0.55f, 0.55f));	// It's a bit too big for our scene, so scale it down
 		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		house.Draw(shader);
-		// Obstacle
+		// Obstacles
 		model = glm::mat4(); // Translate it down a bit so it's at the center of the scene
-		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate it down a bit so it's at the center of the scene
+		model = glm::translate(model, glm::vec3(0.0f, -0.95f, 19.0f)); // Translate it down a bit so it's at the center of the scene
+		model = glm::scale(model, glm::vec3(0.25f, 0.25f, 0.25f));	// It's a bit too big for our scene, so scale it down
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		obstacle.Draw(shader);
+
+		model = glm::mat4(); // Translate it down a bit so it's at the center of the scene
+		model = glm::translate(model, glm::vec3(0.0f, -0.95f, 8.0f)); // Translate it down a bit so it's at the center of the scene
+		model = glm::rotate(model, 45.f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.25f, 0.25f, 0.25f));	// It's a bit too big for our scene, so scale it down
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		obstacle.Draw(shader);
+
+		model = glm::mat4(); // Translate it down a bit so it's at the center of the scene
+		model = glm::translate(model, glm::vec3(-4.5f, -0.95f, 13.0f)); // Translate it down a bit so it's at the center of the scene
+		model = glm::rotate(model, 90.f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.25f, 0.25f, 0.25f));	// It's a bit too big for our scene, so scale it down
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		obstacle.Draw(shader);
+
+		model = glm::mat4(); // Translate it down a bit so it's at the center of the scene
+		model = glm::translate(model, glm::vec3(5.0f, -0.95f, 13.0f)); // Translate it down a bit so it's at the center of the scene
+		model = glm::rotate(model, 135.f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.25f, 0.25f, 0.25f));	// It's a bit too big for our scene, so scale it down
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		obstacle.Draw(shader);
+
+		model = glm::mat4(); // Translate it down a bit so it's at the center of the scene
+		model = glm::translate(model, glm::vec3(-3.0f, -0.95f, 10.0f)); // Translate it down a bit so it's at the center of the scene
+		model = glm::rotate(model, 180.f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.25f, 0.25f, 0.25f));	// It's a bit too big for our scene, so scale it down
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		obstacle.Draw(shader);
+
+		model = glm::mat4(); // Translate it down a bit so it's at the center of the scene
+		model = glm::translate(model, glm::vec3(3.5f, -0.95f, 10.0f)); // Translate it down a bit so it's at the center of the scene
+		model = glm::rotate(model, 235.f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.25f, 0.25f, 0.25f));	// It's a bit too big for our scene, so scale it down
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		obstacle.Draw(shader);
+
+		model = glm::mat4(); // Translate it down a bit so it's at the center of the scene
+		model = glm::translate(model, glm::vec3(-3.0f, -0.95f, 17.0f)); // Translate it down a bit so it's at the center of the scene
+		model = glm::rotate(model, 22.5f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.25f, 0.25f, 0.25f));	// It's a bit too big for our scene, so scale it down
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		obstacle.Draw(shader);
+
+		model = glm::mat4(); // Translate it down a bit so it's at the center of the scene
+		model = glm::translate(model, glm::vec3(3.5f, -0.95f, 17.0f)); // Translate it down a bit so it's at the center of the scene
+		model = glm::rotate(model, 67.5f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.25f, 0.25f, 0.25f));	// It's a bit too big for our scene, so scale it down
 		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		obstacle.Draw(shader);
 		// Boxes
