@@ -5,49 +5,7 @@
 genesis::InputManager _gabenGameInputManager;
 genesis::ResourceManager _gabenGameResourceManager;
 
-void resolveCollision(genesis::GameObject3D &_object, genesis::InputManager &_inputManager)
-{
-	glm::vec3 hitboxPosition = _object._translation + _object._hitboxOffset;
-	glm::vec3 cameraPosition = _inputManager._camera.Position;
-
-	bool collisionX = hitboxPosition.x + _object._hitboxRadius >= cameraPosition.x &&
-		cameraPosition.x >= hitboxPosition.x;
-	bool collisionZ = hitboxPosition.z + _object._hitboxRadius >= cameraPosition.z &&
-		cameraPosition.z >= hitboxPosition.z;
-	bool collisionX2 = hitboxPosition.x - _object._hitboxRadius <= cameraPosition.x &&
-		cameraPosition.x <= hitboxPosition.x;
-	bool collisionZ2 = hitboxPosition.z - _object._hitboxRadius <= cameraPosition.z &&
-		cameraPosition.z <= hitboxPosition.z;
-
-	if (collisionX && collisionZ)
-	{
-		GLfloat penetrationX = hitboxPosition.x + _object._hitboxRadius - cameraPosition.x;
-		GLfloat penetrationZ = hitboxPosition.z + _object._hitboxRadius - cameraPosition.z;
-		_inputManager._camera.Position.x += penetrationX;
-		_inputManager._camera.Position.z += penetrationZ;
-	}
-	else if (collisionX2 && collisionZ)
-	{
-		GLfloat penetrationX = cameraPosition.x - (hitboxPosition.x - _object._hitboxRadius);
-		GLfloat penetrationZ = hitboxPosition.z + _object._hitboxRadius - cameraPosition.z;
-		_inputManager._camera.Position.x -= penetrationX;
-		_inputManager._camera.Position.z += penetrationZ;
-	}
-	else if (collisionX && collisionZ2)
-	{
-		GLfloat penetrationX = hitboxPosition.x + _object._hitboxRadius - cameraPosition.x;
-		GLfloat penetrationZ = cameraPosition.z - (hitboxPosition.z - _object._hitboxRadius);
-		_inputManager._camera.Position.x += penetrationX;
-		_inputManager._camera.Position.z -= penetrationZ;
-	}
-	else if (collisionX2 && collisionZ2)
-	{
-		GLfloat penetrationX = cameraPosition.x - (hitboxPosition.x - _object._hitboxRadius);
-		GLfloat penetrationZ = cameraPosition.z - (hitboxPosition.z - _object._hitboxRadius);
-		_inputManager._camera.Position.x -= penetrationX;
-		_inputManager._camera.Position.z -= penetrationZ;
-	}
-}
+void resolveCollision(genesis::GameObject3D&, genesis::InputManager&);
 
 void run_gaben_game(GLFWwindow* window)
 {
@@ -215,8 +173,6 @@ void run_gaben_game(GLFWwindow* window)
 	glBindVertexArray(0);
 
 	// Load textures
-	_gabenGameResourceManager.loadTexture("Textures/container.jpg", false, "box");
-	GLuint boxTexture = _gabenGameResourceManager.getTexture("box").ID;
 	_gabenGameResourceManager.loadTexture("Textures/Life of Gaben/grass.jpg", false, "floor");
 	GLuint floorTexture = _gabenGameResourceManager.getTexture("floor").ID;
 	_gabenGameResourceManager.loadTexture("Textures/Life of Gaben/wall.jpg", false, "wall");
@@ -238,9 +194,15 @@ void run_gaben_game(GLFWwindow* window)
 	genesis::Model house("Objects/Life of Gaben/House/Farmhouse OBJ.obj");
 	genesis::Model rock("Objects/Rock/rock.obj");
 
-	// Create objects
+	// Create game objects
+	genesis::GameObject3D floorObject(shader, floorTexture, floorVAO, 6);
 	genesis::GameObject3D houseObject(shader, house, glm::vec3(-30.0f, -1.05f, 5.0f), glm::vec3(0.55f, 0.55f, 0.55f));
-	std::vector<genesis::GameObject3D> rockObjects;
+	vector<genesis::GameObject3D> wallObjects;
+	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(-12.0f, 0.0f, 0.0f)));
+	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(14.0f, 0.0f, 0.0f)));
+	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(0.0f, 0.0f, 25.0f), glm::vec3(1.0f), 90.f, glm::vec3(0.0f, 1.0f, 0.0f)));
+	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(1.0f), 90.f, glm::vec3(0.0f, 1.0f, 0.0f)));
+	vector<genesis::GameObject3D> rockObjects;
 	rockObjects.push_back(genesis::GameObject3D(shader, rock, glm::vec3(0.0f, -0.95f, 19.0f), glm::vec3(0.25f, 0.25f, 0.25f)));
 	rockObjects.push_back(genesis::GameObject3D(shader, rock, glm::vec3(0.0f, -0.95f, 8.0f), glm::vec3(0.25f, 0.25f, 0.25f), 45.f, glm::vec3(0.0f, 1.0f, 0.0f)));
 	rockObjects.push_back(genesis::GameObject3D(shader, rock, glm::vec3(-4.5f, -0.95f, 13.0f), glm::vec3(0.25f, 0.25f, 0.25f), 90.f, glm::vec3(0.0f, 1.0f, 0.0f)));
@@ -251,9 +213,23 @@ void run_gaben_game(GLFWwindow* window)
 	rockObjects.push_back(genesis::GameObject3D(shader, rock, glm::vec3(3.5f, -0.95f, 17.0f), glm::vec3(0.25f, 0.25f, 0.25f), 67.5f, glm::vec3(0.0f, 1.0f, 0.0f)));
 	for (genesis::GameObject3D &rockObject : rockObjects)
 	{
-		rockObject._hitboxRadius = 0.46;
+		rockObject._hitboxRadius = 0.46f;
 		rockObject._hitboxOffset = glm::vec3(0.0f, -0.1f, 0.0f);
 	}
+	vector<genesis::GameObject3D> boxObjects;
+	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(-11.0f, 0.0f, -9.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(-11.0f, 0.0f, 24.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(13.0f, 0.0f, 24.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(13.0f, 0.0f, -9.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(6.0f, 0.0f, -3.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(-5.0f, 0.0f, -2.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(0.0f, 0.0f, -7.0f)));
+	for (genesis::GameObject3D &boxObject : boxObjects)
+	{
+		boxObject._hitboxRadius = 1.5f;
+		boxObject._hitboxOffset = glm::vec3(0.0f);
+	}
+
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -289,104 +265,85 @@ void run_gaben_game(GLFWwindow* window)
 
 		// Then draw scene as normal
 		shader.Use();
-		glm::mat4 model;
 		view = _gabenGameInputManager._camera.GetViewMatrix();
-
 		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
+		// Floor
+		floorObject.render();
 		// House
 		houseObject.render();
+		// Walls
+		for (genesis::GameObject3D &wallObject : wallObjects)
+		{
+			wallObject.render();
+		}
 		// Rocks
 		for (genesis::GameObject3D &rockObject : rockObjects)
 		{
 			rockObject.render();
 			resolveCollision(rockObject, _gabenGameInputManager);
 		}
-
 		// Boxes
-		glBindVertexArray(boxVAO);
-		glBindTexture(GL_TEXTURE_2D, wallTexture);  // We omit the glActiveTexture part since TEXTURE0 is already the default active texture unit. (sampler used in fragment is set to 0 as well as default)		
-		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(-11.0f, 0.0f, -9.0f));
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(-11.0f, 0.0f, 24.0f));
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(13.0f, 0.0f, 24.0f));
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(13.0f, 0.0f, -9.0f));
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(6.0f, 0.0f, -3.0f));
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(-5.0f, 0.0f, -2.0f));
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, -7.0f));
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		// Floor
-		glBindVertexArray(floorVAO);
-		glBindTexture(GL_TEXTURE_2D, floorTexture);
-		model = glm::mat4();
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindVertexArray(0);
-		// Left Wall
-		glBindVertexArray(wallVAO);
-		glBindTexture(GL_TEXTURE_2D, wallTexture);
-		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(-12.0f, 0.0f, 0.0f));
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindVertexArray(0);
-		// Right Wall
-		glBindVertexArray(wallVAO);
-		glBindTexture(GL_TEXTURE_2D, wallTexture);
-		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(14.0f, 0.0f, 0.0f));
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindVertexArray(0);
-		// Back Wall
-		glBindVertexArray(wallVAO);
-		glBindTexture(GL_TEXTURE_2D, wallTexture);
-		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 25.0f));
-		model = glm::rotate(model, 90.0f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindVertexArray(0);
-		// Front Wall
-		glBindVertexArray(wallVAO);
-		glBindTexture(GL_TEXTURE_2D, wallTexture);
-		model = glm::mat4();
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, -10.0f));
-		model = glm::rotate(model, 90.0f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindVertexArray(0);
-
+		for (genesis::GameObject3D &boxObject : boxObjects)
+		{
+			boxObject.render();
+			resolveCollision(boxObject, _gabenGameInputManager);
+		}
 
 		// Swap the buffers
 		glfwSwapBuffers(window);
 	}
 
 	glfwTerminate();
+}
+
+void resolveCollision(genesis::GameObject3D &_object, genesis::InputManager &_inputManager)
+{
+	glm::vec3 hitboxPosition = _object._translation + _object._hitboxOffset;
+	glm::vec3 cameraPosition = _inputManager._camera.Position;
+
+	/** Collision detection booleans */
+	// Collision right of the hitbox?
+	bool collisionX = hitboxPosition.x + _object._hitboxRadius >= cameraPosition.x &&
+		cameraPosition.x >= hitboxPosition.x;
+	// Collision behind the hitbox?
+	bool collisionZ = hitboxPosition.z + _object._hitboxRadius >= cameraPosition.z &&
+		cameraPosition.z >= hitboxPosition.z;
+	// Collision left of the hitbox?
+	bool collisionX2 = hitboxPosition.x - _object._hitboxRadius <= cameraPosition.x &&
+		cameraPosition.x <= hitboxPosition.x;
+	// Collision in front of the hitbox?
+	bool collisionZ2 = hitboxPosition.z - _object._hitboxRadius <= cameraPosition.z &&
+		cameraPosition.z <= hitboxPosition.z;
+
+	GLfloat penetrationX, penetrationZ;
+	if (collisionX && collisionZ)
+	{
+		penetrationX = hitboxPosition.x + _object._hitboxRadius - cameraPosition.x;
+		penetrationZ = hitboxPosition.z + _object._hitboxRadius - cameraPosition.z;
+		_inputManager._camera.Position.x += penetrationX;
+		_inputManager._camera.Position.z += penetrationZ;
+	}
+	else if (collisionX2 && collisionZ)
+	{
+		penetrationX = cameraPosition.x - (hitboxPosition.x - _object._hitboxRadius);
+		penetrationZ = hitboxPosition.z + _object._hitboxRadius - cameraPosition.z;
+		_inputManager._camera.Position.x -= penetrationX;
+		_inputManager._camera.Position.z += penetrationZ;
+	}
+	else if (collisionX && collisionZ2)
+	{
+		penetrationX = hitboxPosition.x + _object._hitboxRadius - cameraPosition.x;
+		penetrationZ = cameraPosition.z - (hitboxPosition.z - _object._hitboxRadius);
+		_inputManager._camera.Position.x += penetrationX;
+		_inputManager._camera.Position.z -= penetrationZ;
+	}
+	else if (collisionX2 && collisionZ2)
+	{
+		penetrationX = cameraPosition.x - (hitboxPosition.x - _object._hitboxRadius);
+		penetrationZ = cameraPosition.z - (hitboxPosition.z - _object._hitboxRadius);
+		_inputManager._camera.Position.x -= penetrationX;
+		_inputManager._camera.Position.z -= penetrationZ;
+	}
 }

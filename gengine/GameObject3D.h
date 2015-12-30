@@ -19,7 +19,9 @@ namespace genesis {
 		// Object state
 		Shader _shader;
 		Model _model;
-		Texture2D _texture;
+		GLuint _texture;
+		GLuint _VAO;
+		GLuint _numVertices;
 
 		glm::vec3 _translation;
 		GLfloat _rotationAngle;
@@ -35,7 +37,7 @@ namespace genesis {
 		GameObject3D();
 		GameObject3D(Shader _shader, Model _model, glm::vec3 _translation = glm::vec3(0.0f), glm::vec3 _scale = glm::vec3(1.0), 
 			GLfloat _rotationAngleDegree = 0.0f, glm::vec3 _rotationAxis = glm::vec3(0.0, 1.0, 0.0), GLboolean _isModel = true, GLboolean _destroyed = false);
-		GameObject3D(Shader _shader, Texture2D _texture, glm::vec3 _translation = glm::vec3(0.0f), glm::vec3 _scale = glm::vec3(1.0), 
+		GameObject3D(Shader _shader, GLuint _texture, GLuint _VAO, GLuint _numVertices, glm::vec3 _translation = glm::vec3(0.0f), glm::vec3 _scale = glm::vec3(1.0), 
 			GLfloat _rotationAngleDegree = 0.0f, glm::vec3 _rotationAxis = glm::vec3(0.0, 1.0, 0.0), GLboolean _isModel = false, GLboolean _destroyed = false);
 		~GameObject3D();
 		// Render object
