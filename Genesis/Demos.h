@@ -1,5 +1,4 @@
 #pragma once
-// Std. Includes
 #include <gengine/Shader.h>
 #include <gengine/sb7ktx.h>
 #include <gengine/sb7object.h>

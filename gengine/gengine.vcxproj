@@ -156,6 +156,7 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameLevel.h" />
     <ClInclude Include="GameObject.h" />
+    <ClInclude Include="GameObject3D.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
@@ -176,6 +177,7 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameLevel.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="GameObject3D.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="ParticleGenerator.cpp" />
     <ClCompile Include="PostProcessor.cpp" />

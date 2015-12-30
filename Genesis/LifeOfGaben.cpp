@@ -5,6 +5,50 @@
 genesis::InputManager _gabenGameInputManager;
 genesis::ResourceManager _gabenGameResourceManager;
 
+void resolveCollision(genesis::GameObject3D &_object, genesis::InputManager &_inputManager)
+{
+	glm::vec3 hitboxPosition = _object._translation + _object._hitboxOffset;
+	glm::vec3 cameraPosition = _inputManager._camera.Position;
+
+	bool collisionX = hitboxPosition.x + _object._hitboxRadius >= cameraPosition.x &&
+		cameraPosition.x >= hitboxPosition.x;
+	bool collisionZ = hitboxPosition.z + _object._hitboxRadius >= cameraPosition.z &&
+		cameraPosition.z >= hitboxPosition.z;
+	bool collisionX2 = hitboxPosition.x - _object._hitboxRadius <= cameraPosition.x &&
+		cameraPosition.x <= hitboxPosition.x;
+	bool collisionZ2 = hitboxPosition.z - _object._hitboxRadius <= cameraPosition.z &&
+		cameraPosition.z <= hitboxPosition.z;
+
+	if (collisionX && collisionZ)
+	{
+		GLfloat penetrationX = hitboxPosition.x + _object._hitboxRadius - cameraPosition.x;
+		GLfloat penetrationZ = hitboxPosition.z + _object._hitboxRadius - cameraPosition.z;
+		_inputManager._camera.Position.x += penetrationX;
+		_inputManager._camera.Position.z += penetrationZ;
+	}
+	else if (collisionX2 && collisionZ)
+	{
+		GLfloat penetrationX = cameraPosition.x - (hitboxPosition.x - _object._hitboxRadius);
+		GLfloat penetrationZ = hitboxPosition.z + _object._hitboxRadius - cameraPosition.z;
+		_inputManager._camera.Position.x -= penetrationX;
+		_inputManager._camera.Position.z += penetrationZ;
+	}
+	else if (collisionX && collisionZ2)
+	{
+		GLfloat penetrationX = hitboxPosition.x + _object._hitboxRadius - cameraPosition.x;
+		GLfloat penetrationZ = cameraPosition.z - (hitboxPosition.z - _object._hitboxRadius);
+		_inputManager._camera.Position.x += penetrationX;
+		_inputManager._camera.Position.z -= penetrationZ;
+	}
+	else if (collisionX2 && collisionZ2)
+	{
+		GLfloat penetrationX = cameraPosition.x - (hitboxPosition.x - _object._hitboxRadius);
+		GLfloat penetrationZ = cameraPosition.z - (hitboxPosition.z - _object._hitboxRadius);
+		_inputManager._camera.Position.x -= penetrationX;
+		_inputManager._camera.Position.z -= penetrationZ;
+	}
+}
+
 void run_gaben_game(GLFWwindow* window)
 {
 	// Define the viewport dimensions
@@ -192,10 +236,26 @@ void run_gaben_game(GLFWwindow* window)
 
 	// Load models
 	genesis::Model house("Objects/Life of Gaben/House/Farmhouse OBJ.obj");
-	genesis::Model obstacle("Objects/Rock/rock.obj");
+	genesis::Model rock("Objects/Rock/rock.obj");
+
+	// Create objects
+	genesis::GameObject3D houseObject(shader, house, glm::vec3(-30.0f, -1.05f, 5.0f), glm::vec3(0.55f, 0.55f, 0.55f));
+	std::vector<genesis::GameObject3D> rockObjects;
+	rockObjects.push_back(genesis::GameObject3D(shader, rock, glm::vec3(0.0f, -0.95f, 19.0f), glm::vec3(0.25f, 0.25f, 0.25f)));
+	rockObjects.push_back(genesis::GameObject3D(shader, rock, glm::vec3(0.0f, -0.95f, 8.0f), glm::vec3(0.25f, 0.25f, 0.25f), 45.f, glm::vec3(0.0f, 1.0f, 0.0f)));
+	rockObjects.push_back(genesis::GameObject3D(shader, rock, glm::vec3(-4.5f, -0.95f, 13.0f), glm::vec3(0.25f, 0.25f, 0.25f), 90.f, glm::vec3(0.0f, 1.0f, 0.0f)));
+	rockObjects.push_back(genesis::GameObject3D(shader, rock, glm::vec3(5.0f, -0.95f, 13.0f), glm::vec3(0.25f, 0.25f, 0.25f), 135.f, glm::vec3(0.0f, 1.0f, 0.0f)));
+	rockObjects.push_back(genesis::GameObject3D(shader, rock, glm::vec3(-3.0f, -0.95f, 10.0f), glm::vec3(0.25f, 0.25f, 0.25f), 180.f, glm::vec3(0.0f, 1.0f, 0.0f)));
+	rockObjects.push_back(genesis::GameObject3D(shader, rock, glm::vec3(3.5f, -0.95f, 10.0f), glm::vec3(0.25f, 0.25f, 0.25f), 235.f, glm::vec3(0.0f, 1.0f, 0.0f)));
+	rockObjects.push_back(genesis::GameObject3D(shader, rock, glm::vec3(-3.0f, -0.95f, 17.0f), glm::vec3(0.25f, 0.25f, 0.25f), 22.5f, glm::vec3(0.0f, 1.0f, 0.0f)));
+	rockObjects.push_back(genesis::GameObject3D(shader, rock, glm::vec3(3.5f, -0.95f, 17.0f), glm::vec3(0.25f, 0.25f, 0.25f), 67.5f, glm::vec3(0.0f, 1.0f, 0.0f)));
+	for (genesis::GameObject3D &rockObject : rockObjects)
+	{
+		rockObject._hitboxRadius = 0.46;
+		rockObject._hitboxOffset = glm::vec3(0.0f, -0.1f, 0.0f);
+	}
 
 	glEnable(GL_DEPTH_TEST);
-	//glDepthFunc(GL_ALWAYS); // Set to always pass the depth test (same effect as glDisable(GL_DEPTH_TEST))
 
 	// Game loop
 	while (!glfwWindowShouldClose(window))
@@ -232,69 +292,18 @@ void run_gaben_game(GLFWwindow* window)
 		glm::mat4 model;
 		view = _gabenGameInputManager._camera.GetViewMatrix();
 
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
 		// House
-		model = glm::translate(model, glm::vec3(-30.0f, -1.05f, 5.0f)); // Translate it down a bit so it's at the center of the scene
-		model = glm::scale(model, glm::vec3(0.55f, 0.55f, 0.55f));	// It's a bit too big for our scene, so scale it down
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		house.Draw(shader);
-		// Obstacles
-		model = glm::mat4(); // Translate it down a bit so it's at the center of the scene
-		model = glm::translate(model, glm::vec3(0.0f, -0.95f, 19.0f)); // Translate it down a bit so it's at the center of the scene
-		model = glm::scale(model, glm::vec3(0.25f, 0.25f, 0.25f));	// It's a bit too big for our scene, so scale it down
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		obstacle.Draw(shader);
+		houseObject.render();
+		// Rocks
+		for (genesis::GameObject3D &rockObject : rockObjects)
+		{
+			rockObject.render();
+			resolveCollision(rockObject, _gabenGameInputManager);
+		}
 
-		model = glm::mat4(); // Translate it down a bit so it's at the center of the scene
-		model = glm::translate(model, glm::vec3(0.0f, -0.95f, 8.0f)); // Translate it down a bit so it's at the center of the scene
-		model = glm::rotate(model, 45.f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.25f, 0.25f, 0.25f));	// It's a bit too big for our scene, so scale it down
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		obstacle.Draw(shader);
-
-		model = glm::mat4(); // Translate it down a bit so it's at the center of the scene
-		model = glm::translate(model, glm::vec3(-4.5f, -0.95f, 13.0f)); // Translate it down a bit so it's at the center of the scene
-		model = glm::rotate(model, 90.f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.25f, 0.25f, 0.25f));	// It's a bit too big for our scene, so scale it down
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		obstacle.Draw(shader);
-
-		model = glm::mat4(); // Translate it down a bit so it's at the center of the scene
-		model = glm::translate(model, glm::vec3(5.0f, -0.95f, 13.0f)); // Translate it down a bit so it's at the center of the scene
-		model = glm::rotate(model, 135.f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.25f, 0.25f, 0.25f));	// It's a bit too big for our scene, so scale it down
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		obstacle.Draw(shader);
-
-		model = glm::mat4(); // Translate it down a bit so it's at the center of the scene
-		model = glm::translate(model, glm::vec3(-3.0f, -0.95f, 10.0f)); // Translate it down a bit so it's at the center of the scene
-		model = glm::rotate(model, 180.f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.25f, 0.25f, 0.25f));	// It's a bit too big for our scene, so scale it down
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		obstacle.Draw(shader);
-
-		model = glm::mat4(); // Translate it down a bit so it's at the center of the scene
-		model = glm::translate(model, glm::vec3(3.5f, -0.95f, 10.0f)); // Translate it down a bit so it's at the center of the scene
-		model = glm::rotate(model, 235.f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.25f, 0.25f, 0.25f));	// It's a bit too big for our scene, so scale it down
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		obstacle.Draw(shader);
-
-		model = glm::mat4(); // Translate it down a bit so it's at the center of the scene
-		model = glm::translate(model, glm::vec3(-3.0f, -0.95f, 17.0f)); // Translate it down a bit so it's at the center of the scene
-		model = glm::rotate(model, 22.5f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.25f, 0.25f, 0.25f));	// It's a bit too big for our scene, so scale it down
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		obstacle.Draw(shader);
-
-		model = glm::mat4(); // Translate it down a bit so it's at the center of the scene
-		model = glm::translate(model, glm::vec3(3.5f, -0.95f, 17.0f)); // Translate it down a bit so it's at the center of the scene
-		model = glm::rotate(model, 67.5f * PI_F / 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.25f, 0.25f, 0.25f));	// It's a bit too big for our scene, so scale it down
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		obstacle.Draw(shader);
 		// Boxes
 		glBindVertexArray(boxVAO);
 		glBindTexture(GL_TEXTURE_2D, wallTexture);  // We omit the glActiveTexture part since TEXTURE0 is already the default active texture unit. (sampler used in fragment is set to 0 as well as default)		

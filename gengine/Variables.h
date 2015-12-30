@@ -2,8 +2,8 @@
 
 #define PI_F			3.14159265358979f
 #define WINDOW_NAME		"Life of Gaben"
-#define SCREEN_WIDTH	1920
-#define SCREEN_HEIGHT	1080
+#define SCREEN_WIDTH	800
+#define SCREEN_HEIGHT	600
 #define NUM_DRAWS		50000
 #define WORKGROUP_SIZE	256
 #define NUM_WORKGROUPS	64
