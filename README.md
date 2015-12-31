@@ -12,7 +12,7 @@ Make sure you have a graphics card supporting at least OpenGL 4.3. Download the 
 
 Download the x86 version of [irrKlang](http://www.ambiera.com/irrklang/downloads.html)
 
-Put the following files in the Directory `Genesis-Engine/Debug`
+Put the following files in `bin/win32-visualStudio` into the Directory `Genesis-Engine/Debug`
 
   ikpFlac.dll
   
