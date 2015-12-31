@@ -5,6 +5,7 @@
 genesis::InputManager _gabenGameInputManager;
 genesis::ResourceManager _gabenGameResourceManager;
 
+Direction vectorDirection(glm::vec2);
 void resolveCollision(genesis::GameObject3D&, genesis::InputManager&);
 
 void run_gaben_game(GLFWwindow* window)
@@ -298,6 +299,29 @@ void run_gaben_game(GLFWwindow* window)
 	glfwTerminate();
 }
 
+// Calculates which direction a vector is facing (N,E,S or W)
+Direction vectorDirection(glm::vec2 _target)
+{
+	glm::vec2 compass[] = {
+		glm::vec2(0.0f, 1.0f),	// up
+		glm::vec2(1.0f, 0.0f),	// right
+		glm::vec2(0.0f, -1.0f),	// down
+		glm::vec2(-1.0f, 0.0f)	// left
+	};
+	GLfloat max = 0.0f;
+	GLuint best_match = -1;
+	for (GLuint i = 0; i < 4; i++)
+	{
+		GLfloat dot_product = glm::dot(glm::normalize(_target), compass[i]);
+		if (dot_product > max)
+		{
+			max = dot_product;
+			best_match = i;
+		}
+	}
+	return (Direction)best_match;
+}
+
 void resolveCollision(genesis::GameObject3D &_object, genesis::InputManager &_inputManager)
 {
 	glm::vec3 hitboxPosition = _object._translation + _object._hitboxOffset;
@@ -317,33 +341,43 @@ void resolveCollision(genesis::GameObject3D &_object, genesis::InputManager &_in
 	bool collisionZ2 = hitboxPosition.z - _object._hitboxRadius <= cameraPosition.z &&
 		cameraPosition.z <= hitboxPosition.z;
 
+	Direction dir = vectorDirection(glm::vec2(cameraPosition.x - hitboxPosition.x, cameraPosition.z - hitboxPosition.z));
+
 	GLfloat penetrationX, penetrationZ;
 	if (collisionX && collisionZ)
 	{
 		penetrationX = hitboxPosition.x + _object._hitboxRadius - cameraPosition.x;
 		penetrationZ = hitboxPosition.z + _object._hitboxRadius - cameraPosition.z;
-		_inputManager._camera.Position.x += penetrationX;
-		_inputManager._camera.Position.z += penetrationZ;
+		if (dir == LEFT || dir == RIGHT)
+			_inputManager._camera.Position.x += penetrationX;
+		else
+			_inputManager._camera.Position.z += penetrationZ;
 	}
 	else if (collisionX2 && collisionZ)
 	{
 		penetrationX = cameraPosition.x - (hitboxPosition.x - _object._hitboxRadius);
 		penetrationZ = hitboxPosition.z + _object._hitboxRadius - cameraPosition.z;
-		_inputManager._camera.Position.x -= penetrationX;
-		_inputManager._camera.Position.z += penetrationZ;
+		if (dir == LEFT || dir == RIGHT)
+			_inputManager._camera.Position.x -= penetrationX;
+		else
+			_inputManager._camera.Position.z += penetrationZ;
 	}
 	else if (collisionX && collisionZ2)
 	{
 		penetrationX = hitboxPosition.x + _object._hitboxRadius - cameraPosition.x;
 		penetrationZ = cameraPosition.z - (hitboxPosition.z - _object._hitboxRadius);
-		_inputManager._camera.Position.x += penetrationX;
-		_inputManager._camera.Position.z -= penetrationZ;
+		if (dir == LEFT || dir == RIGHT)
+			_inputManager._camera.Position.x += penetrationX;
+		else
+			_inputManager._camera.Position.z -= penetrationZ;
 	}
 	else if (collisionX2 && collisionZ2)
 	{
 		penetrationX = cameraPosition.x - (hitboxPosition.x - _object._hitboxRadius);
 		penetrationZ = cameraPosition.z - (hitboxPosition.z - _object._hitboxRadius);
-		_inputManager._camera.Position.x -= penetrationX;
-		_inputManager._camera.Position.z -= penetrationZ;
+		if (dir == LEFT || dir == RIGHT)
+			_inputManager._camera.Position.x -= penetrationX;
+		else
+			_inputManager._camera.Position.z -= penetrationZ;
 	}
 }
