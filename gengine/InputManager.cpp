@@ -149,6 +149,11 @@ namespace genesis {
 		this->_firstMouse = _firstMouse;
 	}
 
+	GLfloat InputManager::getDeltaTime()
+	{
+		return this->_deltaTime;
+	}
+
 	void InputManager::setDeltaTime(GLfloat _deltaTime)
 	{
 		this->_deltaTime = _deltaTime;

@@ -22,20 +22,23 @@ namespace genesis {
 
 	void GameObject3D::render()
 	{
-		_shader.Use();
-		glm::mat4 model;
-		model = glm::translate(model, _translation);
-		model = glm::rotate(model, _rotationAngle, _rotationAxis);
-		model = glm::scale(model, _scale);
-		glUniformMatrix4fv(glGetUniformLocation(_shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		if (_isModel)
-			_model.Draw(_shader);
-		else
+		if (!_destroyed)
 		{
-			glBindVertexArray(_VAO);
-			glBindTexture(GL_TEXTURE_2D, _texture);
-			glDrawArrays(GL_TRIANGLES, 0, _numVertices);
-			glBindVertexArray(0);
+			_shader.Use();
+			glm::mat4 model;
+			model = glm::translate(model, _translation);
+			model = glm::rotate(model, _rotationAngle, _rotationAxis);
+			model = glm::scale(model, _scale);
+			glUniformMatrix4fv(glGetUniformLocation(_shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+			if (_isModel)
+				_model.Draw(_shader);
+			else
+			{
+				glBindVertexArray(_VAO);
+				glBindTexture(GL_TEXTURE_2D, _texture);
+				glDrawArrays(GL_TRIANGLES, 0, _numVertices);
+				glBindVertexArray(0);
+			}
 		}
 	}
 

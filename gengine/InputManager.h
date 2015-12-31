@@ -25,6 +25,7 @@ namespace genesis {
 		bool getFirstMouse();
 		void setFirstMouse(bool);
 
+		GLfloat getDeltaTime();
 		void setDeltaTime(GLfloat);
 		GLfloat getLastFrame();
 		void setLastFrame(GLfloat);

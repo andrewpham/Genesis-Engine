@@ -4,10 +4,21 @@
 
 genesis::InputManager _gabenGameInputManager;
 genesis::ResourceManager _gabenGameResourceManager;
+ISoundEngine *_soundEngine = createIrrKlangDevice();
 
 Direction vectorDirection(glm::vec2);
+GLboolean checkCollision(genesis::GameObject3D&, genesis::InputManager&);
 void resolveCollision(genesis::GameObject3D&, genesis::InputManager&);
 void resolveWallCollisions(GLfloat, GLfloat, GLfloat, GLfloat, genesis::InputManager&);
+
+// Courtesy of the fine people over at StackOverflow
+static inline float random_float(float a, float b)
+{
+	float random = ((float)rand()) / (float)RAND_MAX;
+	float diff = b - a;
+	float r = random * diff;
+	return a + r;
+}
 
 void run_gaben_game(GLFWwindow* window)
 {
@@ -19,6 +30,50 @@ void run_gaben_game(GLFWwindow* window)
 	genesis::Shader skyboxShader = _gabenGameResourceManager.loadShader("Shaders/Life of Gaben/skybox.vs", "Shaders/Life of Gaben/skybox.frag", "skybox");
 
 #pragma region "object_initialization"
+	GLfloat testHitboxVertices[] = {
+		// Positions          // Texture Coords
+		-0.22f, -0.22f, -0.22f,  0.0f, 0.0f,
+		0.22f, -0.22f, -0.22f,  1.0f, 0.0f,
+		0.22f,  0.22f, -0.22f,  1.0f, 1.0f,
+		0.22f,  0.22f, -0.22f,  1.0f, 1.0f,
+		-0.22f,  0.22f, -0.22f,  0.0f, 1.0f,
+		-0.22f, -0.22f, -0.22f,  0.0f, 0.0f,
+
+		-0.22f, -0.22f,  0.22f,  0.0f, 0.0f,
+		0.22f, -0.22f,  0.22f,  1.0f, 0.0f,
+		0.22f,  0.22f,  0.22f,  1.0f, 1.0f,
+		0.22f,  0.22f,  0.22f,  1.0f, 1.0f,
+		-0.22f,  0.22f,  0.22f,  0.0f, 1.0f,
+		-0.22f, -0.22f,  0.22f,  0.0f, 0.0f,
+
+		-0.22f,  0.22f,  0.22f,  1.0f, 0.0f,
+		-0.22f,  0.22f, -0.22f,  1.0f, 1.0f,
+		-0.22f, -0.22f, -0.22f,  0.0f, 1.0f,
+		-0.22f, -0.22f, -0.22f,  0.0f, 1.0f,
+		-0.22f, -0.22f,  0.22f,  0.0f, 0.0f,
+		-0.22f,  0.22f,  0.22f,  1.0f, 0.0f,
+
+		0.22f,  0.22f,  0.22f,  1.0f, 0.0f,
+		0.22f,  0.22f, -0.22f,  1.0f, 1.0f,
+		0.22f, -0.22f, -0.22f,  0.0f, 1.0f,
+		0.22f, -0.22f, -0.22f,  0.0f, 1.0f,
+		0.22f, -0.22f,  0.22f,  0.0f, 0.0f,
+		0.22f,  0.22f,  0.22f,  1.0f, 0.0f,
+
+		-0.22f, -0.22f, -0.22f,  0.0f, 1.0f,
+		0.22f, -0.22f, -0.22f,  1.0f, 1.0f,
+		0.22f, -0.22f,  0.22f,  1.0f, 0.0f,
+		0.22f, -0.22f,  0.22f,  1.0f, 0.0f,
+		-0.22f, -0.22f,  0.22f,  0.0f, 0.0f,
+		-0.22f, -0.22f, -0.22f,  0.0f, 1.0f,
+
+		-0.22f,  0.22f, -0.22f,  0.0f, 1.0f,
+		0.22f,  0.22f, -0.22f,  1.0f, 1.0f,
+		0.22f,  0.22f,  0.22f,  1.0f, 0.0f,
+		0.22f,  0.22f,  0.22f,  1.0f, 0.0f,
+		-0.22f,  0.22f,  0.22f,  0.0f, 0.0f,
+		-0.22f,  0.22f, -0.22f,  0.0f, 1.0f
+	};
 	GLfloat boxVertices[] = {
 		// Positions          // Texture Coords
 		-1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
@@ -195,10 +250,17 @@ void run_gaben_game(GLFWwindow* window)
 	// Load models
 	genesis::Model house("Objects/Life of Gaben/House/Farmhouse OBJ.obj");
 	genesis::Model rock("Objects/Rock/rock.obj");
+	genesis::Model pickup("Objects/Life of Gaben/Pickup/cup OBJ.obj");
 
 	// Create game objects
 	genesis::GameObject3D floorObject(shader, floorTexture, floorVAO, 6);
 	genesis::GameObject3D houseObject(shader, house, glm::vec3(-30.0f, -1.05f, 5.0f), glm::vec3(0.55f, 0.55f, 0.55f));
+	vector<genesis::GameObject3D> pickupObjects;
+
+	genesis::GameObject3D pickupObject(shader, pickup, glm::vec3(0.0f, -0.75f, 0.0f), glm::vec3(0.025f, 0.025f, 0.025f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	pickupObject._hitboxRadius = 0.22f;
+	pickupObject._hitboxOffset = glm::vec3(0.0f, 0.0f, 0.0f);
+
 	vector<genesis::GameObject3D> wallObjects;
 	GLfloat west = -12.f, east = 14.f, south = 25.f, north = -10.f;
 	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(west, 0.0f, 0.0f)));
@@ -233,8 +295,9 @@ void run_gaben_game(GLFWwindow* window)
 		boxObject._hitboxOffset = glm::vec3(0.0f);
 	}
 
-
 	glEnable(GL_DEPTH_TEST);
+
+	GLfloat secondsSincePickup = 0.0f;
 
 	// Game loop
 	while (!glfwWindowShouldClose(window))
@@ -251,6 +314,10 @@ void run_gaben_game(GLFWwindow* window)
 		// Clear buffers
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// Slowly decays the movement speed of Gaben if greater than base speed
+		if (_gabenGameInputManager._camera.MovementSpeed > 3.0f)
+			_gabenGameInputManager._camera.MovementSpeed -= _gabenGameInputManager.getDeltaTime() / 4.0f;
 
 		// Draw skybox first
 		glDepthMask(GL_FALSE);// Remember to turn depth writing off
@@ -276,6 +343,31 @@ void run_gaben_game(GLFWwindow* window)
 		floorObject.render();
 		// House
 		houseObject.render();
+		// Pickup Spawns
+		secondsSincePickup += _gabenGameInputManager.getDeltaTime();
+		if (secondsSincePickup >= 5.0f)
+		{
+			secondsSincePickup = 0.0f;
+			GLfloat x_rand = random_float(west + 2, east - 2);
+			GLfloat z_rand = random_float(0.0f, south - 2);
+			GLfloat theta_rand = random_float(0.0f, 360.0f);
+			pickupObjects.push_back(genesis::GameObject3D(shader, pickup, glm::vec3(x_rand, -0.75f, z_rand), glm::vec3(0.025f, 0.025f, 0.025f), theta_rand, glm::vec3(0.0f, 1.0f, 0.0f)));
+			pickupObjects.back()._hitboxRadius = 0.22f;
+			pickupObjects.back()._hitboxOffset = glm::vec3(0.0f, 0.0f, 0.0f);
+		}
+		for (genesis::GameObject3D &pickupObject : pickupObjects)
+		{
+			if (pickupObject._rotationAngle > 360.f)
+				pickupObject._rotationAngle = 0.0f;
+			pickupObject._rotationAngle += _gabenGameInputManager.getDeltaTime();
+			pickupObject.render();
+			if (!pickupObject._destroyed && checkCollision(pickupObject, _gabenGameInputManager))
+			{
+				pickupObject._destroyed = true;
+				_gabenGameInputManager._camera.MovementSpeed *= 2.0f;
+				_soundEngine->play2D("../Genesis/Audio/Breakout/bleep.wav", GL_FALSE);
+			}
+		}
 		// Walls
 		for (genesis::GameObject3D &wallObject : wallObjects)
 		{
@@ -323,6 +415,29 @@ Direction vectorDirection(glm::vec2 _target)
 		}
 	}
 	return (Direction)best_match;
+}
+
+GLboolean checkCollision(genesis::GameObject3D &_object, genesis::InputManager &_inputManager)
+{
+	glm::vec3 hitboxPosition = _object._translation + _object._hitboxOffset;
+	glm::vec3 cameraPosition = _inputManager._camera.Position;
+
+	/** Collision detection booleans */
+	// Collision right of the hitbox?
+	bool collisionX = hitboxPosition.x + _object._hitboxRadius >= cameraPosition.x &&
+		cameraPosition.x >= hitboxPosition.x;
+	// Collision behind the hitbox?
+	bool collisionZ = hitboxPosition.z + _object._hitboxRadius >= cameraPosition.z &&
+		cameraPosition.z >= hitboxPosition.z;
+	// Collision left of the hitbox?
+	bool collisionX2 = hitboxPosition.x - _object._hitboxRadius <= cameraPosition.x &&
+		cameraPosition.x <= hitboxPosition.x;
+	// Collision in front of the hitbox?
+	bool collisionZ2 = hitboxPosition.z - _object._hitboxRadius <= cameraPosition.z &&
+		cameraPosition.z <= hitboxPosition.z;
+
+	return (collisionX && collisionZ) || (collisionX2 && collisionZ)
+		|| (collisionX && collisionZ2) || (collisionX2 && collisionZ2);
 }
 
 void resolveCollision(genesis::GameObject3D &_object, genesis::InputManager &_inputManager)

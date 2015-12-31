@@ -1,4 +1,7 @@
 #pragma once
+#include <irrklang/irrKlang.h>
+using namespace irrklang;
+
 #include <gengine/Shader.h>
 #include <gengine/sb7ktx.h>
 #include <gengine/sb7object.h>
@@ -12,5 +15,6 @@
 
 extern genesis::InputManager _gabenGameInputManager;
 extern genesis::ResourceManager _gabenGameResourceManager;
+extern ISoundEngine *_soundEngine;
 
 void run_gaben_game(GLFWwindow*);
