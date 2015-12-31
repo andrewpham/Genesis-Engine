@@ -7,6 +7,7 @@ genesis::ResourceManager _gabenGameResourceManager;
 
 Direction vectorDirection(glm::vec2);
 void resolveCollision(genesis::GameObject3D&, genesis::InputManager&);
+void resolveWallCollisions(GLfloat, GLfloat, GLfloat, GLfloat, genesis::InputManager&);
 
 void run_gaben_game(GLFWwindow* window)
 {
@@ -199,10 +200,11 @@ void run_gaben_game(GLFWwindow* window)
 	genesis::GameObject3D floorObject(shader, floorTexture, floorVAO, 6);
 	genesis::GameObject3D houseObject(shader, house, glm::vec3(-30.0f, -1.05f, 5.0f), glm::vec3(0.55f, 0.55f, 0.55f));
 	vector<genesis::GameObject3D> wallObjects;
-	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(-12.0f, 0.0f, 0.0f)));
-	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(14.0f, 0.0f, 0.0f)));
-	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(0.0f, 0.0f, 25.0f), glm::vec3(1.0f), 90.f, glm::vec3(0.0f, 1.0f, 0.0f)));
-	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(1.0f), 90.f, glm::vec3(0.0f, 1.0f, 0.0f)));
+	GLfloat west = -12.f, east = 14.f, south = 25.f, north = -10.f;
+	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(west, 0.0f, 0.0f)));
+	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(east, 0.0f, 0.0f)));
+	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(0.0f, 0.0f, south), glm::vec3(1.0f), 90.f, glm::vec3(0.0f, 1.0f, 0.0f)));
+	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(0.0f, 0.0f, north), glm::vec3(1.0f), 90.f, glm::vec3(0.0f, 1.0f, 0.0f)));
 	vector<genesis::GameObject3D> rockObjects;
 	rockObjects.push_back(genesis::GameObject3D(shader, rock, glm::vec3(0.0f, -0.95f, 19.0f), glm::vec3(0.25f, 0.25f, 0.25f)));
 	rockObjects.push_back(genesis::GameObject3D(shader, rock, glm::vec3(0.0f, -0.95f, 8.0f), glm::vec3(0.25f, 0.25f, 0.25f), 45.f, glm::vec3(0.0f, 1.0f, 0.0f)));
@@ -279,6 +281,7 @@ void run_gaben_game(GLFWwindow* window)
 		{
 			wallObject.render();
 		}
+		resolveWallCollisions(north, south, east, west, _gabenGameInputManager);
 		// Rocks
 		for (genesis::GameObject3D &rockObject : rockObjects)
 		{
@@ -343,11 +346,10 @@ void resolveCollision(genesis::GameObject3D &_object, genesis::InputManager &_in
 
 	Direction dir = vectorDirection(glm::vec2(cameraPosition.x - hitboxPosition.x, cameraPosition.z - hitboxPosition.z));
 
-	GLfloat penetrationX, penetrationZ;
 	if (collisionX && collisionZ)
 	{
-		penetrationX = hitboxPosition.x + _object._hitboxRadius - cameraPosition.x;
-		penetrationZ = hitboxPosition.z + _object._hitboxRadius - cameraPosition.z;
+		GLfloat penetrationX = hitboxPosition.x + _object._hitboxRadius - cameraPosition.x;
+		GLfloat penetrationZ = hitboxPosition.z + _object._hitboxRadius - cameraPosition.z;
 		if (dir == LEFT || dir == RIGHT)
 			_inputManager._camera.Position.x += penetrationX;
 		else
@@ -355,8 +357,8 @@ void resolveCollision(genesis::GameObject3D &_object, genesis::InputManager &_in
 	}
 	else if (collisionX2 && collisionZ)
 	{
-		penetrationX = cameraPosition.x - (hitboxPosition.x - _object._hitboxRadius);
-		penetrationZ = hitboxPosition.z + _object._hitboxRadius - cameraPosition.z;
+		GLfloat penetrationX = cameraPosition.x - (hitboxPosition.x - _object._hitboxRadius);
+		GLfloat penetrationZ = hitboxPosition.z + _object._hitboxRadius - cameraPosition.z;
 		if (dir == LEFT || dir == RIGHT)
 			_inputManager._camera.Position.x -= penetrationX;
 		else
@@ -364,8 +366,8 @@ void resolveCollision(genesis::GameObject3D &_object, genesis::InputManager &_in
 	}
 	else if (collisionX && collisionZ2)
 	{
-		penetrationX = hitboxPosition.x + _object._hitboxRadius - cameraPosition.x;
-		penetrationZ = cameraPosition.z - (hitboxPosition.z - _object._hitboxRadius);
+		GLfloat penetrationX = hitboxPosition.x + _object._hitboxRadius - cameraPosition.x;
+		GLfloat penetrationZ = cameraPosition.z - (hitboxPosition.z - _object._hitboxRadius);
 		if (dir == LEFT || dir == RIGHT)
 			_inputManager._camera.Position.x += penetrationX;
 		else
@@ -373,11 +375,40 @@ void resolveCollision(genesis::GameObject3D &_object, genesis::InputManager &_in
 	}
 	else if (collisionX2 && collisionZ2)
 	{
-		penetrationX = cameraPosition.x - (hitboxPosition.x - _object._hitboxRadius);
-		penetrationZ = cameraPosition.z - (hitboxPosition.z - _object._hitboxRadius);
+		GLfloat penetrationX = cameraPosition.x - (hitboxPosition.x - _object._hitboxRadius);
+		GLfloat penetrationZ = cameraPosition.z - (hitboxPosition.z - _object._hitboxRadius);
 		if (dir == LEFT || dir == RIGHT)
 			_inputManager._camera.Position.x -= penetrationX;
 		else
 			_inputManager._camera.Position.z -= penetrationZ;
+	}
+}
+
+// Note the coordinate bounds within the game world and ensure proper collision resolution at those limits
+void resolveWallCollisions(GLfloat _north, GLfloat _south, GLfloat _east, GLfloat _west, genesis::InputManager &_inputManager)
+{
+	glm::vec3 cameraPosition = _inputManager._camera.Position;
+
+	GLfloat southBoundary = _south - 0.5f, northBoundary = _north + 0.5f, westBoundary = _west + 0.5f, eastBoundary = _east - 0.5f;
+
+	if (cameraPosition.z >= southBoundary)
+	{
+		GLfloat penetration = cameraPosition.z - southBoundary;
+		_inputManager._camera.Position.z -= penetration;
+	}
+	else if (cameraPosition.z <= northBoundary)
+	{
+		GLfloat penetration = northBoundary - cameraPosition.z;
+		_inputManager._camera.Position.z += penetration;
+	}
+	else if (cameraPosition.x >= eastBoundary)
+	{
+		GLfloat penetration = cameraPosition.x - eastBoundary;
+		_inputManager._camera.Position.x -= penetration;
+	}
+	else if (cameraPosition.x <= westBoundary)
+	{
+		GLfloat penetration = westBoundary - cameraPosition.x;
+		_inputManager._camera.Position.x += penetration;
 	}
 }
