@@ -237,8 +237,6 @@ void run_gaben_game(GLFWwindow* window)
 	GLuint floorTexture = _gabenGameResourceManager.getTexture("floor").ID;
 	_gabenGameResourceManager.loadTexture("Textures/Life of Gaben/wall.jpg", false, "wall");
 	GLuint wallTexture = _gabenGameResourceManager.getTexture("wall").ID;
-	_gabenGameResourceManager.loadTexture("Textures/container.jpg", false, "box");
-	GLuint boxTexture = _gabenGameResourceManager.getTexture("box").ID;
 #pragma endregion
 
 	// Cubemap (Skybox)
@@ -269,6 +267,8 @@ void run_gaben_game(GLFWwindow* window)
 	enemyObject._damageRadius = 2.0f;
 
 	vector<genesis::GameObject3D> pickupObjects;
+	// Little hack to ensure that the wall textures render on start - not sure why this works!
+	pickupObjects.push_back(genesis::GameObject3D(shader, pickup, glm::vec3(20.0f, 0.0f, 30.0f), glm::vec3(0.025f, 0.025f, 0.025f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f)));
 	vector<genesis::GameObject3D> wallObjects;
 	GLfloat west = -12.f, east = 14.f, south = 25.f, north = -10.f;
 	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(west, 0.0f, 0.0f)));
@@ -290,13 +290,13 @@ void run_gaben_game(GLFWwindow* window)
 		rockObject._hitboxOffset = glm::vec3(0.0f, -0.1f, 0.0f);
 	}
 	vector<genesis::GameObject3D> boxObjects;
-	boxObjects.push_back(genesis::GameObject3D(shader, boxTexture, boxVAO, 36, glm::vec3(-11.0f, 0.0f, -9.0f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, boxTexture, boxVAO, 36, glm::vec3(-11.0f, 0.0f, 24.0f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, boxTexture, boxVAO, 36, glm::vec3(13.0f, 0.0f, 24.0f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, boxTexture, boxVAO, 36, glm::vec3(13.0f, 0.0f, -9.0f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, boxTexture, boxVAO, 36, glm::vec3(6.0f, 0.0f, -3.0f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, boxTexture, boxVAO, 36, glm::vec3(-5.0f, 0.0f, -2.0f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, boxTexture, boxVAO, 36, glm::vec3(0.0f, 0.0f, -7.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(-11.0f, 0.0f, -9.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(-11.0f, 0.0f, 24.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(13.0f, 0.0f, 24.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(13.0f, 0.0f, -9.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(6.0f, 0.0f, -3.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(-5.0f, 0.0f, -2.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(0.0f, 0.0f, -7.0f)));
 	for (genesis::GameObject3D &boxObject : boxObjects)
 	{
 		boxObject._hitboxRadius = 1.5f;
