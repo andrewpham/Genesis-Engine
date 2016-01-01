@@ -2,8 +2,8 @@
 
 #define PI_F			3.14159265358979f
 #define WINDOW_NAME		"Life of Gaben"
-#define SCREEN_WIDTH	1920
-#define SCREEN_HEIGHT	1080
+#define SCREEN_WIDTH	800
+#define SCREEN_HEIGHT	600
 #define NUM_DRAWS		50000
 #define WORKGROUP_SIZE	256
 #define NUM_WORKGROUPS	64
@@ -22,6 +22,8 @@
 #define SIZE			glm::vec2(60, 20)
 // Velocity a PowerUp block has when spawned
 #define VELOCITY		glm::vec2(0.0f, 150.0f)
+// Enemy DPS
+#define DAMAGE			10
 
 enum MODE
 {

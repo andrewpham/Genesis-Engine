@@ -1,7 +1,5 @@
 #include "InputManager.h"
 
-
-
 namespace genesis {
 
 	InputManager::InputManager() : _camera(glm::vec3(0.0f, 0.0f, 3.0f)), _lastX(400), _lastY(300), _firstMouse(true), _deltaTime(0.0f), _lastFrame(0.0f),
@@ -9,7 +7,8 @@ namespace genesis {
 		_showPoints(false), _showCage(false), _modeNo(0), _vidOffset(0), _usePerspective(true), _exposure(1.0f), _focalDistance(40.0f),
 		_focalDepth(50.0f), _perVertex(false), _rimPower(2.5f), _envmapIndex(0)
 	{
-
+		_soundEngine = createIrrKlangDevice();
+		_secondsSinceSound = 0.0f;
 	}
 
 
@@ -27,6 +26,13 @@ namespace genesis {
 		{
 			_camera.ProcessKeyboard(FORWARD, _deltaTime);
 
+			if (_secondsSinceSound > 0.5f)
+			{
+				_secondsSinceSound = 0.0f;
+				_soundEngine->play2D("../Genesis/Audio/Life of Gaben/footstep.mp3", GL_FALSE);
+			} else 
+				_secondsSinceSound += _deltaTime;
+
 			_wireframe = !_wireframe;
 
 			_focalDepth *= 1.1f;
@@ -35,16 +41,42 @@ namespace genesis {
 		{
 			_camera.ProcessKeyboard(BACKWARD, _deltaTime);
 
+			if (_secondsSinceSound > 0.5f)
+			{
+				_secondsSinceSound = 0.0f;
+				_soundEngine->play2D("../Genesis/Audio/Life of Gaben/footstep.mp3", GL_FALSE);
+			}
+			else
+				_secondsSinceSound += _deltaTime;
+
 			_focalDepth /= 1.1f;
 		}
 		if (_keys[GLFW_KEY_A])
 		{
 			_camera.ProcessKeyboard(LEFT, _deltaTime);
 
+			if (_secondsSinceSound > 0.5f)
+			{
+				_secondsSinceSound = 0.0f;
+				_soundEngine->play2D("../Genesis/Audio/Life of Gaben/footstep.mp3", GL_FALSE);
+			}
+			else
+				_secondsSinceSound += _deltaTime;
+
 			_focalDistance /= 1.1f;
 		}
 		if (_keys[GLFW_KEY_D])
+		{
 			_camera.ProcessKeyboard(RIGHT, _deltaTime);
+
+			if (_secondsSinceSound > 0.5f)
+			{
+				_secondsSinceSound = 0.0f;
+				_soundEngine->play2D("../Genesis/Audio/Life of Gaben/footstep.mp3", GL_FALSE);
+			}
+			else
+				_secondsSinceSound += _deltaTime;
+		}
 		// SB controls
 		if (_keys[GLFW_KEY_P])
 			_paused = !_paused;
@@ -247,6 +279,11 @@ namespace genesis {
 	int InputManager::getEnvmapIndex()
 	{
 		return this->_envmapIndex;
+	}
+
+	ISoundEngine* InputManager::getSoundEngine()
+	{
+		return this->_soundEngine;
 	}
 
 }

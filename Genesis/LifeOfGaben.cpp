@@ -4,11 +4,14 @@
 
 genesis::InputManager _gabenGameInputManager;
 genesis::ResourceManager _gabenGameResourceManager;
-ISoundEngine *_soundEngine = createIrrKlangDevice();
+static GLfloat _health = 100.0f;
+static GLfloat _secondsSinceDamaged = 0.0f;
 
 Direction vectorDirection(glm::vec2);
+glm::quat rotationBetweenVectors(glm::vec3, glm::vec3);
 GLboolean checkCollision(genesis::GameObject3D&, genesis::InputManager&);
 void resolveCollision(genesis::GameObject3D&, genesis::InputManager&);
+void resolveEnemyInteractions(genesis::Enemy&, genesis::InputManager&, GLfloat, GLuint);
 void resolveWallCollisions(GLfloat, GLfloat, GLfloat, GLfloat, genesis::InputManager&);
 
 // Courtesy of the fine people over at StackOverflow
@@ -32,47 +35,47 @@ void run_gaben_game(GLFWwindow* window)
 #pragma region "object_initialization"
 	GLfloat testHitboxVertices[] = {
 		// Positions          // Texture Coords
-		-0.22f, -0.22f, -0.22f,  0.0f, 0.0f,
-		0.22f, -0.22f, -0.22f,  1.0f, 0.0f,
-		0.22f,  0.22f, -0.22f,  1.0f, 1.0f,
-		0.22f,  0.22f, -0.22f,  1.0f, 1.0f,
-		-0.22f,  0.22f, -0.22f,  0.0f, 1.0f,
-		-0.22f, -0.22f, -0.22f,  0.0f, 0.0f,
+		-0.4f, -0.4f, -0.4f,  0.0f, 0.0f,
+		0.4f, -0.4f, -0.4f,  1.0f, 0.0f,
+		0.4f,  0.4f, -0.4f,  1.0f, 1.0f,
+		0.4f,  0.4f, -0.4f,  1.0f, 1.0f,
+		-0.4f,  0.4f, -0.4f,  0.0f, 1.0f,
+		-0.4f, -0.4f, -0.4f,  0.0f, 0.0f,
 
-		-0.22f, -0.22f,  0.22f,  0.0f, 0.0f,
-		0.22f, -0.22f,  0.22f,  1.0f, 0.0f,
-		0.22f,  0.22f,  0.22f,  1.0f, 1.0f,
-		0.22f,  0.22f,  0.22f,  1.0f, 1.0f,
-		-0.22f,  0.22f,  0.22f,  0.0f, 1.0f,
-		-0.22f, -0.22f,  0.22f,  0.0f, 0.0f,
+		-0.4f, -0.4f,  0.4f,  0.0f, 0.0f,
+		0.4f, -0.4f,  0.4f,  1.0f, 0.0f,
+		0.4f,  0.4f,  0.4f,  1.0f, 1.0f,
+		0.4f,  0.4f,  0.4f,  1.0f, 1.0f,
+		-0.4f,  0.4f,  0.4f,  0.0f, 1.0f,
+		-0.4f, -0.4f,  0.4f,  0.0f, 0.0f,
 
-		-0.22f,  0.22f,  0.22f,  1.0f, 0.0f,
-		-0.22f,  0.22f, -0.22f,  1.0f, 1.0f,
-		-0.22f, -0.22f, -0.22f,  0.0f, 1.0f,
-		-0.22f, -0.22f, -0.22f,  0.0f, 1.0f,
-		-0.22f, -0.22f,  0.22f,  0.0f, 0.0f,
-		-0.22f,  0.22f,  0.22f,  1.0f, 0.0f,
+		-0.4f,  0.4f,  0.4f,  1.0f, 0.0f,
+		-0.4f,  0.4f, -0.4f,  1.0f, 1.0f,
+		-0.4f, -0.4f, -0.4f,  0.0f, 1.0f,
+		-0.4f, -0.4f, -0.4f,  0.0f, 1.0f,
+		-0.4f, -0.4f,  0.4f,  0.0f, 0.0f,
+		-0.4f,  0.4f,  0.4f,  1.0f, 0.0f,
 
-		0.22f,  0.22f,  0.22f,  1.0f, 0.0f,
-		0.22f,  0.22f, -0.22f,  1.0f, 1.0f,
-		0.22f, -0.22f, -0.22f,  0.0f, 1.0f,
-		0.22f, -0.22f, -0.22f,  0.0f, 1.0f,
-		0.22f, -0.22f,  0.22f,  0.0f, 0.0f,
-		0.22f,  0.22f,  0.22f,  1.0f, 0.0f,
+		0.4f,  0.4f,  0.4f,  1.0f, 0.0f,
+		0.4f,  0.4f, -0.4f,  1.0f, 1.0f,
+		0.4f, -0.4f, -0.4f,  0.0f, 1.0f,
+		0.4f, -0.4f, -0.4f,  0.0f, 1.0f,
+		0.4f, -0.4f,  0.4f,  0.0f, 0.0f,
+		0.4f,  0.4f,  0.4f,  1.0f, 0.0f,
 
-		-0.22f, -0.22f, -0.22f,  0.0f, 1.0f,
-		0.22f, -0.22f, -0.22f,  1.0f, 1.0f,
-		0.22f, -0.22f,  0.22f,  1.0f, 0.0f,
-		0.22f, -0.22f,  0.22f,  1.0f, 0.0f,
-		-0.22f, -0.22f,  0.22f,  0.0f, 0.0f,
-		-0.22f, -0.22f, -0.22f,  0.0f, 1.0f,
+		-0.4f, -0.4f, -0.4f,  0.0f, 1.0f,
+		0.4f, -0.4f, -0.4f,  1.0f, 1.0f,
+		0.4f, -0.4f,  0.4f,  1.0f, 0.0f,
+		0.4f, -0.4f,  0.4f,  1.0f, 0.0f,
+		-0.4f, -0.4f,  0.4f,  0.0f, 0.0f,
+		-0.4f, -0.4f, -0.4f,  0.0f, 1.0f,
 
-		-0.22f,  0.22f, -0.22f,  0.0f, 1.0f,
-		0.22f,  0.22f, -0.22f,  1.0f, 1.0f,
-		0.22f,  0.22f,  0.22f,  1.0f, 0.0f,
-		0.22f,  0.22f,  0.22f,  1.0f, 0.0f,
-		-0.22f,  0.22f,  0.22f,  0.0f, 0.0f,
-		-0.22f,  0.22f, -0.22f,  0.0f, 1.0f
+		-0.4f,  0.4f, -0.4f,  0.0f, 1.0f,
+		0.4f,  0.4f, -0.4f,  1.0f, 1.0f,
+		0.4f,  0.4f,  0.4f,  1.0f, 0.0f,
+		0.4f,  0.4f,  0.4f,  1.0f, 0.0f,
+		-0.4f,  0.4f,  0.4f,  0.0f, 0.0f,
+		-0.4f,  0.4f, -0.4f,  0.0f, 1.0f
 	};
 	GLfloat boxVertices[] = {
 		// Positions          // Texture Coords
@@ -234,6 +237,8 @@ void run_gaben_game(GLFWwindow* window)
 	GLuint floorTexture = _gabenGameResourceManager.getTexture("floor").ID;
 	_gabenGameResourceManager.loadTexture("Textures/Life of Gaben/wall.jpg", false, "wall");
 	GLuint wallTexture = _gabenGameResourceManager.getTexture("wall").ID;
+	_gabenGameResourceManager.loadTexture("Textures/container.jpg", false, "box");
+	GLuint boxTexture = _gabenGameResourceManager.getTexture("box").ID;
 #pragma endregion
 
 	// Cubemap (Skybox)
@@ -251,12 +256,18 @@ void run_gaben_game(GLFWwindow* window)
 	genesis::Model house("Objects/Life of Gaben/House/Farmhouse OBJ.obj");
 	genesis::Model rock("Objects/Rock/rock.obj");
 	genesis::Model pickup("Objects/Life of Gaben/Pickup/cup OBJ.obj");
-	genesis::Model robot("Objects/Nanosuit/nanosuit.obj");
+	genesis::Model enemy("Objects/Nanosuit/nanosuit.obj");
 
 	// Create game objects
 	genesis::GameObject3D floorObject(shader, floorTexture, floorVAO, 6);
 	genesis::GameObject3D houseObject(shader, house, glm::vec3(-30.0f, -1.05f, 5.0f), glm::vec3(0.55f, 0.55f, 0.55f));
-	genesis::GameObject3D robotObject(shader, robot, glm::vec3(0.0f, -0.5f, 0.0f), glm::vec3(0.10f, 0.10f, 0.10f));
+
+	genesis::Enemy enemyObject(shader, enemy, glm::vec3(0.0f, -0.2f, -4.0f), glm::vec3(0.10f, 0.10f, 0.10f));
+	enemyObject._hitboxRadius = 0.4f;
+	enemyObject._hitboxOffset = glm::vec3(0.0f, 0.4f, 0.0f);
+	enemyObject._aggroRadius = 5.0f;
+	enemyObject._damageRadius = 2.0f;
+
 	vector<genesis::GameObject3D> pickupObjects;
 	vector<genesis::GameObject3D> wallObjects;
 	GLfloat west = -12.f, east = 14.f, south = 25.f, north = -10.f;
@@ -279,13 +290,13 @@ void run_gaben_game(GLFWwindow* window)
 		rockObject._hitboxOffset = glm::vec3(0.0f, -0.1f, 0.0f);
 	}
 	vector<genesis::GameObject3D> boxObjects;
-	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(-11.0f, 0.0f, -9.0f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(-11.0f, 0.0f, 24.0f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(13.0f, 0.0f, 24.0f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(13.0f, 0.0f, -9.0f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(6.0f, 0.0f, -3.0f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(-5.0f, 0.0f, -2.0f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(0.0f, 0.0f, -7.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, boxTexture, boxVAO, 36, glm::vec3(-11.0f, 0.0f, -9.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, boxTexture, boxVAO, 36, glm::vec3(-11.0f, 0.0f, 24.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, boxTexture, boxVAO, 36, glm::vec3(13.0f, 0.0f, 24.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, boxTexture, boxVAO, 36, glm::vec3(13.0f, 0.0f, -9.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, boxTexture, boxVAO, 36, glm::vec3(6.0f, 0.0f, -3.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, boxTexture, boxVAO, 36, glm::vec3(-5.0f, 0.0f, -2.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, boxTexture, boxVAO, 36, glm::vec3(0.0f, 0.0f, -7.0f)));
 	for (genesis::GameObject3D &boxObject : boxObjects)
 	{
 		boxObject._hitboxRadius = 1.5f;
@@ -314,7 +325,7 @@ void run_gaben_game(GLFWwindow* window)
 
 		// Slowly decays the movement speed of Gaben if greater than base speed
 		if (_gabenGameInputManager._camera.MovementSpeed > 3.0f)
-			_gabenGameInputManager._camera.MovementSpeed -= _gabenGameInputManager.getDeltaTime() / 4.0f;
+			_gabenGameInputManager._camera.MovementSpeed -= _gabenGameInputManager.getDeltaTime() / 7.0f;
 
 		// Draw skybox first
 		glDepthMask(GL_FALSE);// Remember to turn depth writing off
@@ -340,11 +351,17 @@ void run_gaben_game(GLFWwindow* window)
 		floorObject.render();
 		// House
 		houseObject.render();
-		// Robot
-		robotObject.render();
+		// Enemy
+
+		enemyObject._translation.y = -0.2f + sinf(currentFrame) / 4;
+		enemyObject.render();
+		resolveCollision(enemyObject, _gabenGameInputManager);
+		resolveEnemyInteractions(enemyObject, _gabenGameInputManager, _gabenGameInputManager.getDeltaTime(), DAMAGE);
+		std::cout << _health << std::endl;
+
 		// Pickup Spawns
 		secondsSincePickup += _gabenGameInputManager.getDeltaTime();
-		if (secondsSincePickup >= 5.0f)
+		if (secondsSincePickup >= 20.0f)
 		{
 			secondsSincePickup = 0.0f;
 			GLfloat x_rand = random_float(west + 2, east - 2);
@@ -364,7 +381,7 @@ void run_gaben_game(GLFWwindow* window)
 			{
 				pickupObject._destroyed = true;
 				_gabenGameInputManager._camera.MovementSpeed *= 2.0f;
-				_soundEngine->play2D("../Genesis/Audio/Breakout/bleep.wav", GL_FALSE);
+				_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/reload.mp3", GL_FALSE);
 			}
 		}
 		// Walls
@@ -414,6 +431,37 @@ Direction vectorDirection(glm::vec2 _target)
 		}
 	}
 	return (Direction)best_match;
+}
+
+/** http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-17-quaternions/ */
+glm::quat rotationBetweenVectors(glm::vec3 _start, glm::vec3 _dest) 
+{
+	_start = glm::normalize(_start);
+	_dest = glm::normalize(_dest);
+
+	float cosTheta = dot(_start, _dest);
+	glm::vec3 rotationAxis;
+
+	if (cosTheta < -1 + 0.001f) 
+	{
+		// special case when vectors in opposite directions:
+		// there is no "ideal" rotation axis
+		// So guess one; any will do as long as it's perpendicular to _start
+		rotationAxis = glm::cross(glm::vec3(0.0f, 0.0f, 1.0f), _start);
+		if (glm::length2(rotationAxis) < 0.01) // bad luck, they were parallel, try again!
+			rotationAxis = glm::cross(glm::vec3(1.0f, 0.0f, 0.0f), _start);
+
+		rotationAxis = normalize(rotationAxis);
+		return glm::angleAxis(180.0f, rotationAxis);
+	}
+
+	rotationAxis = cross(_start, _dest);
+
+	float s = sqrt((1 + cosTheta) * 2);
+	float invs = 1 / s;
+
+	return glm::quat(s * 0.5f, rotationAxis.x * invs, 
+		rotationAxis.y * invs, rotationAxis.z * invs);
 }
 
 GLboolean checkCollision(genesis::GameObject3D &_object, genesis::InputManager &_inputManager)
@@ -495,6 +543,80 @@ void resolveCollision(genesis::GameObject3D &_object, genesis::InputManager &_in
 			_inputManager._camera.Position.x -= penetrationX;
 		else
 			_inputManager._camera.Position.z -= penetrationZ;
+	}
+}
+
+void resolveEnemyInteractions(genesis::Enemy &_object, genesis::InputManager &_inputManager, GLfloat _velocity, GLuint _damage)
+{
+	glm::vec3 hitboxPosition = _object._translation + _object._hitboxOffset;
+	glm::vec3 cameraPosition = _inputManager._camera.Position;
+
+	if (_object._isAggroed)
+	{
+		// Make the enemy move towards the player
+		glm::vec3 dir = _inputManager._camera.Position - _object._translation;
+		dir = glm::normalize(dir);
+		_object._translation += _velocity * dir;
+		// Make the enemy rotate towards the player
+		dir = glm::vec3(dir.x, 0.0f, dir.z);
+		dir = glm::normalize(dir);
+		// Find the rotation between the front of the object (that we assume towards +Z,
+		// but this depends on your model) and the desired direction
+		glm::quat targetOrientation = rotationBetweenVectors(glm::vec3(0.0f, 0.0f, 1.0f), dir);
+		// Interpolate between start orientation and target orientation
+		_object._orientation = glm::slerp(_object._orientation, targetOrientation, _velocity);
+		_object._rotationAngle = glm::eulerAngles(_object._orientation).y;
+
+		/** Aggro detection booleans */
+		// Collision right of the hitbox?
+		bool collisionX = hitboxPosition.x + _object._damageRadius >= cameraPosition.x &&
+			cameraPosition.x >= hitboxPosition.x;
+		// Collision behind the hitbox?
+		bool collisionZ = hitboxPosition.z + _object._damageRadius >= cameraPosition.z &&
+			cameraPosition.z >= hitboxPosition.z;
+		// Collision left of the hitbox?
+		bool collisionX2 = hitboxPosition.x - _object._damageRadius <= cameraPosition.x &&
+			cameraPosition.x <= hitboxPosition.x;
+		// Collision in front of the hitbox?
+		bool collisionZ2 = hitboxPosition.z - _object._damageRadius <= cameraPosition.z &&
+			cameraPosition.z <= hitboxPosition.z;
+
+		if (_health > 0 && ((collisionX && collisionZ) || (collisionX2 && collisionZ) ||
+			(collisionX && collisionZ2) || (collisionX2 && collisionZ2)))
+		{
+			if (_secondsSinceDamaged > 1.0f)
+			{
+				_secondsSinceDamaged = 0.0f;
+				_health -= _damage;
+				_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/hit.wav", GL_FALSE);
+			}
+			else
+				_secondsSinceDamaged += _velocity;
+		}
+
+		return;
+	}
+
+	/** Aggro detection booleans */
+	// Collision right of the hitbox?
+	bool collisionX = hitboxPosition.x + _object._aggroRadius >= cameraPosition.x &&
+		cameraPosition.x >= hitboxPosition.x;
+	// Collision behind the hitbox?
+	bool collisionZ = hitboxPosition.z + _object._aggroRadius >= cameraPosition.z &&
+		cameraPosition.z >= hitboxPosition.z;
+	// Collision left of the hitbox?
+	bool collisionX2 = hitboxPosition.x - _object._aggroRadius <= cameraPosition.x &&
+		cameraPosition.x <= hitboxPosition.x;
+	// Collision in front of the hitbox?
+	bool collisionZ2 = hitboxPosition.z - _object._aggroRadius <= cameraPosition.z &&
+		cameraPosition.z <= hitboxPosition.z;
+
+	Direction dir = vectorDirection(glm::vec2(cameraPosition.x - hitboxPosition.x, cameraPosition.z - hitboxPosition.z));
+
+	if (!_object._isAggroed && ((collisionX && collisionZ) || (collisionX2 && collisionZ) || 
+		(collisionX && collisionZ2) || (collisionX2 && collisionZ2)))
+	{
+		_object._isAggroed = true;
 	}
 }
 

@@ -1,4 +1,7 @@
 #pragma once
+#include <irrklang/irrKlang.h>
+using namespace irrklang;
+
 #include "Camera.h"
 #include "Variables.h"
 
@@ -54,6 +57,8 @@ namespace genesis {
 		float getRimPower();
 
 		int getEnvmapIndex();
+
+		ISoundEngine* getSoundEngine();
 	private:
 		// Camera
 		GLfloat _lastX, _lastY;
@@ -98,6 +103,10 @@ namespace genesis {
 
 		// Additional Spherical Environment Mapping Controls
 		int _envmapIndex;
+
+		// Sound Effects Controls
+		ISoundEngine *_soundEngine;
+		GLfloat _secondsSinceSound;
 	};
 
 }
