@@ -251,16 +251,13 @@ void run_gaben_game(GLFWwindow* window)
 	genesis::Model house("Objects/Life of Gaben/House/Farmhouse OBJ.obj");
 	genesis::Model rock("Objects/Rock/rock.obj");
 	genesis::Model pickup("Objects/Life of Gaben/Pickup/cup OBJ.obj");
+	genesis::Model robot("Objects/Nanosuit/nanosuit.obj");
 
 	// Create game objects
 	genesis::GameObject3D floorObject(shader, floorTexture, floorVAO, 6);
 	genesis::GameObject3D houseObject(shader, house, glm::vec3(-30.0f, -1.05f, 5.0f), glm::vec3(0.55f, 0.55f, 0.55f));
+	genesis::GameObject3D robotObject(shader, robot, glm::vec3(0.0f, -0.5f, 0.0f), glm::vec3(0.10f, 0.10f, 0.10f));
 	vector<genesis::GameObject3D> pickupObjects;
-
-	genesis::GameObject3D pickupObject(shader, pickup, glm::vec3(0.0f, -0.75f, 0.0f), glm::vec3(0.025f, 0.025f, 0.025f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-	pickupObject._hitboxRadius = 0.22f;
-	pickupObject._hitboxOffset = glm::vec3(0.0f, 0.0f, 0.0f);
-
 	vector<genesis::GameObject3D> wallObjects;
 	GLfloat west = -12.f, east = 14.f, south = 25.f, north = -10.f;
 	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(west, 0.0f, 0.0f)));
@@ -343,6 +340,8 @@ void run_gaben_game(GLFWwindow* window)
 		floorObject.render();
 		// House
 		houseObject.render();
+		// Robot
+		robotObject.render();
 		// Pickup Spawns
 		secondsSincePickup += _gabenGameInputManager.getDeltaTime();
 		if (secondsSincePickup >= 5.0f)
