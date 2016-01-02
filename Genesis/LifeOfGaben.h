@@ -16,5 +16,9 @@
 
 extern genesis::InputManager _gabenGameInputManager;
 extern genesis::ResourceManager _gabenGameResourceManager;
+// Health of the player
+extern GLfloat _health;
+// Used to pace the triggering of the audio engine sounds at regular intervals
+extern GLfloat _secondsSinceDamaged;
 
 void run_gaben_game(GLFWwindow*);

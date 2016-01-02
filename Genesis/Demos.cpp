@@ -675,7 +675,7 @@ void render_superbible_csflocking(GLFWwindow* window)
 		glBindVertexArray(flock_render_vao[i]);
 		glBindBuffer(GL_ARRAY_BUFFER, geometry_buffer);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void *)(8 * sizeof(glm::vec3)));
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void *)(6 * sizeof(glm::vec3)));
 
 		glBindBuffer(GL_ARRAY_BUFFER, flock_buffer[i]);
 		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(flock_member), NULL);
@@ -751,7 +751,7 @@ void render_superbible_csflocking(GLFWwindow* window)
 
 		glBindVertexArray(flock_render_vao[frame_index]);
 
-		glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 8, FLOCK_SIZE);
+		glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 6, FLOCK_SIZE);
 
 		frame_index ^= 1;
 

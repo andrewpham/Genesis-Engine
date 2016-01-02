@@ -14,8 +14,24 @@ void resolveCollision(genesis::GameObject3D&, genesis::InputManager&);
 void resolveEnemyInteractions(genesis::Enemy&, genesis::InputManager&, GLfloat, GLuint);
 void resolveWallCollisions(GLfloat, GLfloat, GLfloat, GLfloat, genesis::InputManager&);
 
+static inline float random_float()
+{
+	static unsigned int seed = 0x13371337;
+
+	float res;
+	unsigned int tmp;
+
+	seed *= 16807;
+
+	tmp = seed ^ (seed >> 4) ^ (seed << 15);
+
+	*((unsigned int *)&res) = (tmp >> 9) | 0x3F800000;
+
+	return (res - 1.0f);
+}
+
 // Courtesy of the fine people over at StackOverflow
-static inline float random_float(float a, float b)
+static inline float random_range(float a, float b)
 {
 	float random = ((float)rand()) / (float)RAND_MAX;
 	float diff = b - a;
@@ -31,213 +47,160 @@ void run_gaben_game(GLFWwindow* window)
 	// Setup and compile our shaders
 	genesis::Shader shader = _gabenGameResourceManager.loadShader("Shaders/Life of Gaben/object.vs", "Shaders/Life of Gaben/object.frag", "object");
 	genesis::Shader skyboxShader = _gabenGameResourceManager.loadShader("Shaders/Life of Gaben/skybox.vs", "Shaders/Life of Gaben/skybox.frag", "skybox");
+	genesis::Shader flockShader = _gabenGameResourceManager.loadShader("Shaders/Life of Gaben/flock.vs", "Shaders/Life of Gaben/flock.frag", "flock");
+	genesis::Shader flockUpdateShader = _gabenGameResourceManager.loadShader("Shaders/Life of Gaben/flock.comp", "flockUpdate");
+
+	// Flock data and state
+	GLuint flockBuffers[2], flockVAO[2], geometryVBO;
+	// Box data and state
+	GLuint boxVAO, boxVBO;
+	// Floor data and state
+	GLuint floorVAO, floorVBO;
+	// Wall data and state
+	GLuint wallVAO, wallVBO;
+	// Skybox data and state
+	GLuint skyboxVAO, skyboxVBO;
+
+	// Uniforms for the various shaders
+	struct
+	{
+		struct
+		{
+			GLint view;
+			GLint projection;
+		} object;
+		struct
+		{
+			GLint view;
+			GLint projection;
+		} skybox;
+		struct
+		{
+			GLuint mvp;
+		} flock;
+		struct
+		{
+			GLint goal;
+		} flockUpdate;
+	} uniforms;
+
+	// Cache the uniform locations
+	shader.Use();
+	uniforms.object.view = glGetUniformLocation(shader.ID, "view");
+	uniforms.object.projection = glGetUniformLocation(shader.ID, "projection");
+	skyboxShader.Use();
+	uniforms.skybox.view = glGetUniformLocation(skyboxShader.ID, "view");
+	uniforms.skybox.projection = glGetUniformLocation(skyboxShader.ID, "projection");
+	flockShader.Use();
+	uniforms.flock.mvp = glGetUniformLocation(flockShader.ID, "mvp");
+	flockUpdateShader.Use();
+	uniforms.flockUpdate.goal = glGetUniformLocation(flockUpdateShader.ID, "goal");
+
+	// Index to swap flock buffers with one another to be used in the rendering and computation/data upload stages and vice versa
+	GLuint frameIndex = 0;
+	// Used to pace the spawning of objects at regular intervals
+	GLfloat secondsSincePickup = 0.0f;
+	GLfloat secondsSinceEnemy = 0.0f;
 
 #pragma region "object_initialization"
-	GLfloat testHitboxVertices[] = {
-		// Positions          // Texture Coords
-		-0.4f, -0.4f, -0.4f,  0.0f, 0.0f,
-		0.4f, -0.4f, -0.4f,  1.0f, 0.0f,
-		0.4f,  0.4f, -0.4f,  1.0f, 1.0f,
-		0.4f,  0.4f, -0.4f,  1.0f, 1.0f,
-		-0.4f,  0.4f, -0.4f,  0.0f, 1.0f,
-		-0.4f, -0.4f, -0.4f,  0.0f, 0.0f,
-
-		-0.4f, -0.4f,  0.4f,  0.0f, 0.0f,
-		0.4f, -0.4f,  0.4f,  1.0f, 0.0f,
-		0.4f,  0.4f,  0.4f,  1.0f, 1.0f,
-		0.4f,  0.4f,  0.4f,  1.0f, 1.0f,
-		-0.4f,  0.4f,  0.4f,  0.0f, 1.0f,
-		-0.4f, -0.4f,  0.4f,  0.0f, 0.0f,
-
-		-0.4f,  0.4f,  0.4f,  1.0f, 0.0f,
-		-0.4f,  0.4f, -0.4f,  1.0f, 1.0f,
-		-0.4f, -0.4f, -0.4f,  0.0f, 1.0f,
-		-0.4f, -0.4f, -0.4f,  0.0f, 1.0f,
-		-0.4f, -0.4f,  0.4f,  0.0f, 0.0f,
-		-0.4f,  0.4f,  0.4f,  1.0f, 0.0f,
-
-		0.4f,  0.4f,  0.4f,  1.0f, 0.0f,
-		0.4f,  0.4f, -0.4f,  1.0f, 1.0f,
-		0.4f, -0.4f, -0.4f,  0.0f, 1.0f,
-		0.4f, -0.4f, -0.4f,  0.0f, 1.0f,
-		0.4f, -0.4f,  0.4f,  0.0f, 0.0f,
-		0.4f,  0.4f,  0.4f,  1.0f, 0.0f,
-
-		-0.4f, -0.4f, -0.4f,  0.0f, 1.0f,
-		0.4f, -0.4f, -0.4f,  1.0f, 1.0f,
-		0.4f, -0.4f,  0.4f,  1.0f, 0.0f,
-		0.4f, -0.4f,  0.4f,  1.0f, 0.0f,
-		-0.4f, -0.4f,  0.4f,  0.0f, 0.0f,
-		-0.4f, -0.4f, -0.4f,  0.0f, 1.0f,
-
-		-0.4f,  0.4f, -0.4f,  0.0f, 1.0f,
-		0.4f,  0.4f, -0.4f,  1.0f, 1.0f,
-		0.4f,  0.4f,  0.4f,  1.0f, 0.0f,
-		0.4f,  0.4f,  0.4f,  1.0f, 0.0f,
-		-0.4f,  0.4f,  0.4f,  0.0f, 0.0f,
-		-0.4f,  0.4f, -0.4f,  0.0f, 1.0f
-	};
-	GLfloat boxVertices[] = {
-		// Positions          // Texture Coords
-		-1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
-		1.0f, -1.0f, -1.0f,  1.0f, 0.0f,
-		1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
-		1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
-		-1.0f,  1.0f, -1.0f,  0.0f, 1.0f,
-		-1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
-
-		-1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
-		1.0f, -1.0f,  1.0f,  1.0f, 0.0f,
-		1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
-		1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
-		-1.0f,  1.0f,  1.0f,  0.0f, 1.0f,
-		-1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
-
-		-1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
-		-1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
-		-1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
-		-1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
-		-1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
-		-1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
-
-		1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
-		1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
-		1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
-		1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
-		1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
-		1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
-
-		-1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
-		1.0f, -1.0f, -1.0f,  1.0f, 1.0f,
-		1.0f, -1.0f,  1.0f,  1.0f, 0.0f,
-		1.0f, -1.0f,  1.0f,  1.0f, 0.0f,
-		-1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
-		-1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
-
-		-1.0f,  1.0f, -1.0f,  0.0f, 1.0f,
-		1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
-		1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
-		1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
-		-1.0f,  1.0f,  1.0f,  0.0f, 0.0f,
-		-1.0f,  1.0f, -1.0f,  0.0f, 1.0f
-	};
-	GLfloat skyboxVertices[] = {
-		// Positions          
-		-1.0f,  1.0f, -1.0f,
-		-1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-		1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-
-		-1.0f, -1.0f,  1.0f,
-		-1.0f, -1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f,
-
-		1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-
-		-1.0f, -1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,
-		1.0f, -1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f,
-
-		-1.0f,  1.0f, -1.0f,
-		1.0f,  1.0f, -1.0f,
-		1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f, -1.0f,
-
-		-1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f,  1.0f,
-		1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f,  1.0f,
-		1.0f, -1.0f,  1.0f
-	};
-	GLfloat floorVertices[] = {
-		// Positions            // Texture Coords (note we set these higher than 1 that together with GL_REPEAT as texture wrapping mode will cause the floor texture to repeat)
-		250.0f,  -1.0f,  250.0f,  250.0f, 0.0f,
-		-250.0f, -1.0f,  250.0f,  0.0f, 0.0f,
-		-250.0f, -1.0f, -250.0f,  0.0f, 250.0f,
-
-		250.0f,  -1.0f,  250.0f,  250.0f, 0.0f,
-		-250.0f, -1.0f, -250.0f,  0.0f, 250.0f,
-		250.0f,  -1.0f, -250.0f,  250.0f, 250.0f
-	};
-	GLfloat wall[] = {
-		// Positions            // Texture Coords (note we set these higher than 1 that together with GL_REPEAT as texture wrapping mode will cause the floor texture to repeat)
-		0.0f,  1.0f,  40.0f,  40.0f, 0.0f,
-		0.0f, 1.0f,  -40.0f,  0.0f, 0.0f,
-		0.0f, -1.0f, -40.0f,  0.0f, 1.0f,
-
-		0.0f,  1.0f,  40.0f,  40.0f, 0.0f,
-		0.0f, -1.0f, -40.0f,  0.0f, 1.0f,
-		0.0f,  -1.0f, 40.0f,  40.0f, 1.0f
-	};
 	// Setup box VAO
-	GLuint boxVAO, boxVBO;
 	glGenVertexArrays(1, &boxVAO);
 	glGenBuffers(1, &boxVBO);
 	glBindVertexArray(boxVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, boxVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(boxVertices), &boxVertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(BOX_VERTICES), &BOX_VERTICES, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glBindVertexArray(0);
 	// Setup floor VAO
-	GLuint floorVAO, floorVBO;
 	glGenVertexArrays(1, &floorVAO);
 	glGenBuffers(1, &floorVBO);
 	glBindVertexArray(floorVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, floorVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(floorVertices), &floorVertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(FLOOR_VERTICES), &FLOOR_VERTICES, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glBindVertexArray(0);
-	// Setup left wall VAO
-	GLuint wallVAO, wallVBO;
+	// Setup wall VAO
 	glGenVertexArrays(1, &wallVAO);
 	glGenBuffers(1, &wallVBO);
 	glBindVertexArray(wallVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, wallVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(wall), &wall, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(WALL_VERTICES), &WALL_VERTICES, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glBindVertexArray(0);
 	// Setup skybox VAO
-	GLuint skyboxVAO, skyboxVBO;
 	glGenVertexArrays(1, &skyboxVAO);
 	glGenBuffers(1, &skyboxVBO);
 	glBindVertexArray(skyboxVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(SKYBOX_VERTICES), &SKYBOX_VERTICES, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glBindVertexArray(0);
+#pragma endregion
+
+#pragma region "flock_initialization"
+	// Allocate space for shader storage buffer objects to store and retrieve data pertaining to members of the flock; also bind those objects to the current context
+	glGenBuffers(2, flockBuffers);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, flockBuffers[0]);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, FLOCK_SIZE * sizeof(Fish), NULL, GL_DYNAMIC_COPY);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, flockBuffers[1]);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, FLOCK_SIZE * sizeof(Fish), NULL, GL_DYNAMIC_COPY);
+
+	// Upload flock member vertex data to be used during the rendering stage
+	glGenBuffers(1, &geometryVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, geometryVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(FISH_VERTICES), FISH_VERTICES, GL_STATIC_DRAW);
+
+	// Setup flock VAO
+	glGenVertexArrays(2, flockVAO);
+
+	int i;
+
+	for (i = 0; i < 2; i++)
+	{
+		// Bind the geometry data of a flock member to the shaders
+		glBindVertexArray(flockVAO[i]);
+		glBindBuffer(GL_ARRAY_BUFFER, geometryVBO);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void *)(6 * sizeof(glm::vec3)));
+		// Bind the storage into which the shaders can write computed data
+		glBindBuffer(GL_ARRAY_BUFFER, flockBuffers[i]);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Fish), NULL);
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Fish), (void *)sizeof(glm::vec4));
+		glVertexAttribDivisor(2, 1);
+		glVertexAttribDivisor(3, 1);
+
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+		glEnableVertexAttribArray(3);
+	}
+
+	// Map the entirety of a buffer object's data store into the client's address space so we can write data to it
+	glBindBuffer(GL_ARRAY_BUFFER, flockBuffers[0]);
+	Fish * ptr = reinterpret_cast<Fish *>(glMapBufferRange(GL_ARRAY_BUFFER, 0, FLOCK_SIZE * sizeof(Fish), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
+	for (i = 0; i < FLOCK_SIZE; i++)
+	{
+		ptr[i].position = (glm::vec3(random_float(), random_float(), random_float()) - glm::vec3(0.5f)) * 300.0f;
+		ptr[i].velocity = (glm::vec3(random_float(), random_float(), random_float()) - glm::vec3(0.5f));
+	}
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+#pragma endregion
 
 	// Load textures
 	_gabenGameResourceManager.loadTexture("Textures/Life of Gaben/grass.jpg", false, "floor");
 	GLuint floorTexture = _gabenGameResourceManager.getTexture("floor").ID;
 	_gabenGameResourceManager.loadTexture("Textures/Life of Gaben/wall.jpg", false, "wall");
 	GLuint wallTexture = _gabenGameResourceManager.getTexture("wall").ID;
-#pragma endregion
 
 	// Cubemap (Skybox)
 	vector<const GLchar*> faces;
@@ -259,15 +222,9 @@ void run_gaben_game(GLFWwindow* window)
 	// Create game objects
 	genesis::GameObject3D floorObject(shader, floorTexture, floorVAO, 6);
 	genesis::GameObject3D houseObject(shader, house, glm::vec3(-30.0f, -1.05f, 5.0f), glm::vec3(0.55f, 0.55f, 0.55f));
-
-	genesis::Enemy enemyObject(shader, enemy, glm::vec3(0.0f, -0.2f, -4.0f), glm::vec3(0.10f, 0.10f, 0.10f));
-	enemyObject._hitboxRadius = 0.4f;
-	enemyObject._hitboxOffset = glm::vec3(0.0f, 0.4f, 0.0f);
-	enemyObject._aggroRadius = 5.0f;
-	enemyObject._damageRadius = 2.0f;
-
+	vector<genesis::Enemy> enemyObjects;
 	vector<genesis::GameObject3D> pickupObjects;
-	// Little hack to ensure that the wall textures render on start - not sure why this works!
+	// Little hack to ensure that the wall textures actually render - not sure why this works!
 	pickupObjects.push_back(genesis::GameObject3D(shader, pickup, glm::vec3(20.0f, 0.0f, 30.0f), glm::vec3(0.025f, 0.025f, 0.025f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f)));
 	vector<genesis::GameObject3D> wallObjects;
 	GLfloat west = -12.f, east = 14.f, south = 25.f, north = -10.f;
@@ -305,7 +262,8 @@ void run_gaben_game(GLFWwindow* window)
 
 	glEnable(GL_DEPTH_TEST);
 
-	GLfloat secondsSincePickup = 0.0f;
+	// Play theme song
+	_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/theme.mp3", GL_TRUE);
 
 	// Game loop
 	while (!glfwWindowShouldClose(window))
@@ -328,45 +286,61 @@ void run_gaben_game(GLFWwindow* window)
 			_gabenGameInputManager._camera.MovementSpeed -= _gabenGameInputManager.getDeltaTime() / 7.0f;
 
 		// Draw skybox first
-		glDepthMask(GL_FALSE);// Remember to turn depth writing off
+		glDepthMask(GL_FALSE); // Remember to turn depth writing off
+
 		skyboxShader.Use();
 		glm::mat4 view = glm::mat4(glm::mat3(_gabenGameInputManager._camera.GetViewMatrix()));	// Remove any translation component of the view matrix
 		glm::mat4 projection = glm::perspective(_gabenGameInputManager._camera.Zoom, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
-		glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(uniforms.skybox.view, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(uniforms.skybox.projection, 1, GL_FALSE, glm::value_ptr(projection));
 
 		glBindVertexArray(skyboxVAO);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
-		glDepthMask(GL_TRUE);
+
+		glDepthMask(GL_TRUE); // Turn depth writing back on
 
 		// Then draw scene as normal
 		shader.Use();
 		view = _gabenGameInputManager._camera.GetViewMatrix();
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(uniforms.object.view, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(uniforms.object.projection, 1, GL_FALSE, glm::value_ptr(projection));
 
 		// Floor
 		floorObject.render();
 		// House
 		houseObject.render();
-		// Enemy
-
-		enemyObject._translation.y = -0.2f + sinf(currentFrame) / 4;
-		enemyObject.render();
-		resolveCollision(enemyObject, _gabenGameInputManager);
-		resolveEnemyInteractions(enemyObject, _gabenGameInputManager, _gabenGameInputManager.getDeltaTime(), DAMAGE);
+		// Enemy Spawns
+		secondsSinceEnemy += _gabenGameInputManager.getDeltaTime();
+		if (secondsSinceEnemy >= 10.0f)
+		{
+			secondsSinceEnemy = 0.0f;
+			GLfloat x_rand = random_range(west + 2, east - 2);
+			GLfloat z_rand = random_range(0.0f, south - 2);
+			enemyObjects.push_back(genesis::Enemy(shader, enemy, glm::vec3(x_rand, -0.2f, z_rand), glm::vec3(0.10f, 0.10f, 0.10f)));
+			enemyObjects.back()._hitboxRadius = 0.4f;
+			enemyObjects.back()._hitboxOffset = glm::vec3(0.0f, 0.4f, 0.0f);
+			enemyObjects.back().setAggroRadius(5.0f);
+			enemyObjects.back().setDamageRadius(2.0f);
+		}
+		for (genesis::Enemy &enemyObject : enemyObjects)
+		{
+			enemyObject._translation.y = -0.2f + sinf(currentFrame) / 4;
+			enemyObject.render();
+			resolveCollision(enemyObject, _gabenGameInputManager);
+			resolveEnemyInteractions(enemyObject, _gabenGameInputManager, _gabenGameInputManager.getDeltaTime(), DAMAGE);
+		}
+		// Print the health of the player
 		std::cout << _health << std::endl;
-
 		// Pickup Spawns
 		secondsSincePickup += _gabenGameInputManager.getDeltaTime();
-		if (secondsSincePickup >= 20.0f)
+		if (secondsSincePickup >= 30.0f)
 		{
 			secondsSincePickup = 0.0f;
-			GLfloat x_rand = random_float(west + 2, east - 2);
-			GLfloat z_rand = random_float(0.0f, south - 2);
-			GLfloat theta_rand = random_float(0.0f, 360.0f);
+			GLfloat x_rand = random_range(west + 2, east - 2);
+			GLfloat z_rand = random_range(0.0f, south - 2);
+			GLfloat theta_rand = random_range(0.0f, 360.0f);
 			pickupObjects.push_back(genesis::GameObject3D(shader, pickup, glm::vec3(x_rand, -0.75f, z_rand), glm::vec3(0.025f, 0.025f, 0.025f), theta_rand, glm::vec3(0.0f, 1.0f, 0.0f)));
 			pickupObjects.back()._hitboxRadius = 0.22f;
 			pickupObjects.back()._hitboxOffset = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -402,6 +376,31 @@ void run_gaben_game(GLFWwindow* window)
 			boxObject.render();
 			resolveCollision(boxObject, _gabenGameInputManager);
 		}
+#pragma region "flock_render"
+		flockUpdateShader.Use();
+		// Shift the flock convergence point over time to create a more dynamic simulation
+		glm::vec3 goal = glm::vec3(sinf(currentFrame * 0.34f * PI_F / 180.f),
+			cosf(currentFrame * 0.29f * PI_F / 180.f),
+			sinf(currentFrame * 0.12f) * cosf(currentFrame * 0.5f * PI_F / 180.f));
+		goal = goal * glm::vec3(35.0f, 105.0f, 60.0f);
+		glUniform3fv(uniforms.flockUpdate.goal, 1, glm::value_ptr(goal));
+
+		// Swap the flock buffers (one will be used for rendering and the other will be written 
+		// into from the shader for the next frame, when it will be used for rendering)
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, flockBuffers[frameIndex]);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, flockBuffers[frameIndex ^ 1]);
+
+		glDispatchCompute(NUM_WORKGROUPS, 1, 1);
+
+		flockShader.Use();
+		glm::mat4 mvp = projection * view;
+		glUniformMatrix4fv(uniforms.flock.mvp, 1, GL_FALSE, glm::value_ptr(mvp));
+
+		// Render the flock
+		glBindVertexArray(flockVAO[frameIndex]);
+		glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 6, FLOCK_SIZE);
+		frameIndex ^= 1;
+#pragma endregion
 
 		// Swap the buffers
 		glfwSwapBuffers(window);
@@ -551,12 +550,12 @@ void resolveEnemyInteractions(genesis::Enemy &_object, genesis::InputManager &_i
 	glm::vec3 hitboxPosition = _object._translation + _object._hitboxOffset;
 	glm::vec3 cameraPosition = _inputManager._camera.Position;
 
-	if (_object._isAggroed)
+	if (_object.getIsAggroed())
 	{
 		// Make the enemy move towards the player
 		glm::vec3 dir = _inputManager._camera.Position - _object._translation;
 		dir = glm::normalize(dir);
-		_object._translation += _velocity * dir;
+		_object._translation += 3 * _velocity * dir;
 		// Make the enemy rotate towards the player
 		dir = glm::vec3(dir.x, 0.0f, dir.z);
 		dir = glm::normalize(dir);
@@ -564,21 +563,21 @@ void resolveEnemyInteractions(genesis::Enemy &_object, genesis::InputManager &_i
 		// but this depends on your model) and the desired direction
 		glm::quat targetOrientation = rotationBetweenVectors(glm::vec3(0.0f, 0.0f, 1.0f), dir);
 		// Interpolate between start orientation and target orientation
-		_object._orientation = glm::slerp(_object._orientation, targetOrientation, _velocity);
-		_object._rotationAngle = glm::eulerAngles(_object._orientation).y;
+		_object.setOrientation(glm::slerp(_object.getOrientation(), targetOrientation, _velocity));
+		_object._rotationAngle = 2 * acosf(_object.getOrientation().w);
 
-		/** Aggro detection booleans */
+		/** Collision detection booleans */
 		// Collision right of the hitbox?
-		bool collisionX = hitboxPosition.x + _object._damageRadius >= cameraPosition.x &&
+		bool collisionX = hitboxPosition.x + _object.getDamageRadius() >= cameraPosition.x &&
 			cameraPosition.x >= hitboxPosition.x;
 		// Collision behind the hitbox?
-		bool collisionZ = hitboxPosition.z + _object._damageRadius >= cameraPosition.z &&
+		bool collisionZ = hitboxPosition.z + _object.getDamageRadius() >= cameraPosition.z &&
 			cameraPosition.z >= hitboxPosition.z;
 		// Collision left of the hitbox?
-		bool collisionX2 = hitboxPosition.x - _object._damageRadius <= cameraPosition.x &&
+		bool collisionX2 = hitboxPosition.x - _object.getDamageRadius() <= cameraPosition.x &&
 			cameraPosition.x <= hitboxPosition.x;
 		// Collision in front of the hitbox?
-		bool collisionZ2 = hitboxPosition.z - _object._damageRadius <= cameraPosition.z &&
+		bool collisionZ2 = hitboxPosition.z - _object.getDamageRadius() <= cameraPosition.z &&
 			cameraPosition.z <= hitboxPosition.z;
 
 		if (_health > 0 && ((collisionX && collisionZ) || (collisionX2 && collisionZ) ||
@@ -599,24 +598,25 @@ void resolveEnemyInteractions(genesis::Enemy &_object, genesis::InputManager &_i
 
 	/** Aggro detection booleans */
 	// Collision right of the hitbox?
-	bool collisionX = hitboxPosition.x + _object._aggroRadius >= cameraPosition.x &&
+	bool collisionX = hitboxPosition.x + _object.getAggroRadius() >= cameraPosition.x &&
 		cameraPosition.x >= hitboxPosition.x;
 	// Collision behind the hitbox?
-	bool collisionZ = hitboxPosition.z + _object._aggroRadius >= cameraPosition.z &&
+	bool collisionZ = hitboxPosition.z + _object.getAggroRadius() >= cameraPosition.z &&
 		cameraPosition.z >= hitboxPosition.z;
 	// Collision left of the hitbox?
-	bool collisionX2 = hitboxPosition.x - _object._aggroRadius <= cameraPosition.x &&
+	bool collisionX2 = hitboxPosition.x - _object.getAggroRadius() <= cameraPosition.x &&
 		cameraPosition.x <= hitboxPosition.x;
 	// Collision in front of the hitbox?
-	bool collisionZ2 = hitboxPosition.z - _object._aggroRadius <= cameraPosition.z &&
+	bool collisionZ2 = hitboxPosition.z - _object.getAggroRadius() <= cameraPosition.z &&
 		cameraPosition.z <= hitboxPosition.z;
 
 	Direction dir = vectorDirection(glm::vec2(cameraPosition.x - hitboxPosition.x, cameraPosition.z - hitboxPosition.z));
 
-	if (!_object._isAggroed && ((collisionX && collisionZ) || (collisionX2 && collisionZ) || 
+	if (!_object.getIsAggroed() && ((collisionX && collisionZ) || (collisionX2 && collisionZ) || 
 		(collisionX && collisionZ2) || (collisionX2 && collisionZ2)))
 	{
-		_object._isAggroed = true;
+		_object.setIsAggroed(true);
+		_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/aggro.ogg", GL_FALSE);
 	}
 }
 

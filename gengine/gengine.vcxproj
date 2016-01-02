@@ -175,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BallObject.cpp" />
+    <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameLevel.cpp" />
     <ClCompile Include="GameObject.cpp" />

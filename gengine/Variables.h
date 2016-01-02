@@ -4,9 +4,10 @@
 #define WINDOW_NAME		"Life of Gaben"
 #define SCREEN_WIDTH	1920
 #define SCREEN_HEIGHT	1080
+/** Variables pertaining to the OpenGL SuperBible Demos */
 #define NUM_DRAWS		50000
-#define WORKGROUP_SIZE	256
-#define NUM_WORKGROUPS	64
+#define WORKGROUP_SIZE	64
+#define NUM_WORKGROUPS	16
 #define FLOCK_SIZE		NUM_WORKGROUPS * WORKGROUP_SIZE
 //#define MANY_OBJECTS	1
 /** Variables pertaining to the game Breakout */
@@ -22,8 +23,11 @@
 #define SIZE			glm::vec2(60, 20)
 // Velocity a PowerUp block has when spawned
 #define VELOCITY		glm::vec2(0.0f, 150.0f)
+/** Variables pertaining to Life of Gaben */
 // Enemy DPS
 #define DAMAGE			10
+
+/** Enumerations and definitions pertaining to the OpenGL SuperBible Demos */
 
 enum MODE
 {
@@ -69,4 +73,152 @@ struct Particle {
 	GLfloat _life;
 
 	Particle() : _position(0.0f), _velocity(0.0f), _color(1.0f), _life(0.0f) { }
+};
+
+/** Enumerations and definitions pertaining to Life of Gaben */
+
+// Represents a single fish in a 3D flock and its state
+struct Fish
+{
+	glm::vec3 position;
+	unsigned int : 32;
+	glm::vec3 velocity;
+	unsigned int : 32;
+};
+
+/** Vertex data pertaining to Life of Gaben */
+
+static const GLfloat BOX_VERTICES[] = {
+	// Positions          // Texture Coords
+	-1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
+	1.0f, -1.0f, -1.0f,  1.0f, 0.0f,
+	1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
+	1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
+	-1.0f,  1.0f, -1.0f,  0.0f, 1.0f,
+	-1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
+
+	-1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
+	1.0f, -1.0f,  1.0f,  1.0f, 0.0f,
+	1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
+	1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
+	-1.0f,  1.0f,  1.0f,  0.0f, 1.0f,
+	-1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
+
+	-1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
+	-1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
+	-1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
+	-1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
+	-1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
+	-1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
+
+	1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
+	1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
+	1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
+	1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
+	1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
+	1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
+
+	-1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
+	1.0f, -1.0f, -1.0f,  1.0f, 1.0f,
+	1.0f, -1.0f,  1.0f,  1.0f, 0.0f,
+	1.0f, -1.0f,  1.0f,  1.0f, 0.0f,
+	-1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
+	-1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
+
+	-1.0f,  1.0f, -1.0f,  0.0f, 1.0f,
+	1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
+	1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
+	1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
+	-1.0f,  1.0f,  1.0f,  0.0f, 0.0f,
+	-1.0f,  1.0f, -1.0f,  0.0f, 1.0f
+};
+
+static const GLfloat SKYBOX_VERTICES[] = {
+	// Positions          
+	-1.0f,  1.0f, -1.0f,
+	-1.0f, -1.0f, -1.0f,
+	1.0f, -1.0f, -1.0f,
+	1.0f, -1.0f, -1.0f,
+	1.0f,  1.0f, -1.0f,
+	-1.0f,  1.0f, -1.0f,
+
+	-1.0f, -1.0f,  1.0f,
+	-1.0f, -1.0f, -1.0f,
+	-1.0f,  1.0f, -1.0f,
+	-1.0f,  1.0f, -1.0f,
+	-1.0f,  1.0f,  1.0f,
+	-1.0f, -1.0f,  1.0f,
+
+	1.0f, -1.0f, -1.0f,
+	1.0f, -1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f, -1.0f,
+	1.0f, -1.0f, -1.0f,
+
+	-1.0f, -1.0f,  1.0f,
+	-1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f, -1.0f,  1.0f,
+	-1.0f, -1.0f,  1.0f,
+
+	-1.0f,  1.0f, -1.0f,
+	1.0f,  1.0f, -1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	-1.0f,  1.0f,  1.0f,
+	-1.0f,  1.0f, -1.0f,
+
+	-1.0f, -1.0f, -1.0f,
+	-1.0f, -1.0f,  1.0f,
+	1.0f, -1.0f, -1.0f,
+	1.0f, -1.0f, -1.0f,
+	-1.0f, -1.0f,  1.0f,
+	1.0f, -1.0f,  1.0f
+};
+
+static const GLfloat FLOOR_VERTICES[] = {
+	// Positions            // Texture Coords (note we set these higher than 1 that together with GL_REPEAT as texture wrapping mode will cause the floor texture to repeat)
+	250.0f,  -1.0f,  250.0f,  250.0f, 0.0f,
+	-250.0f, -1.0f,  250.0f,  0.0f, 0.0f,
+	-250.0f, -1.0f, -250.0f,  0.0f, 250.0f,
+
+	250.0f,  -1.0f,  250.0f,  250.0f, 0.0f,
+	-250.0f, -1.0f, -250.0f,  0.0f, 250.0f,
+	250.0f,  -1.0f, -250.0f,  250.0f, 250.0f
+};
+
+static const GLfloat WALL_VERTICES[] = {
+	// Positions            // Texture Coords (note we set these higher than 1 that together with GL_REPEAT as texture wrapping mode will cause the floor texture to repeat)
+	0.0f,  1.0f,  40.0f,  40.0f, 0.0f,
+	0.0f, 1.0f,  -40.0f,  0.0f, 0.0f,
+	0.0f, -1.0f, -40.0f,  0.0f, 1.0f,
+
+	0.0f,  1.0f,  40.0f,  40.0f, 0.0f,
+	0.0f, -1.0f, -40.0f,  0.0f, 1.0f,
+	0.0f,  -1.0f, 40.0f,  40.0f, 1.0f
+};
+
+static const glm::vec3 FISH_VERTICES[] =
+{
+	// Positions
+	glm::vec3(-5.0f, 1.0f, 0.0f) * 0.2f,
+	glm::vec3(-1.0f, 1.5f, 0.0f) * 0.2f,
+	glm::vec3(-1.0f, 1.5f, 7.0f) * 0.2f,
+	glm::vec3(0.0f, 0.0f, 0.0f) * 0.2f,
+	glm::vec3(0.0f, 0.0f, 10.0f) * 0.2f,
+	glm::vec3(1.0f, 1.5f, 0.0f) * 0.2f,
+	glm::vec3(1.0f, 1.5f, 7.0f) * 0.2f,
+	glm::vec3(5.0f, 1.0f, 0.0f) * 0.2f,
+
+	// Normals
+	glm::vec3(0.0f),
+	glm::vec3(0.0f),
+	glm::vec3(0.107f, -0.859f, 0.00f),
+	glm::vec3(0.832f, 0.554f, 0.00f),
+	glm::vec3(-0.59f, -0.395f, 0.00f),
+	glm::vec3(-0.832f, 0.554f, 0.00f),
+	glm::vec3(0.295f, -0.196f, 0.00f),
+	glm::vec3(0.124f, 0.992f, 0.00f),
 };
