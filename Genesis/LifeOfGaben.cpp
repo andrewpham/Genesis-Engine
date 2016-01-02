@@ -45,10 +45,10 @@ void run_gaben_game(GLFWwindow* window)
 	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	// Setup and compile our shaders
-	genesis::Shader shader = _gabenGameResourceManager.loadShader("Shaders/Life of Gaben/object.vs", "Shaders/Life of Gaben/object.frag", "object");
-	genesis::Shader skyboxShader = _gabenGameResourceManager.loadShader("Shaders/Life of Gaben/skybox.vs", "Shaders/Life of Gaben/skybox.frag", "skybox");
-	genesis::Shader flockShader = _gabenGameResourceManager.loadShader("Shaders/Life of Gaben/flock.vs", "Shaders/Life of Gaben/flock.frag", "flock");
-	genesis::Shader flockUpdateShader = _gabenGameResourceManager.loadShader("Shaders/Life of Gaben/flock.comp", "flockUpdate");
+	genesis::Shader shader = _gabenGameResourceManager.loadShader("../Genesis/Shaders/Life of Gaben/object.vs", "Shaders/Life of Gaben/object.frag", "object");
+	genesis::Shader skyboxShader = _gabenGameResourceManager.loadShader("../Genesis/Shaders/Life of Gaben/skybox.vs", "Shaders/Life of Gaben/skybox.frag", "skybox");
+	genesis::Shader flockShader = _gabenGameResourceManager.loadShader("../Genesis/Shaders/Life of Gaben/flock.vs", "Shaders/Life of Gaben/flock.frag", "flock");
+	genesis::Shader flockUpdateShader = _gabenGameResourceManager.loadShader("../Genesis/Shaders/Life of Gaben/flock.comp", "flockUpdate");
 
 	// Flock data and state
 	GLuint flockBuffers[2], flockVAO[2], geometryVBO;
@@ -197,27 +197,27 @@ void run_gaben_game(GLFWwindow* window)
 #pragma endregion
 
 	// Load textures
-	_gabenGameResourceManager.loadTexture("Textures/Life of Gaben/grass.jpg", false, "floor");
+	_gabenGameResourceManager.loadTexture("../Genesis/Textures/Life of Gaben/grass.jpg", false, "floor");
 	GLuint floorTexture = _gabenGameResourceManager.getTexture("floor").ID;
-	_gabenGameResourceManager.loadTexture("Textures/Life of Gaben/wall.jpg", false, "wall");
+	_gabenGameResourceManager.loadTexture("../Genesis/Textures/Life of Gaben/wall.jpg", false, "wall");
 	GLuint wallTexture = _gabenGameResourceManager.getTexture("wall").ID;
 
 	// Cubemap (Skybox)
 	vector<const GLchar*> faces;
-	faces.push_back("Textures/Skybox/Life of Gaben/right.jpg");
-	faces.push_back("Textures/Skybox/Life of Gaben/left.jpg");
-	faces.push_back("Textures/Skybox/Life of Gaben/top.jpg");
-	faces.push_back("Textures/Skybox/Life of Gaben/bottom.jpg");
-	faces.push_back("Textures/Skybox/Life of Gaben/back.jpg");
-	faces.push_back("Textures/Skybox/Life of Gaben/front.jpg");
+	faces.push_back("../Genesis/Textures/Skybox/Life of Gaben/right.jpg");
+	faces.push_back("../Genesis/Textures/Skybox/Life of Gaben/left.jpg");
+	faces.push_back("../Genesis/Textures/Skybox/Life of Gaben/top.jpg");
+	faces.push_back("../Genesis/Textures/Skybox/Life of Gaben/bottom.jpg");
+	faces.push_back("../Genesis/Textures/Skybox/Life of Gaben/back.jpg");
+	faces.push_back("../Genesis/Textures/Skybox/Life of Gaben/front.jpg");
 	_gabenGameResourceManager.loadCubemap(faces);
 	GLuint cubemapTexture = _gabenGameResourceManager.getCubemap();
 
 	// Load models
-	genesis::Model house("Objects/Life of Gaben/House/Farmhouse OBJ.obj");
-	genesis::Model rock("Objects/Rock/rock.obj");
-	genesis::Model pickup("Objects/Life of Gaben/Pickup/cup OBJ.obj");
-	genesis::Model enemy("Objects/Nanosuit/nanosuit.obj");
+	genesis::Model house("../Genesis/Objects/Life of Gaben/House/Farmhouse OBJ.obj");
+	genesis::Model rock("../Genesis/Objects/Rock/rock.obj");
+	genesis::Model pickup("../Genesis/Objects/Life of Gaben/Pickup/cup OBJ.obj");
+	genesis::Model enemy("../Genesis/Objects/Nanosuit/nanosuit.obj");
 
 	// Create game objects
 	genesis::GameObject3D floorObject(shader, floorTexture, floorVAO, 6);
