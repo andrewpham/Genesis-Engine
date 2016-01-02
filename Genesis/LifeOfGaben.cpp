@@ -381,7 +381,7 @@ void run_gaben_game(GLFWwindow* window)
 		// Shift the flock convergence point over time to create a more dynamic simulation
 		glm::vec3 goal = glm::vec3(sinf(currentFrame * 0.34f * PI_F / 180.f),
 			cosf(currentFrame * 0.29f * PI_F / 180.f),
-			sinf(currentFrame * 0.12f) * cosf(currentFrame * 0.5f * PI_F / 180.f));
+			sinf(currentFrame * 0.12f * PI_F / 180.f) * cosf(currentFrame * 0.5f * PI_F / 180.f));
 		goal = goal * glm::vec3(35.0f, 105.0f, 60.0f);
 		glUniform3fv(uniforms.flockUpdate.goal, 1, glm::value_ptr(goal));
 
