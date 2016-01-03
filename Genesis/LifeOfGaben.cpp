@@ -243,8 +243,8 @@ void run_gaben_game(GLFWwindow* window)
 	rockObjects.push_back(genesis::GameObject3D(shader, rock, glm::vec3(3.5f, -0.95f, 17.0f), glm::vec3(0.25f, 0.25f, 0.25f), 67.5f, glm::vec3(0.0f, 1.0f, 0.0f)));
 	for (genesis::GameObject3D &rockObject : rockObjects)
 	{
-		rockObject._hitboxRadius = 0.46f;
-		rockObject._hitboxOffset = glm::vec3(0.0f, -0.1f, 0.0f);
+		rockObject.setHitboxRadius(0.46f);
+		rockObject.setHitboxOffset(glm::vec3(0.0f, -0.1f, 0.0f));
 	}
 	vector<genesis::GameObject3D> boxObjects;
 	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(-11.0f, 0.0f, -9.0f)));
@@ -256,8 +256,8 @@ void run_gaben_game(GLFWwindow* window)
 	boxObjects.push_back(genesis::GameObject3D(shader, wallTexture, boxVAO, 36, glm::vec3(0.0f, 0.0f, -7.0f)));
 	for (genesis::GameObject3D &boxObject : boxObjects)
 	{
-		boxObject._hitboxRadius = 1.5f;
-		boxObject._hitboxOffset = glm::vec3(0.0f);
+		boxObject.setHitboxRadius(1.5f);
+		boxObject.setHitboxOffset(glm::vec3(0.0f));
 	}
 
 	glEnable(GL_DEPTH_TEST);
@@ -319,14 +319,14 @@ void run_gaben_game(GLFWwindow* window)
 			GLfloat x_rand = random_range(west + 2, east - 2);
 			GLfloat z_rand = random_range(0.0f, south - 2);
 			enemyObjects.push_back(genesis::Enemy(shader, enemy, glm::vec3(x_rand, -0.2f, z_rand), glm::vec3(0.10f, 0.10f, 0.10f)));
-			enemyObjects.back()._hitboxRadius = 0.4f;
-			enemyObjects.back()._hitboxOffset = glm::vec3(0.0f, 0.4f, 0.0f);
+			enemyObjects.back().setHitboxRadius(0.4f);
+			enemyObjects.back().setHitboxOffset(glm::vec3(0.0f, 0.4f, 0.0f));
 			enemyObjects.back().setAggroRadius(5.0f);
 			enemyObjects.back().setDamageRadius(2.0f);
 		}
 		for (genesis::Enemy &enemyObject : enemyObjects)
 		{
-			enemyObject._translation.y = -0.2f + sinf(currentFrame) / 4;
+			enemyObject.setPositionY(-0.2f + sinf(currentFrame) / 4);
 			enemyObject.render();
 			resolveCollision(enemyObject, _gabenGameInputManager);
 			resolveEnemyInteractions(enemyObject, _gabenGameInputManager, _gabenGameInputManager.getDeltaTime(), DAMAGE);
@@ -342,18 +342,18 @@ void run_gaben_game(GLFWwindow* window)
 			GLfloat z_rand = random_range(0.0f, south - 2);
 			GLfloat theta_rand = random_range(0.0f, 360.0f);
 			pickupObjects.push_back(genesis::GameObject3D(shader, pickup, glm::vec3(x_rand, -0.75f, z_rand), glm::vec3(0.025f, 0.025f, 0.025f), theta_rand, glm::vec3(0.0f, 1.0f, 0.0f)));
-			pickupObjects.back()._hitboxRadius = 0.22f;
-			pickupObjects.back()._hitboxOffset = glm::vec3(0.0f, 0.0f, 0.0f);
+			pickupObjects.back().setHitboxRadius(0.22f);
+			pickupObjects.back().setHitboxOffset(glm::vec3(0.0f, 0.0f, 0.0f));
 		}
 		for (genesis::GameObject3D &pickupObject : pickupObjects)
 		{
 			if (pickupObject._rotationAngle > 360.f)
 				pickupObject._rotationAngle = 0.0f;
-			pickupObject._rotationAngle += _gabenGameInputManager.getDeltaTime();
+			pickupObject._rotationAngle = pickupObject._rotationAngle + _gabenGameInputManager.getDeltaTime();
 			pickupObject.render();
-			if (!pickupObject._destroyed && checkCollision(pickupObject, _gabenGameInputManager))
+			if (!pickupObject.getDestroyed() && checkCollision(pickupObject, _gabenGameInputManager))
 			{
-				pickupObject._destroyed = true;
+				pickupObject.setDestroyed(true);
 				_gabenGameInputManager._camera.MovementSpeed *= 2.0f;
 				_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/reload.mp3", GL_FALSE);
 			}
@@ -465,21 +465,21 @@ glm::quat rotationBetweenVectors(glm::vec3 _start, glm::vec3 _dest)
 
 GLboolean checkCollision(genesis::GameObject3D &_object, genesis::InputManager &_inputManager)
 {
-	glm::vec3 hitboxPosition = _object._translation + _object._hitboxOffset;
+	glm::vec3 hitboxPosition = _object.getPosition() + _object.getHitboxOffset();
 	glm::vec3 cameraPosition = _inputManager._camera.Position;
 
 	/** Collision detection booleans */
 	// Collision right of the hitbox?
-	bool collisionX = hitboxPosition.x + _object._hitboxRadius >= cameraPosition.x &&
+	bool collisionX = hitboxPosition.x + _object.getHitboxRadius() >= cameraPosition.x &&
 		cameraPosition.x >= hitboxPosition.x;
 	// Collision behind the hitbox?
-	bool collisionZ = hitboxPosition.z + _object._hitboxRadius >= cameraPosition.z &&
+	bool collisionZ = hitboxPosition.z + _object.getHitboxRadius() >= cameraPosition.z &&
 		cameraPosition.z >= hitboxPosition.z;
 	// Collision left of the hitbox?
-	bool collisionX2 = hitboxPosition.x - _object._hitboxRadius <= cameraPosition.x &&
+	bool collisionX2 = hitboxPosition.x - _object.getHitboxRadius() <= cameraPosition.x &&
 		cameraPosition.x <= hitboxPosition.x;
 	// Collision in front of the hitbox?
-	bool collisionZ2 = hitboxPosition.z - _object._hitboxRadius <= cameraPosition.z &&
+	bool collisionZ2 = hitboxPosition.z - _object.getHitboxRadius() <= cameraPosition.z &&
 		cameraPosition.z <= hitboxPosition.z;
 
 	return (collisionX && collisionZ) || (collisionX2 && collisionZ)
@@ -488,29 +488,29 @@ GLboolean checkCollision(genesis::GameObject3D &_object, genesis::InputManager &
 
 void resolveCollision(genesis::GameObject3D &_object, genesis::InputManager &_inputManager)
 {
-	glm::vec3 hitboxPosition = _object._translation + _object._hitboxOffset;
+	glm::vec3 hitboxPosition = _object.getPosition() + _object.getHitboxOffset();
 	glm::vec3 cameraPosition = _inputManager._camera.Position;
 
 	/** Collision detection booleans */
 	// Collision right of the hitbox?
-	bool collisionX = hitboxPosition.x + _object._hitboxRadius >= cameraPosition.x &&
+	bool collisionX = hitboxPosition.x + _object.getHitboxRadius() >= cameraPosition.x &&
 		cameraPosition.x >= hitboxPosition.x;
 	// Collision behind the hitbox?
-	bool collisionZ = hitboxPosition.z + _object._hitboxRadius >= cameraPosition.z &&
+	bool collisionZ = hitboxPosition.z + _object.getHitboxRadius() >= cameraPosition.z &&
 		cameraPosition.z >= hitboxPosition.z;
 	// Collision left of the hitbox?
-	bool collisionX2 = hitboxPosition.x - _object._hitboxRadius <= cameraPosition.x &&
+	bool collisionX2 = hitboxPosition.x - _object.getHitboxRadius() <= cameraPosition.x &&
 		cameraPosition.x <= hitboxPosition.x;
 	// Collision in front of the hitbox?
-	bool collisionZ2 = hitboxPosition.z - _object._hitboxRadius <= cameraPosition.z &&
+	bool collisionZ2 = hitboxPosition.z - _object.getHitboxRadius() <= cameraPosition.z &&
 		cameraPosition.z <= hitboxPosition.z;
 
 	Direction dir = vectorDirection(glm::vec2(cameraPosition.x - hitboxPosition.x, cameraPosition.z - hitboxPosition.z));
 
 	if (collisionX && collisionZ)
 	{
-		GLfloat penetrationX = hitboxPosition.x + _object._hitboxRadius - cameraPosition.x;
-		GLfloat penetrationZ = hitboxPosition.z + _object._hitboxRadius - cameraPosition.z;
+		GLfloat penetrationX = hitboxPosition.x + _object.getHitboxRadius() - cameraPosition.x;
+		GLfloat penetrationZ = hitboxPosition.z + _object.getHitboxRadius() - cameraPosition.z;
 		if (dir == LEFT || dir == RIGHT)
 			_inputManager._camera.Position.x += penetrationX;
 		else
@@ -518,8 +518,8 @@ void resolveCollision(genesis::GameObject3D &_object, genesis::InputManager &_in
 	}
 	else if (collisionX2 && collisionZ)
 	{
-		GLfloat penetrationX = cameraPosition.x - (hitboxPosition.x - _object._hitboxRadius);
-		GLfloat penetrationZ = hitboxPosition.z + _object._hitboxRadius - cameraPosition.z;
+		GLfloat penetrationX = cameraPosition.x - (hitboxPosition.x - _object.getHitboxRadius());
+		GLfloat penetrationZ = hitboxPosition.z + _object.getHitboxRadius() - cameraPosition.z;
 		if (dir == LEFT || dir == RIGHT)
 			_inputManager._camera.Position.x -= penetrationX;
 		else
@@ -527,8 +527,8 @@ void resolveCollision(genesis::GameObject3D &_object, genesis::InputManager &_in
 	}
 	else if (collisionX && collisionZ2)
 	{
-		GLfloat penetrationX = hitboxPosition.x + _object._hitboxRadius - cameraPosition.x;
-		GLfloat penetrationZ = cameraPosition.z - (hitboxPosition.z - _object._hitboxRadius);
+		GLfloat penetrationX = hitboxPosition.x + _object.getHitboxRadius() - cameraPosition.x;
+		GLfloat penetrationZ = cameraPosition.z - (hitboxPosition.z - _object.getHitboxRadius());
 		if (dir == LEFT || dir == RIGHT)
 			_inputManager._camera.Position.x += penetrationX;
 		else
@@ -536,8 +536,8 @@ void resolveCollision(genesis::GameObject3D &_object, genesis::InputManager &_in
 	}
 	else if (collisionX2 && collisionZ2)
 	{
-		GLfloat penetrationX = cameraPosition.x - (hitboxPosition.x - _object._hitboxRadius);
-		GLfloat penetrationZ = cameraPosition.z - (hitboxPosition.z - _object._hitboxRadius);
+		GLfloat penetrationX = cameraPosition.x - (hitboxPosition.x - _object.getHitboxRadius());
+		GLfloat penetrationZ = cameraPosition.z - (hitboxPosition.z - _object.getHitboxRadius());
 		if (dir == LEFT || dir == RIGHT)
 			_inputManager._camera.Position.x -= penetrationX;
 		else
@@ -547,15 +547,15 @@ void resolveCollision(genesis::GameObject3D &_object, genesis::InputManager &_in
 
 void resolveEnemyInteractions(genesis::Enemy &_object, genesis::InputManager &_inputManager, GLfloat _velocity, GLuint _damage)
 {
-	glm::vec3 hitboxPosition = _object._translation + _object._hitboxOffset;
+	glm::vec3 hitboxPosition = _object.getPosition() + _object.getHitboxOffset();
 	glm::vec3 cameraPosition = _inputManager._camera.Position;
 
 	if (_object.getIsAggroed())
 	{
 		// Make the enemy move towards the player
-		glm::vec3 dir = _inputManager._camera.Position - _object._translation;
+		glm::vec3 dir = _inputManager._camera.Position - _object.getPosition();
 		dir = glm::normalize(dir);
-		_object._translation += 3 * _velocity * dir;
+		_object.setPosition(_object.getPosition() + 3 * _velocity * dir);
 		// Make the enemy rotate towards the player
 		dir = glm::vec3(dir.x, 0.0f, dir.z);
 		dir = glm::normalize(dir);

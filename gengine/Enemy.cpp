@@ -2,15 +2,15 @@
 
 namespace genesis {
 
-	Enemy::Enemy(Shader _shader, Model _model, glm::vec3 _translation, glm::vec3 _scale, GLfloat _rotationAngleDegree,
+	Enemy::Enemy(Shader _shader, Model _model, glm::vec3 _position, glm::vec3 _size, GLfloat _rotationAngleDegree,
 		glm::vec3 _rotationAxis, GLboolean _isModel, GLboolean _destroyed, GLboolean _isAggroed, glm::quat _orientation)
-		: GameObject3D(_shader, _model, _translation, _scale, _rotationAngleDegree, _rotationAxis, _isModel, _destroyed), 
+		: GameObject3D(_shader, _model, _position, _size, _rotationAngleDegree, _rotationAxis, _isModel, _destroyed), 
 		_isAggroed(_isAggroed), _orientation(_orientation) { }
 
-	Enemy::Enemy(Shader _shader, GLuint _texture, GLuint _VAO, GLuint _numVertices, glm::vec3 _translation, glm::vec3 _scale,
+	Enemy::Enemy(Shader _shader, GLuint _texture, GLuint _VAO, GLuint _numVertices, glm::vec3 _position, glm::vec3 _size,
 		GLfloat _rotationAngleDegree, glm::vec3 _rotationAxis, GLboolean _isModel, GLboolean _destroyed, GLboolean _isAggroed, 
 		glm::quat _orientation)
-		: GameObject3D(_shader, _texture, _VAO, _numVertices, _translation, _scale, _rotationAngleDegree, _rotationAxis, _isModel, _destroyed), 
+		: GameObject3D(_shader, _texture, _VAO, _numVertices, _position, _size, _rotationAngleDegree, _rotationAxis, _isModel, _destroyed), 
 		_isAggroed(_isAggroed), _orientation(_orientation) { }
 
 	void Enemy::setIsAggroed(GLboolean _isAggroed)
