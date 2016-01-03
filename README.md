@@ -23,6 +23,8 @@ current OOP implementation in order to stymie the creep of massive inheritance h
 * Add a simple UI, billboarding, and other helpful gameplay features.
 * Abstract the aggregate members of various objects into multiple components.
 * Improve the test coverage.
+* Improve collision detection algorithms.
+* Improve general purpose algorithms such as random functions.
 
 ### How to build on Windows 7/8/10
 You will require both the 2013 and 2015 Visual C++ redistributable packages.  Easiest way to fulfill this 
@@ -70,13 +72,13 @@ You may also have to include **assimpd.dll** into the Debug folder, which you do
 	- gengine.lib
 	
 In order to run the solution, you will need to set the build in the upper panel to `Debug` and `x86`. 
-Then build both the **game engine (gengine)** and **gameplay code (Genesis)**  by right clicking Genesis 
+Then build both the game engine (gengine) and gameplay code (Genesis)  by right clicking Genesis 
 in the Solution Explorer and selecting Build.
 
 You can play through the various demos by accessing the `main.cpp` code and uncommenting the appropriate 
 lines, making sure that only one function is uncommented at any given point.
 
-##### Possible issues
+##### Troubleshooting
 If you have no audio devices available, a runtime exception will be thrown.
 
 ### Authors and contributors
@@ -89,5 +91,5 @@ If you have no audio devices available, a runtime exception will be thrown.
 If you are a developer, we need your help. Genesis is a young project and we have a lot of new features 
 to implement and bugs to fix.  Feel free to refactor the current codebase and improve what we already have.  
 Once the Visual Studio workflow is set, contributing is as easy as changing just a few lines of code.  Feel 
-free to shoot me an [email](andrew.pham@uwaterloo.ca) to begin a correspondence on how you can help grow 
-the project.
+free to shoot me an email at andrew.pham@uwaterloo.ca to begin a correspondence on how you can help grow 
+the project!
