@@ -89,48 +89,48 @@ struct Fish
 /** Vertex data pertaining to Life of Gaben */
 
 static const GLfloat BOX_VERTICES[] = {
-	// Positions          // Texture Coords
-	-1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
-	1.0f, -1.0f, -1.0f,  1.0f, 0.0f,
-	1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
-	1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
-	-1.0f,  1.0f, -1.0f,  0.0f, 1.0f,
-	-1.0f, -1.0f, -1.0f,  0.0f, 0.0f,
+	// Positions          // Normals           // Texture Coords
+	-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+	1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
+	1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+	-1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
+	-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
 
-	-1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
-	1.0f, -1.0f,  1.0f,  1.0f, 0.0f,
-	1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
-	1.0f,  1.0f,  1.0f,  1.0f, 1.0f,
-	-1.0f,  1.0f,  1.0f,  0.0f, 1.0f,
-	-1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
+	-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+	1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
+	1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+	-1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
+	-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
 
-	-1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
-	-1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
-	-1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
-	-1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
-	-1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
-	-1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
+	-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+	-1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+	-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+	-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+	-1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+	-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
 
-	1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
-	1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
-	1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
-	1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
-	1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
-	1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
+	1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+	1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+	1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+	1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+	1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+	1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
 
-	-1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
-	1.0f, -1.0f, -1.0f,  1.0f, 1.0f,
-	1.0f, -1.0f,  1.0f,  1.0f, 0.0f,
-	1.0f, -1.0f,  1.0f,  1.0f, 0.0f,
-	-1.0f, -1.0f,  1.0f,  0.0f, 0.0f,
-	-1.0f, -1.0f, -1.0f,  0.0f, 1.0f,
+	-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+	1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
+	1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+	1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+	-1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
+	-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
 
-	-1.0f,  1.0f, -1.0f,  0.0f, 1.0f,
-	1.0f,  1.0f, -1.0f,  1.0f, 1.0f,
-	1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
-	1.0f,  1.0f,  1.0f,  1.0f, 0.0f,
-	-1.0f,  1.0f,  1.0f,  0.0f, 0.0f,
-	-1.0f,  1.0f, -1.0f,  0.0f, 1.0f
+	-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+	1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+	1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+	-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
+	-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
 };
 
 static const GLfloat SKYBOX_VERTICES[] = {
@@ -179,25 +179,25 @@ static const GLfloat SKYBOX_VERTICES[] = {
 };
 
 static const GLfloat FLOOR_VERTICES[] = {
-	// Positions            // Texture Coords (note we set these higher than 1 that together with GL_REPEAT as texture wrapping mode will cause the floor texture to repeat)
-	250.0f,  -1.0f,  250.0f,  250.0f, 0.0f,
-	-250.0f, -1.0f,  250.0f,  0.0f, 0.0f,
-	-250.0f, -1.0f, -250.0f,  0.0f, 250.0f,
+	// Positions			  // Normals			// Texture Coords (note we set these higher than 1 that together with GL_REPEAT as texture wrapping mode will cause the floor texture to repeat)
+	250.0f,  -1.0f,  250.0f,  0.0f, 1.0f, 0.0f,	 250.0f, 0.0f,
+	-250.0f, -1.0f,  250.0f,  0.0f, 1.0f, 0.0f,	 0.0f, 0.0f,
+	-250.0f, -1.0f, -250.0f,  0.0f, 1.0f, 0.0f,	 0.0f, 250.0f,
 
-	250.0f,  -1.0f,  250.0f,  250.0f, 0.0f,
-	-250.0f, -1.0f, -250.0f,  0.0f, 250.0f,
-	250.0f,  -1.0f, -250.0f,  250.0f, 250.0f
+	250.0f,  -1.0f,  250.0f,  0.0f, 1.0f, 0.0f, 250.0f, 0.0f,
+	-250.0f, -1.0f, -250.0f,  0.0f, 1.0f, 0.0f, 0.0f, 250.0f,
+	250.0f,  -1.0f, -250.0f,  0.0f, 1.0f, 0.0f, 250.0f, 250.0f
 };
 
 static const GLfloat WALL_VERTICES[] = {
-	// Positions            // Texture Coords (note we set these higher than 1 that together with GL_REPEAT as texture wrapping mode will cause the floor texture to repeat)
-	0.0f,  1.0f,  40.0f,  40.0f, 0.0f,
-	0.0f, 1.0f,  -40.0f,  0.0f, 0.0f,
-	0.0f, -1.0f, -40.0f,  0.0f, 1.0f,
+	// Positions            //Normals			// Texture Coords (note we set these higher than 1 that together with GL_REPEAT as texture wrapping mode will cause the floor texture to repeat)
+	0.0f,  1.0f,  40.0f,	1.0f, 0.0f, 0.0f,	40.0f, 0.0f,
+	0.0f, 1.0f,  -40.0f,	1.0f, 0.0f, 0.0f,	0.0f, 0.0f,
+	0.0f, -1.0f, -40.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f,
 
-	0.0f,  1.0f,  40.0f,  40.0f, 0.0f,
-	0.0f, -1.0f, -40.0f,  0.0f, 1.0f,
-	0.0f,  -1.0f, 40.0f,  40.0f, 1.0f
+	0.0f,  1.0f,  40.0f,	1.0f, 0.0f, 0.0f,	40.0f, 0.0f,
+	0.0f, -1.0f, -40.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f,
+	0.0f,  -1.0f, 40.0f,	1.0f, 0.0f, 0.0f,	40.0f, 1.0f
 };
 
 static const glm::vec3 FISH_VERTICES[] =
@@ -222,3 +222,7 @@ static const glm::vec3 FISH_VERTICES[] =
 	glm::vec3(0.295f, -0.196f, 0.00f),
 	glm::vec3(0.124f, 0.992f, 0.00f),
 };
+
+/** Light source variables pertaining to Life of Gaben */
+static const glm::vec3 LIGHT_COLOR(1.0f, 1.0f, 1.0f);
+static const glm::vec3 LIGHT_POS(0.0f, 10.0f, 0.0f);

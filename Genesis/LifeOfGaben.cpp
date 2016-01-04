@@ -68,6 +68,9 @@ void run_gaben_game(GLFWwindow* window)
 		{
 			GLint view;
 			GLint projection;
+			GLint lightColor;
+			GLint lightPos;
+			GLint viewPos;
 		} object;
 		struct
 		{
@@ -88,6 +91,9 @@ void run_gaben_game(GLFWwindow* window)
 	shader.Use();
 	uniforms.object.view = glGetUniformLocation(shader.ID, "view");
 	uniforms.object.projection = glGetUniformLocation(shader.ID, "projection");
+	uniforms.object.lightColor = glGetUniformLocation(shader.ID, "lightColor");
+	uniforms.object.lightPos = glGetUniformLocation(shader.ID, "lightPos");
+	uniforms.object.viewPos = glGetUniformLocation(shader.ID, "viewPos");
 	skyboxShader.Use();
 	uniforms.skybox.view = glGetUniformLocation(skyboxShader.ID, "view");
 	uniforms.skybox.projection = glGetUniformLocation(skyboxShader.ID, "projection");
@@ -110,9 +116,11 @@ void run_gaben_game(GLFWwindow* window)
 	glBindBuffer(GL_ARRAY_BUFFER, boxVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(BOX_VERTICES), &BOX_VERTICES, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
 	glBindVertexArray(0);
 	// Setup floor VAO
 	glGenVertexArrays(1, &floorVAO);
@@ -121,9 +129,11 @@ void run_gaben_game(GLFWwindow* window)
 	glBindBuffer(GL_ARRAY_BUFFER, floorVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(FLOOR_VERTICES), &FLOOR_VERTICES, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
 	glBindVertexArray(0);
 	// Setup wall VAO
 	glGenVertexArrays(1, &wallVAO);
@@ -132,9 +142,11 @@ void run_gaben_game(GLFWwindow* window)
 	glBindBuffer(GL_ARRAY_BUFFER, wallVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(WALL_VERTICES), &WALL_VERTICES, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
 	glBindVertexArray(0);
 	// Setup skybox VAO
 	glGenVertexArrays(1, &skyboxVAO);
@@ -229,9 +241,9 @@ void run_gaben_game(GLFWwindow* window)
 	vector<genesis::GameObject3D> wallObjects;
 	GLfloat west = -12.f, east = 14.f, south = 25.f, north = -10.f;
 	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(west, 0.0f, 0.0f)));
-	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(east, 0.0f, 0.0f)));
+	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(east, 0.0f, 0.0f), glm::vec3(1.0f), 180.f, glm::vec3(0.0f, 1.0f, 0.0f)));
 	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(0.0f, 0.0f, south), glm::vec3(1.0f), 90.f, glm::vec3(0.0f, 1.0f, 0.0f)));
-	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(0.0f, 0.0f, north), glm::vec3(1.0f), 90.f, glm::vec3(0.0f, 1.0f, 0.0f)));
+	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(0.0f, 0.0f, north), glm::vec3(1.0f), 270.f, glm::vec3(0.0f, 1.0f, 0.0f)));
 	vector<genesis::GameObject3D> rockObjects;
 	rockObjects.push_back(genesis::GameObject3D(shader, rock, glm::vec3(0.0f, -0.95f, 19.0f), glm::vec3(0.25f, 0.25f, 0.25f)));
 	rockObjects.push_back(genesis::GameObject3D(shader, rock, glm::vec3(0.0f, -0.95f, 8.0f), glm::vec3(0.25f, 0.25f, 0.25f), 45.f, glm::vec3(0.0f, 1.0f, 0.0f)));
@@ -262,6 +274,11 @@ void run_gaben_game(GLFWwindow* window)
 
 	glEnable(GL_DEPTH_TEST);
 
+	// Set the light source properties in the fragment shader
+	shader.Use();
+	glUniform3f(uniforms.object.lightColor, LIGHT_COLOR.x, LIGHT_COLOR.y, LIGHT_COLOR.z);
+	glUniform3f(uniforms.object.lightPos, LIGHT_POS.x, LIGHT_POS.y, LIGHT_POS.z);
+
 	// Play theme song
 	_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/theme.mp3", GL_TRUE);
 
@@ -284,6 +301,10 @@ void run_gaben_game(GLFWwindow* window)
 		// Slowly decays the movement speed of Gaben if greater than base speed
 		if (_gabenGameInputManager._camera.MovementSpeed > 3.0f)
 			_gabenGameInputManager._camera.MovementSpeed -= _gabenGameInputManager.getDeltaTime() / 7.0f;
+
+		// Set the view position property in the fragment shader
+		shader.Use();
+		glUniform3f(uniforms.object.viewPos, _gabenGameInputManager._camera.Position.x, _gabenGameInputManager._camera.Position.y, _gabenGameInputManager._camera.Position.z);
 
 		// Draw skybox first
 		glDepthMask(GL_FALSE); // Remember to turn depth writing off
@@ -332,7 +353,7 @@ void run_gaben_game(GLFWwindow* window)
 			resolveEnemyInteractions(enemyObject, _gabenGameInputManager, _gabenGameInputManager.getDeltaTime(), DAMAGE);
 		}
 		// Print the health of the player
-		std::cout << _health << std::endl;
+		//std::cout << _health << std::endl;
 		// Pickup Spawns
 		secondsSincePickup += _gabenGameInputManager.getDeltaTime();
 		if (secondsSincePickup >= 30.0f)
