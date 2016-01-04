@@ -26,6 +26,8 @@
 /** Variables pertaining to Life of Gaben */
 // Enemy DPS
 #define DAMAGE			10
+// Light position
+static const glm::vec3	LIGHT_POS(0.0f, 10.0f, 0.0f);
 
 /** Enumerations and definitions pertaining to the OpenGL SuperBible Demos */
 
@@ -222,7 +224,3 @@ static const glm::vec3 FISH_VERTICES[] =
 	glm::vec3(0.295f, -0.196f, 0.00f),
 	glm::vec3(0.124f, 0.992f, 0.00f),
 };
-
-/** Light source variables pertaining to Life of Gaben */
-static const glm::vec3 LIGHT_COLOR(1.0f, 1.0f, 1.0f);
-static const glm::vec3 LIGHT_POS(0.0f, 10.0f, 0.0f);

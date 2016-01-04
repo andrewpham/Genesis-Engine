@@ -68,7 +68,6 @@ void run_gaben_game(GLFWwindow* window)
 		{
 			GLint view;
 			GLint projection;
-			GLint lightColor;
 			GLint lightPos;
 			GLint viewPos;
 		} object;
@@ -91,7 +90,6 @@ void run_gaben_game(GLFWwindow* window)
 	shader.Use();
 	uniforms.object.view = glGetUniformLocation(shader.ID, "view");
 	uniforms.object.projection = glGetUniformLocation(shader.ID, "projection");
-	uniforms.object.lightColor = glGetUniformLocation(shader.ID, "lightColor");
 	uniforms.object.lightPos = glGetUniformLocation(shader.ID, "lightPos");
 	uniforms.object.viewPos = glGetUniformLocation(shader.ID, "viewPos");
 	skyboxShader.Use();
@@ -276,7 +274,6 @@ void run_gaben_game(GLFWwindow* window)
 
 	// Set the light source properties in the fragment shader
 	shader.Use();
-	glUniform3f(uniforms.object.lightColor, LIGHT_COLOR.x, LIGHT_COLOR.y, LIGHT_COLOR.z);
 	glUniform3f(uniforms.object.lightPos, LIGHT_POS.x, LIGHT_POS.y, LIGHT_POS.z);
 
 	// Play theme song
