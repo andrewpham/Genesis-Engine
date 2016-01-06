@@ -105,9 +105,25 @@ void run_gaben_game(GLFWwindow* window)
 	// Used to pace the spawning of objects at regular intervals
 	GLfloat secondsSincePickup = 0.0f;
 	GLfloat secondsSinceEnemy = 0.0f;
+	GLfloat secondsSinceTrap = 0.0f;
+	GLint numTrapsAvailable = 0;
 
 #pragma region "object_initialization"
-	// Setup box VAO
+	/** Setup test VAO */
+	GLuint testVAO, testVBO;
+	glGenVertexArrays(1, &testVAO);
+	glGenBuffers(1, &testVBO);
+	glBindVertexArray(testVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, testVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(TEST_VERTICES), &TEST_VERTICES, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	glBindVertexArray(0);
+	/** Setup box VAO */
 	glGenVertexArrays(1, &boxVAO);
 	glGenBuffers(1, &boxVBO);
 	glBindVertexArray(boxVAO);
@@ -122,15 +138,15 @@ void run_gaben_game(GLFWwindow* window)
 	glBindVertexArray(0);
 	/** Setup floor VAO */
 	// Floor quad positions
-	glm::vec3 floorPos1(-30.0, 30.0, 0.0);
-	glm::vec3 floorPos2(-30.0, -30.0, 0.0);
-	glm::vec3 floorPos3(30.0, -30.0, 0.0);
-	glm::vec3 floorPos4(30.0, 30.0, 0.0);
+	glm::vec3 floorPos1(-30.0f, 30.0f, 0.0f);
+	glm::vec3 floorPos2(-30.0f, -30.0f, 0.0f);
+	glm::vec3 floorPos3(30.0f, -30.0f, 0.0f);
+	glm::vec3 floorPos4(30.0f, 30.0f, 0.0f);
 	// Quad texture coordinates
-	glm::vec2 floorUV1(0.0, 30.0);
-	glm::vec2 floorUV2(0.0, 0.0);
-	glm::vec2 floorUV3(30.0, 0.0);
-	glm::vec2 floorUV4(30.0, 30.0);
+	glm::vec2 floorUV1(0.0f, 30.0f);
+	glm::vec2 floorUV2(0.0f, 0.0f);
+	glm::vec2 floorUV3(30.0f, 0.0f);
+	glm::vec2 floorUV4(30.0f, 30.0f);
 	// Quad normal vector
 	glm::vec3 nm(0.0, 0.0, 1.0);
 	// Calculate tangent/bitangent vectors of both triangles
@@ -142,7 +158,7 @@ void run_gaben_game(GLFWwindow* window)
 		floorTangent1, floorBitangent1,
 		floorTangent2, floorBitangent2);
 	GLfloat floorVertices[] = {
-		// floorPositions            // normal         // TexCoords  // floorTangent                          // floorBitangent
+		// Positions						   // Normal         // TexCoords			 // Tangent											// Bitangent
 		floorPos1.x, floorPos1.y, floorPos1.z, nm.x, nm.y, nm.z, floorUV1.x, floorUV1.y, floorTangent1.x, floorTangent1.y, floorTangent1.z, floorBitangent1.x, floorBitangent1.y, floorBitangent1.z,
 		floorPos2.x, floorPos2.y, floorPos2.z, nm.x, nm.y, nm.z, floorUV2.x, floorUV2.y, floorTangent1.x, floorTangent1.y, floorTangent1.z, floorBitangent1.x, floorBitangent1.y, floorBitangent1.z,
 		floorPos3.x, floorPos3.y, floorPos3.z, nm.x, nm.y, nm.z, floorUV3.x, floorUV3.y, floorTangent1.x, floorTangent1.y, floorTangent1.z, floorBitangent1.x, floorBitangent1.y, floorBitangent1.z,
@@ -168,19 +184,51 @@ void run_gaben_game(GLFWwindow* window)
 	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (GLvoid*)(11 * sizeof(GLfloat)));
 	glBindVertexArray(0);
 	/** Setup wall VAO */
+	// Wall quad positions
+	glm::vec3 wallPos1(-40.0f, 1.0f, 0.0f);
+	glm::vec3 wallPos2(-40.0f, -1.0f, 0.0f);
+	glm::vec3 wallPos3(40.0f, -1.0f, 0.0f);
+	glm::vec3 wallPos4(40.0f, 1.0f, 0.0f);
+	// Wall texture coordinates
+	glm::vec2 wallUV1(0.0f, 1.0f);
+	glm::vec2 wallUV2(0.0f, 0.0f);
+	glm::vec2 wallUV3(40.0f, 0.0f);
+	glm::vec2 wallUV4(40.0f, 1.0f);
+	// Calculate tangent/bitangent vectors of both triangles
+	glm::vec3 wallTangent1, wallBitangent1;
+	glm::vec3 wallTangent2, wallBitangent2;
+	genesis::computeTangentBasis(wallPos1, wallPos2, wallPos3, wallPos4,
+		wallUV1, wallUV2, wallUV3, wallUV4,
+		nm,
+		wallTangent1, wallBitangent1,
+		wallTangent2, wallBitangent2);
+	GLfloat wallVertices[] = {
+		// Positions						// Normal         // TexCoords			// Tangent										// Bitangent
+		wallPos1.x, wallPos1.y, wallPos1.z, nm.x, nm.y, nm.z, wallUV1.x, wallUV1.y, wallTangent1.x, wallTangent1.y, wallTangent1.z, wallBitangent1.x, wallBitangent1.y, wallBitangent1.z,
+		wallPos2.x, wallPos2.y, wallPos2.z, nm.x, nm.y, nm.z, wallUV2.x, wallUV2.y, wallTangent1.x, wallTangent1.y, wallTangent1.z, wallBitangent1.x, wallBitangent1.y, wallBitangent1.z,
+		wallPos3.x, wallPos3.y, wallPos3.z, nm.x, nm.y, nm.z, wallUV3.x, wallUV3.y, wallTangent1.x, wallTangent1.y, wallTangent1.z, wallBitangent1.x, wallBitangent1.y, wallBitangent1.z,
+
+		wallPos1.x, wallPos1.y, wallPos1.z, nm.x, nm.y, nm.z, wallUV1.x, wallUV1.y, wallTangent2.x, wallTangent2.y, wallTangent2.z, wallBitangent2.x, wallBitangent2.y, wallBitangent2.z,
+		wallPos3.x, wallPos3.y, wallPos3.z, nm.x, nm.y, nm.z, wallUV3.x, wallUV3.y, wallTangent2.x, wallTangent2.y, wallTangent2.z, wallBitangent2.x, wallBitangent2.y, wallBitangent2.z,
+		wallPos4.x, wallPos4.y, wallPos4.z, nm.x, nm.y, nm.z, wallUV4.x, wallUV4.y, wallTangent2.x, wallTangent2.y, wallTangent2.z, wallBitangent2.x, wallBitangent2.y, wallBitangent2.z
+	};
 	glGenVertexArrays(1, &wallVAO);
 	glGenBuffers(1, &wallVBO);
 	glBindVertexArray(wallVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, wallVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(WALL_VERTICES), &WALL_VERTICES, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(wallVertices), &wallVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (GLvoid*)(8 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (GLvoid*)(11 * sizeof(GLfloat)));
 	glBindVertexArray(0);
-	// Setup skybox VAO
+	/** Setup skybox VAO */
 	glGenVertexArrays(1, &skyboxVAO);
 	glGenBuffers(1, &skyboxVBO);
 	glBindVertexArray(skyboxVAO);
@@ -249,6 +297,10 @@ void run_gaben_game(GLFWwindow* window)
 	GLuint wallTexture = _gabenGameResourceManager.getTexture("wall").ID;
 	_gabenGameResourceManager.loadTexture("../Genesis/Textures/Life of Gaben/brickwall_normal.jpg", false, "wallNormalMap");
 	GLuint wallNormalMap = _gabenGameResourceManager.getTexture("wallNormalMap").ID;
+	_gabenGameResourceManager.loadTexture("../Genesis/Textures/container.jpg", false, "tower");
+	GLuint towerTexture = _gabenGameResourceManager.getTexture("tower").ID;
+	_gabenGameResourceManager.loadTexture("../Genesis/Textures/Life of Gaben/tower_head.jpg", false, "towerHead");
+	GLuint towerHeadTexture = _gabenGameResourceManager.getTexture("towerHead").ID;
 
 	// Cubemap (Skybox)
 	vector<const GLchar*> faces;
@@ -278,10 +330,15 @@ void run_gaben_game(GLFWwindow* window)
 	pickupObjects.push_back(genesis::GameObject3D(shader, pickup, glm::vec3(20.0f, 0.0f, 30.0f), glm::vec3(0.025f, 0.025f, 0.025f), 0.0f, glm::vec3(0.0f, 1.0f, 0.0f)));
 	vector<genesis::GameObject3D> wallObjects;
 	GLfloat west = -12.f, east = 14.f, south = 25.f, north = -10.f;
-	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(west, 0.0f, 0.0f)));
-	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(east, 0.0f, 0.0f), glm::vec3(1.0f), 180.f, glm::vec3(0.0f, 1.0f, 0.0f)));
-	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(0.0f, 0.0f, south), glm::vec3(1.0f), 90.f, glm::vec3(0.0f, 1.0f, 0.0f)));
-	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(0.0f, 0.0f, north), glm::vec3(1.0f), 270.f, glm::vec3(0.0f, 1.0f, 0.0f)));
+	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(east, 0.0f, 0.0f), glm::vec3(1.0f), 90.f, glm::vec3(0.0f, 1.0f, 0.0f)));
+	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(west, 0.0f, 0.0f), glm::vec3(1.0f), 270.f, glm::vec3(0.0f, 1.0f, 0.0f)));
+	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(0.0f, 0.0f, north), glm::vec3(1.0f), 180.f, glm::vec3(0.0f, 1.0f, 0.0f)));
+	wallObjects.push_back(genesis::GameObject3D(shader, wallTexture, wallVAO, 6, glm::vec3(0.0f, 0.0f, south)));
+	for (genesis::GameObject3D &wallObject : wallObjects)
+	{
+		wallObject.setNormalMap(wallNormalMap);
+		wallObject.setHasNormalMap(true);
+	}
 	vector<genesis::GameObject3D> rockObjects;
 	rockObjects.push_back(genesis::GameObject3D(shader, rock, glm::vec3(0.0f, -0.95f, 19.0f), glm::vec3(0.25f, 0.25f, 0.25f)));
 	rockObjects.push_back(genesis::GameObject3D(shader, rock, glm::vec3(0.0f, -0.95f, 8.0f), glm::vec3(0.25f, 0.25f, 0.25f), 45.f, glm::vec3(0.0f, 1.0f, 0.0f)));
@@ -309,6 +366,10 @@ void run_gaben_game(GLFWwindow* window)
 		boxObject.setHitboxRadius(1.5f);
 		boxObject.setHitboxOffset(glm::vec3(0.0f));
 	}
+
+	vector<genesis::GameObject3D> hitboxObjects;
+	vector<genesis::GameObject3D> towerObjects;
+	vector<genesis::GameObject3D> towerHeadObjects;
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -434,6 +495,39 @@ void run_gaben_game(GLFWwindow* window)
 			boxObject.render();
 			resolveCollision(boxObject, _gabenGameInputManager);
 		}
+		// Towers
+
+		// Keeps track of when we can spawn a new tower defense (once every 15 seconds by default)
+		secondsSinceTrap += _gabenGameInputManager.getDeltaTime();
+		if (secondsSinceTrap > TOWER_SPAWN_RATE)
+		{
+			secondsSinceTrap = 0.0f;
+			numTrapsAvailable += 1;
+		}
+		if (numTrapsAvailable > 0 && _gabenGameInputManager._keys[GLFW_KEY_E])
+		{	
+			numTrapsAvailable -= 1;
+
+			hitboxObjects.push_back(genesis::GameObject3D(shader, wallTexture, testVAO, 36, glm::vec3(0.0f, 0.0f, -3.0f)));
+			towerObjects.push_back(genesis::GameObject3D(shader, towerTexture, boxVAO, 36, glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.1f, 1.0f, 0.1f)));
+			towerHeadObjects.push_back(genesis::GameObject3D(shader, towerHeadTexture, boxVAO, 36, glm::vec3(0.0f, 0.8f, -3.0f), glm::vec3(0.2f, 0.2f, 0.2f)));
+		}
+		for (genesis::GameObject3D &hitboxObject : hitboxObjects)
+		{
+			hitboxObject.render();
+		}
+		for (genesis::GameObject3D &towerObject : towerObjects)
+		{
+			towerObject.render();
+		}
+		for (genesis::GameObject3D &towerHeadObject : towerHeadObjects)
+		{
+			towerHeadObject.render();
+		}
+
+		std::cout << numTrapsAvailable << std::endl;
+
+
 #pragma region "flock_render"
 		flockUpdateShader.Use();
 		// Shift the flock convergence point over time to create a more dynamic simulation

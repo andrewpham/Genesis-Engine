@@ -2,8 +2,8 @@
 
 #define PI_F			3.14159265358979f
 #define WINDOW_NAME		"Life of Gaben"
-#define SCREEN_WIDTH	1920
-#define SCREEN_HEIGHT	1080
+#define SCREEN_WIDTH	800
+#define SCREEN_HEIGHT	600
 /** Variables pertaining to the OpenGL SuperBible Demos */
 #define NUM_DRAWS		50000
 #define WORKGROUP_SIZE	64
@@ -27,7 +27,9 @@
 // Enemy DPS
 #define DAMAGE			10
 // Light position
-static const glm::vec3	LIGHT_POS(0.0f, 10.0f, 0.0f);
+static const glm::vec3	LIGHT_POS(0.0f, 5.0f, 0.0f);
+// How frequently in seconds you can spawn towers
+#define TOWER_SPAWN_RATE	15
 
 /** Enumerations and definitions pertaining to the OpenGL SuperBible Demos */
 
@@ -88,7 +90,52 @@ struct Fish
 	unsigned int : 32;
 };
 
-/** Vertex data pertaining to Life of Gaben */
+/** Vertex data pertaining to canonical shapes in Life of Gaben */
+
+static const GLfloat TEST_VERTICES[] = {
+	// Positions          // Normals           // Texture Coords
+	-0.4f, -0.4f, -0.4f,  0.0f,  0.0f, -0.4f,  0.0f,  0.0f,
+	0.4f, -0.4f, -0.4f,  0.0f,  0.0f, -0.4f,  0.4f,  0.0f,
+	0.4f,  0.4f, -0.4f,  0.0f,  0.0f, -0.4f,  0.4f,  0.4f,
+	0.4f,  0.4f, -0.4f,  0.0f,  0.0f, -0.4f,  0.4f,  0.4f,
+	-0.4f,  0.4f, -0.4f,  0.0f,  0.0f, -0.4f,  0.0f,  0.4f,
+	-0.4f, -0.4f, -0.4f,  0.0f,  0.0f, -0.4f,  0.0f,  0.0f,
+
+	-0.4f, -0.4f,  0.4f,  0.0f,  0.0f,  0.4f,  0.0f,  0.0f,
+	0.4f, -0.4f,  0.4f,  0.0f,  0.0f,  0.4f,  0.4f,  0.0f,
+	0.4f,  0.4f,  0.4f,  0.0f,  0.0f,  0.4f,  0.4f,  0.4f,
+	0.4f,  0.4f,  0.4f,  0.0f,  0.0f,  0.4f,  0.4f,  0.4f,
+	-0.4f,  0.4f,  0.4f,  0.0f,  0.0f,  0.4f,  0.0f,  0.4f,
+	-0.4f, -0.4f,  0.4f,  0.0f,  0.0f,  0.4f,  0.0f,  0.0f,
+
+	-0.4f,  0.4f,  0.4f, -0.4f,  0.0f,  0.0f,  0.4f,  0.0f,
+	-0.4f,  0.4f, -0.4f, -0.4f,  0.0f,  0.0f,  0.4f,  0.4f,
+	-0.4f, -0.4f, -0.4f, -0.4f,  0.0f,  0.0f,  0.0f,  0.4f,
+	-0.4f, -0.4f, -0.4f, -0.4f,  0.0f,  0.0f,  0.0f,  0.4f,
+	-0.4f, -0.4f,  0.4f, -0.4f,  0.0f,  0.0f,  0.0f,  0.0f,
+	-0.4f,  0.4f,  0.4f, -0.4f,  0.0f,  0.0f,  0.4f,  0.0f,
+
+	0.4f,  0.4f,  0.4f,  0.4f,  0.0f,  0.0f,  0.4f,  0.0f,
+	0.4f,  0.4f, -0.4f,  0.4f,  0.0f,  0.0f,  0.4f,  0.4f,
+	0.4f, -0.4f, -0.4f,  0.4f,  0.0f,  0.0f,  0.0f,  0.4f,
+	0.4f, -0.4f, -0.4f,  0.4f,  0.0f,  0.0f,  0.0f,  0.4f,
+	0.4f, -0.4f,  0.4f,  0.4f,  0.0f,  0.0f,  0.0f,  0.0f,
+	0.4f,  0.4f,  0.4f,  0.4f,  0.0f,  0.0f,  0.4f,  0.0f,
+
+	-0.4f, -0.4f, -0.4f,  0.0f, -0.4f,  0.0f,  0.0f,  0.4f,
+	0.4f, -0.4f, -0.4f,  0.0f, -0.4f,  0.0f,  0.4f,  0.4f,
+	0.4f, -0.4f,  0.4f,  0.0f, -0.4f,  0.0f,  0.4f,  0.0f,
+	0.4f, -0.4f,  0.4f,  0.0f, -0.4f,  0.0f,  0.4f,  0.0f,
+	-0.4f, -0.4f,  0.4f,  0.0f, -0.4f,  0.0f,  0.0f,  0.0f,
+	-0.4f, -0.4f, -0.4f,  0.0f, -0.4f,  0.0f,  0.0f,  0.4f,
+
+	-0.4f,  0.4f, -0.4f,  0.0f,  0.4f,  0.0f,  0.0f,  0.4f,
+	0.4f,  0.4f, -0.4f,  0.0f,  0.4f,  0.0f,  0.4f,  0.4f,
+	0.4f,  0.4f,  0.4f,  0.0f,  0.4f,  0.0f,  0.4f,  0.0f,
+	0.4f,  0.4f,  0.4f,  0.0f,  0.4f,  0.0f,  0.4f,  0.0f,
+	-0.4f,  0.4f,  0.4f,  0.0f,  0.4f,  0.0f,  0.0f,  0.0f,
+	-0.4f,  0.4f, -0.4f,  0.0f,  0.4f,  0.0f,  0.0f,  0.4f
+};
 
 static const GLfloat BOX_VERTICES[] = {
 	// Positions          // Normals           // Texture Coords
@@ -178,28 +225,6 @@ static const GLfloat SKYBOX_VERTICES[] = {
 	1.0f, -1.0f, -1.0f,
 	-1.0f, -1.0f,  1.0f,
 	1.0f, -1.0f,  1.0f
-};
-
-static const GLfloat FLOOR_VERTICES[] = {
-	// Positions			  // Normals			// Texture Coords (note we set these higher than 1 that together with GL_REPEAT as texture wrapping mode will cause the floor texture to repeat)
-	250.0f,  -1.0f,  250.0f,  0.0f, 1.0f, 0.0f,	 250.0f, 0.0f,
-	-250.0f, -1.0f,  250.0f,  0.0f, 1.0f, 0.0f,	 0.0f, 0.0f,
-	-250.0f, -1.0f, -250.0f,  0.0f, 1.0f, 0.0f,	 0.0f, 250.0f,
-
-	250.0f,  -1.0f,  250.0f,  0.0f, 1.0f, 0.0f, 250.0f, 0.0f,
-	-250.0f, -1.0f, -250.0f,  0.0f, 1.0f, 0.0f, 0.0f, 250.0f,
-	250.0f,  -1.0f, -250.0f,  0.0f, 1.0f, 0.0f, 250.0f, 250.0f
-};
-
-static const GLfloat WALL_VERTICES[] = {
-	// Positions            //Normals			// Texture Coords (note we set these higher than 1 that together with GL_REPEAT as texture wrapping mode will cause the floor texture to repeat)
-	0.0f,  1.0f,  40.0f,	1.0f, 0.0f, 0.0f,	40.0f, 0.0f,
-	0.0f, 1.0f,  -40.0f,	1.0f, 0.0f, 0.0f,	0.0f, 0.0f,
-	0.0f, -1.0f, -40.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f,
-
-	0.0f,  1.0f,  40.0f,	1.0f, 0.0f, 0.0f,	40.0f, 0.0f,
-	0.0f, -1.0f, -40.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f,
-	0.0f,  -1.0f, 40.0f,	1.0f, 0.0f, 0.0f,	40.0f, 1.0f
 };
 
 static const glm::vec3 FISH_VERTICES[] =
