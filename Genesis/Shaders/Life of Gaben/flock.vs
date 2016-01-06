@@ -24,15 +24,6 @@ mat4 make_lookat(vec3 forward, vec3 up)
                 vec4(0.0, 0.0, 0.0, 1.0));
 }
 
-vec3 choose_color(float f)
-{
-    float R = sin(f * 6.2831853);
-    float G = sin((f + 0.3333) * 6.2831853);
-    float B = sin((f + 0.6666) * 6.2831853);
-
-    return vec3(R, G, B) * 0.25 + vec3(0.75);
-}
-
 void main(void)
 {
     mat4 lookat = make_lookat(normalize(bird_velocity), vec3(0.0, 1.0, 0.0));
@@ -40,7 +31,7 @@ void main(void)
     gl_Position = mvp * (obj_coord + vec4(bird_position, 0.0));
 
     vec3 N = mat3(lookat) * normal;
-    vec3 C = choose_color(fract(float(gl_InstanceID / float(1237.0))));
+	vec3 C = vec3(255.0f / 256.0f, 141.0f / 256.0f, 30.0f / 256.0f);
 
     vs_out.color = mix(C * 0.2, C, smoothstep(0.0, 0.8, abs(N).z));
 }

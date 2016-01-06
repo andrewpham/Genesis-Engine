@@ -47,4 +47,5 @@ namespace genesis {
 		bitangent2.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
 		bitangent2 = glm::normalize(bitangent2);
 	}
+
 }

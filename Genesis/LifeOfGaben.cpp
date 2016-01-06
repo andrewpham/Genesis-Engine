@@ -120,47 +120,42 @@ void run_gaben_game(GLFWwindow* window)
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
 	glBindVertexArray(0);
-	// Setup floor VAO
-
-	// positions
-	glm::vec3 pos1(-30.0, 30.0, 0.0);
-	glm::vec3 pos2(-30.0, -30.0, 0.0);
-	glm::vec3 pos3(30.0, -30.0, 0.0);
-	glm::vec3 pos4(30.0, 30.0, 0.0);
-	// texture coordinates
-	glm::vec2 uv1(0.0, 30.0);
-	glm::vec2 uv2(0.0, 0.0);
-	glm::vec2 uv3(30.0, 0.0);
-	glm::vec2 uv4(30.0, 30.0);
-	// normal vector
+	/** Setup floor VAO */
+	// Floor quad positions
+	glm::vec3 floorPos1(-30.0, 30.0, 0.0);
+	glm::vec3 floorPos2(-30.0, -30.0, 0.0);
+	glm::vec3 floorPos3(30.0, -30.0, 0.0);
+	glm::vec3 floorPos4(30.0, 30.0, 0.0);
+	// Quad texture coordinates
+	glm::vec2 floorUV1(0.0, 30.0);
+	glm::vec2 floorUV2(0.0, 0.0);
+	glm::vec2 floorUV3(30.0, 0.0);
+	glm::vec2 floorUV4(30.0, 30.0);
+	// Quad normal vector
 	glm::vec3 nm(0.0, 0.0, 1.0);
-
-	// calculate tangent/bitangent vectors of both triangles
-	glm::vec3 tangent1, bitangent1;
-	glm::vec3 tangent2, bitangent2;
-
-	genesis::computeTangentBasis(pos1, pos2, pos3, pos4,
-		uv1, uv2, uv3, uv4,
+	// Calculate tangent/bitangent vectors of both triangles
+	glm::vec3 floorTangent1, floorBitangent1;
+	glm::vec3 floorTangent2, floorBitangent2;
+	genesis::computeTangentBasis(floorPos1, floorPos2, floorPos3, floorPos4,
+		floorUV1, floorUV2, floorUV3, floorUV4,
 		nm,
-		tangent1, bitangent1,
-		tangent2, bitangent2);
+		floorTangent1, floorBitangent1,
+		floorTangent2, floorBitangent2);
+	GLfloat floorVertices[] = {
+		// floorPositions            // normal         // TexCoords  // floorTangent                          // floorBitangent
+		floorPos1.x, floorPos1.y, floorPos1.z, nm.x, nm.y, nm.z, floorUV1.x, floorUV1.y, floorTangent1.x, floorTangent1.y, floorTangent1.z, floorBitangent1.x, floorBitangent1.y, floorBitangent1.z,
+		floorPos2.x, floorPos2.y, floorPos2.z, nm.x, nm.y, nm.z, floorUV2.x, floorUV2.y, floorTangent1.x, floorTangent1.y, floorTangent1.z, floorBitangent1.x, floorBitangent1.y, floorBitangent1.z,
+		floorPos3.x, floorPos3.y, floorPos3.z, nm.x, nm.y, nm.z, floorUV3.x, floorUV3.y, floorTangent1.x, floorTangent1.y, floorTangent1.z, floorBitangent1.x, floorBitangent1.y, floorBitangent1.z,
 
-	GLfloat quadVertices[] = {
-		// Positions            // normal         // TexCoords  // Tangent                          // Bitangent
-		pos1.x, pos1.y, pos1.z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
-		pos2.x, pos2.y, pos2.z, nm.x, nm.y, nm.z, uv2.x, uv2.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
-		pos3.x, pos3.y, pos3.z, nm.x, nm.y, nm.z, uv3.x, uv3.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
-
-		pos1.x, pos1.y, pos1.z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z,
-		pos3.x, pos3.y, pos3.z, nm.x, nm.y, nm.z, uv3.x, uv3.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z,
-		pos4.x, pos4.y, pos4.z, nm.x, nm.y, nm.z, uv4.x, uv4.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z
+		floorPos1.x, floorPos1.y, floorPos1.z, nm.x, nm.y, nm.z, floorUV1.x, floorUV1.y, floorTangent2.x, floorTangent2.y, floorTangent2.z, floorBitangent2.x, floorBitangent2.y, floorBitangent2.z,
+		floorPos3.x, floorPos3.y, floorPos3.z, nm.x, nm.y, nm.z, floorUV3.x, floorUV3.y, floorTangent2.x, floorTangent2.y, floorTangent2.z, floorBitangent2.x, floorBitangent2.y, floorBitangent2.z,
+		floorPos4.x, floorPos4.y, floorPos4.z, nm.x, nm.y, nm.z, floorUV4.x, floorUV4.y, floorTangent2.x, floorTangent2.y, floorTangent2.z, floorBitangent2.x, floorBitangent2.y, floorBitangent2.z
 	};
-
 	glGenVertexArrays(1, &floorVAO);
 	glGenBuffers(1, &floorVBO);
 	glBindVertexArray(floorVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, floorVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(floorVertices), &floorVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(1);
@@ -172,7 +167,7 @@ void run_gaben_game(GLFWwindow* window)
 	glEnableVertexAttribArray(4);
 	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (GLvoid*)(11 * sizeof(GLfloat)));
 	glBindVertexArray(0);
-	// Setup wall VAO
+	/** Setup wall VAO */
 	glGenVertexArrays(1, &wallVAO);
 	glGenBuffers(1, &wallVBO);
 	glBindVertexArray(wallVAO);
