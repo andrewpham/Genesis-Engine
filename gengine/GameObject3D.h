@@ -33,6 +33,8 @@ namespace genesis {
 		Model getModel();
 		void setTexture(GLuint);
 		GLuint getTexture();
+		void setNormalMap(GLuint);
+		GLuint getNormalMap();
 		void setVAO(GLuint);
 		GLuint getVAO();
 		void setNumVertices(GLuint);
@@ -50,6 +52,8 @@ namespace genesis {
 		GLboolean getIsModel();
 		void setDestroyed(GLboolean);
 		GLboolean getDestroyed();
+		void setHasNormalMap(GLboolean);
+		GLboolean getHasNormalMap();
 
 		void setHitboxRadius(GLfloat);
 		GLfloat getHitboxRadius();
@@ -60,6 +64,7 @@ namespace genesis {
 		Shader _shader;
 		Model _model;
 		GLuint _texture;
+		GLuint _normalMap;
 		GLuint _VAO;
 		GLuint _numVertices;
 
@@ -69,6 +74,7 @@ namespace genesis {
 
 		GLboolean _isModel;
 		GLboolean   _destroyed;
+		GLboolean _hasNormalMap;
 
 		GLfloat _hitboxRadius;
 		glm::vec3 _hitboxOffset;

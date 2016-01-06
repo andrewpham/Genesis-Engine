@@ -9,12 +9,12 @@ namespace genesis {
 	GameObject3D::GameObject3D(Shader _shader, Model _model, glm::vec3 _position, glm::vec3 _size,
 		GLfloat _rotationAngleDegree, glm::vec3 _rotationAxis, GLboolean _isModel, GLboolean _destroyed)
 		: _shader(_shader), _model(_model), _position(_position), _size(_size), 
-		_rotationAngle(_rotationAngleDegree * PI_F / 180.0f), _rotationAxis(_rotationAxis), _isModel(_isModel), _destroyed(_destroyed) { }
+		_rotationAngle(_rotationAngleDegree * PI_F / 180.0f), _rotationAxis(_rotationAxis), _isModel(_isModel), _destroyed(_destroyed), _hasNormalMap(false) { }
 
 	GameObject3D::GameObject3D(Shader _shader, GLuint _texture, GLuint _VAO, GLuint _numVertices, glm::vec3 _position, glm::vec3 _size,
 		GLfloat _rotationAngleDegree, glm::vec3 _rotationAxis, GLboolean _isModel, GLboolean _destroyed)
 		: _shader(_shader), _texture(_texture), _VAO(_VAO), _numVertices(_numVertices), _position(_position), _size(_size), 
-		_rotationAngle(_rotationAngleDegree * PI_F / 180.0f), _rotationAxis(_rotationAxis), _isModel(_isModel), _destroyed(_destroyed) { }
+		_rotationAngle(_rotationAngleDegree * PI_F / 180.0f), _rotationAxis(_rotationAxis), _isModel(_isModel), _destroyed(_destroyed), _hasNormalMap(false) { }
 
 	GameObject3D::~GameObject3D()
 	{
@@ -25,6 +25,7 @@ namespace genesis {
 		if (!_destroyed)
 		{
 			_shader.Use();
+			glUniform1i(glGetUniformLocation(_shader.ID, "hasNormalMap"), _hasNormalMap);
 			glm::mat4 model;
 			model = glm::translate(model, _position);
 			model = glm::rotate(model, _rotationAngle, _rotationAxis);
@@ -35,7 +36,13 @@ namespace genesis {
 			else
 			{
 				glBindVertexArray(_VAO);
+				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, _texture);
+				if (_hasNormalMap)
+				{
+					glActiveTexture(GL_TEXTURE1);
+					glBindTexture(GL_TEXTURE_2D, _normalMap);
+				}
 				glDrawArrays(GL_TRIANGLES, 0, _numVertices);
 				glBindVertexArray(0);
 			}
@@ -70,6 +77,16 @@ namespace genesis {
 	GLuint GameObject3D::getTexture()
 	{
 		return this->_texture;
+	}
+
+	void GameObject3D::setNormalMap(GLuint _normalMap)
+	{
+		this->_normalMap = _normalMap;
+	}
+
+	GLuint GameObject3D::getNormalMap()
+	{
+		return this->_normalMap;
 	}
 
 	void GameObject3D::setVAO(GLuint _VAO)
@@ -145,6 +162,16 @@ namespace genesis {
 	GLboolean GameObject3D::getDestroyed()
 	{
 		return this->_destroyed;
+	}
+
+	void GameObject3D::setHasNormalMap(GLboolean _hasNormalMap)
+	{
+		this->_hasNormalMap = _hasNormalMap;
+	}
+
+	GLboolean GameObject3D::getHasNormalMap()
+	{
+		return this->_hasNormalMap;
 	}
 
 	void GameObject3D::setHitboxRadius(GLfloat _hitboxRadius)

@@ -121,17 +121,56 @@ void run_gaben_game(GLFWwindow* window)
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
 	glBindVertexArray(0);
 	// Setup floor VAO
+
+	// positions
+	glm::vec3 pos1(-30.0, 30.0, 0.0);
+	glm::vec3 pos2(-30.0, -30.0, 0.0);
+	glm::vec3 pos3(30.0, -30.0, 0.0);
+	glm::vec3 pos4(30.0, 30.0, 0.0);
+	// texture coordinates
+	glm::vec2 uv1(0.0, 30.0);
+	glm::vec2 uv2(0.0, 0.0);
+	glm::vec2 uv3(30.0, 0.0);
+	glm::vec2 uv4(30.0, 30.0);
+	// normal vector
+	glm::vec3 nm(0.0, 0.0, 1.0);
+
+	// calculate tangent/bitangent vectors of both triangles
+	glm::vec3 tangent1, bitangent1;
+	glm::vec3 tangent2, bitangent2;
+
+	genesis::computeTangentBasis(pos1, pos2, pos3, pos4,
+		uv1, uv2, uv3, uv4,
+		nm,
+		tangent1, bitangent1,
+		tangent2, bitangent2);
+
+	GLfloat quadVertices[] = {
+		// Positions            // normal         // TexCoords  // Tangent                          // Bitangent
+		pos1.x, pos1.y, pos1.z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
+		pos2.x, pos2.y, pos2.z, nm.x, nm.y, nm.z, uv2.x, uv2.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
+		pos3.x, pos3.y, pos3.z, nm.x, nm.y, nm.z, uv3.x, uv3.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
+
+		pos1.x, pos1.y, pos1.z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z,
+		pos3.x, pos3.y, pos3.z, nm.x, nm.y, nm.z, uv3.x, uv3.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z,
+		pos4.x, pos4.y, pos4.z, nm.x, nm.y, nm.z, uv4.x, uv4.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z
+	};
+
 	glGenVertexArrays(1, &floorVAO);
 	glGenBuffers(1, &floorVBO);
 	glBindVertexArray(floorVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, floorVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(FLOOR_VERTICES), &FLOOR_VERTICES, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (GLvoid*)(8 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (GLvoid*)(11 * sizeof(GLfloat)));
 	glBindVertexArray(0);
 	// Setup wall VAO
 	glGenVertexArrays(1, &wallVAO);
@@ -207,10 +246,14 @@ void run_gaben_game(GLFWwindow* window)
 #pragma endregion
 
 	// Load textures
-	_gabenGameResourceManager.loadTexture("../Genesis/Textures/Life of Gaben/grass.jpg", false, "floor");
+	_gabenGameResourceManager.loadTexture("../Genesis/Textures/Life of Gaben/ground.jpg", false, "floor");
 	GLuint floorTexture = _gabenGameResourceManager.getTexture("floor").ID;
-	_gabenGameResourceManager.loadTexture("../Genesis/Textures/Life of Gaben/wall.jpg", false, "wall");
+	_gabenGameResourceManager.loadTexture("../Genesis/Textures/Life of Gaben/ground_normal.jpg", false, "floorNormalMap");
+	GLuint floorNormalMap = _gabenGameResourceManager.getTexture("floorNormalMap").ID;
+	_gabenGameResourceManager.loadTexture("../Genesis/Textures/Life of Gaben/brickwall.jpg", false, "wall");
 	GLuint wallTexture = _gabenGameResourceManager.getTexture("wall").ID;
+	_gabenGameResourceManager.loadTexture("../Genesis/Textures/Life of Gaben/brickwall_normal.jpg", false, "wallNormalMap");
+	GLuint wallNormalMap = _gabenGameResourceManager.getTexture("wallNormalMap").ID;
 
 	// Cubemap (Skybox)
 	vector<const GLchar*> faces;
@@ -230,7 +273,9 @@ void run_gaben_game(GLFWwindow* window)
 	genesis::Model enemy("../Genesis/Objects/Nanosuit/nanosuit.obj");
 
 	// Create game objects
-	genesis::GameObject3D floorObject(shader, floorTexture, floorVAO, 6);
+	genesis::GameObject3D floorObject(shader, floorTexture, floorVAO, 6, glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f), 90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	floorObject.setNormalMap(floorNormalMap);
+	floorObject.setHasNormalMap(true);
 	genesis::GameObject3D houseObject(shader, house, glm::vec3(-30.0f, -1.05f, 5.0f), glm::vec3(0.55f, 0.55f, 0.55f));
 	vector<genesis::Enemy> enemyObjects;
 	vector<genesis::GameObject3D> pickupObjects;

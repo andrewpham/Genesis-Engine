@@ -5,6 +5,7 @@
 #include <gengine/InputManager.h>
 #include <gengine/ResourceManager.h>
 #include <gengine/Variables.h>
+#include <gengine/Algorithms.h>
 #include <gengine/GameObject3D.h>
 #include <gengine/Enemy.h>
 
