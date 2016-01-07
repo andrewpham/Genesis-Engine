@@ -59,6 +59,8 @@ void run_gaben_game(GLFWwindow* window)
 	GLuint floorVAO, floorVBO;
 	// Wall data and state
 	GLuint wallVAO, wallVBO;
+	// Square data and state
+	GLuint squareVAO, squareVBO;
 	// Skybox data and state
 	GLuint skyboxVAO, skyboxVBO;
 
@@ -110,20 +112,6 @@ void run_gaben_game(GLFWwindow* window)
 	GLint numTrapsAvailable = 0;
 
 #pragma region "object_initialization"
-	/** Setup test VAO */
-	GLuint testVAO, testVBO;
-	glGenVertexArrays(1, &testVAO);
-	glGenBuffers(1, &testVBO);
-	glBindVertexArray(testVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, testVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(TEST_VERTICES), &TEST_VERTICES, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
-	glBindVertexArray(0);
 	/** Setup box VAO */
 	glGenVertexArrays(1, &boxVAO);
 	glGenBuffers(1, &boxVBO);
@@ -229,6 +217,51 @@ void run_gaben_game(GLFWwindow* window)
 	glEnableVertexAttribArray(4);
 	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (GLvoid*)(11 * sizeof(GLfloat)));
 	glBindVertexArray(0);
+	/** Setup square VAO */
+	// Square quad positions
+	glm::vec3 squarePos1(-0.35f, 0.35f, 0.0f);
+	glm::vec3 squarePos2(-0.35f, -0.35f, 0.0f);
+	glm::vec3 squarePos3(0.35f, -0.35f, 0.0f);
+	glm::vec3 squarePos4(0.35f, 0.35f, 0.0f);
+	// Square texture coordinates
+	glm::vec2 squareUV1(0.0f, 1.0f);
+	glm::vec2 squareUV2(0.0f, 0.0f);
+	glm::vec2 squareUV3(1.0f, 0.0f);
+	glm::vec2 squareUV4(1.0f, 1.0f);
+	// Calculate tangent/bitangent vectors of both triangles
+	glm::vec3 squareTangent1, squareBitangent1;
+	glm::vec3 squareTangent2, squareBitangent2;
+	genesis::computeTangentBasis(squarePos1, squarePos2, squarePos3, squarePos4,
+		squareUV1, squareUV2, squareUV3, squareUV4,
+		nm,
+		squareTangent1, squareBitangent1,
+		squareTangent2, squareBitangent2);
+	GLfloat squareVertices[] = {
+		// Positions						// Normal         // TexCoords			// Tangent										// Bitangent
+		squarePos1.x, squarePos1.y, squarePos1.z, nm.x, nm.y, nm.z, squareUV1.x, squareUV1.y, squareTangent1.x, squareTangent1.y, squareTangent1.z, squareBitangent1.x, squareBitangent1.y, squareBitangent1.z,
+		squarePos2.x, squarePos2.y, squarePos2.z, nm.x, nm.y, nm.z, squareUV2.x, squareUV2.y, squareTangent1.x, squareTangent1.y, squareTangent1.z, squareBitangent1.x, squareBitangent1.y, squareBitangent1.z,
+		squarePos3.x, squarePos3.y, squarePos3.z, nm.x, nm.y, nm.z, squareUV3.x, squareUV3.y, squareTangent1.x, squareTangent1.y, squareTangent1.z, squareBitangent1.x, squareBitangent1.y, squareBitangent1.z,
+
+		squarePos1.x, squarePos1.y, squarePos1.z, nm.x, nm.y, nm.z, squareUV1.x, squareUV1.y, squareTangent2.x, squareTangent2.y, squareTangent2.z, squareBitangent2.x, squareBitangent2.y, squareBitangent2.z,
+		squarePos3.x, squarePos3.y, squarePos3.z, nm.x, nm.y, nm.z, squareUV3.x, squareUV3.y, squareTangent2.x, squareTangent2.y, squareTangent2.z, squareBitangent2.x, squareBitangent2.y, squareBitangent2.z,
+		squarePos4.x, squarePos4.y, squarePos4.z, nm.x, nm.y, nm.z, squareUV4.x, squareUV4.y, squareTangent2.x, squareTangent2.y, squareTangent2.z, squareBitangent2.x, squareBitangent2.y, squareBitangent2.z
+	};
+	glGenVertexArrays(1, &squareVAO);
+	glGenBuffers(1, &squareVBO);
+	glBindVertexArray(squareVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, squareVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(squareVertices), &squareVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (GLvoid*)(8 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (GLvoid*)(11 * sizeof(GLfloat)));
+	glBindVertexArray(0);
 	/** Setup skybox VAO */
 	glGenVertexArrays(1, &skyboxVAO);
 	glGenBuffers(1, &skyboxVBO);
@@ -302,6 +335,8 @@ void run_gaben_game(GLFWwindow* window)
 	GLuint towerTexture = _gabenGameResourceManager.getTexture("tower").ID;
 	_gabenGameResourceManager.loadTexture("../Genesis/Textures/Life of Gaben/tower_head.jpg", false, "towerHead");
 	GLuint towerHeadTexture = _gabenGameResourceManager.getTexture("towerHead").ID;
+	_gabenGameResourceManager.loadTexture("../Genesis/Textures/Life of Gaben/square.jpg", false, "square");
+	GLuint squareTexture = _gabenGameResourceManager.getTexture("square").ID;
 
 	// Cubemap (Skybox)
 	vector<const GLchar*> faces;
@@ -369,6 +404,7 @@ void run_gaben_game(GLFWwindow* window)
 	}
 	vector<genesis::GameObject3D> towerObjects;
 	vector<genesis::GameObject3D> towerHeadObjects;
+	genesis::GameObject3D squareObject(shader, squareTexture, squareVAO, 6, glm::vec3(0.0f, -0.99f, 0.0f), glm::vec3(1.0f), 90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -552,6 +588,9 @@ void run_gaben_game(GLFWwindow* window)
 		}
 		// Print the number of traps available to place
 		std::cout << numTrapsAvailable << std::endl;
+		// Square
+		squareObject.setPosition(glm::vec3(x_ray, -0.99f, z_ray));
+		squareObject.render();
 #pragma region "flock_render"
 		flockUpdateShader.Use();
 		// Shift the flock convergence point over time to create a more dynamic simulation
