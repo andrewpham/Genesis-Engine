@@ -10,6 +10,7 @@ static GLfloat _secondsSinceDamaged = 0.0f;
 Direction vectorDirection(glm::vec2);
 glm::quat rotationBetweenVectors(glm::vec3, glm::vec3);
 GLboolean checkCollision(genesis::GameObject3D&, genesis::InputManager&);
+GLboolean checkTrapCollision(genesis::GameObject3D&, genesis::GameObject3D&);
 void resolveCollision(genesis::GameObject3D&, genesis::InputManager&);
 void resolveEnemyInteractions(genesis::Enemy&, genesis::InputManager&, GLfloat, GLuint);
 void resolveWallCollisions(GLfloat, GLfloat, GLfloat, GLfloat, genesis::InputManager&);
@@ -366,8 +367,6 @@ void run_gaben_game(GLFWwindow* window)
 		boxObject.setHitboxRadius(1.5f);
 		boxObject.setHitboxOffset(glm::vec3(0.0f));
 	}
-
-	vector<genesis::GameObject3D> hitboxObjects;
 	vector<genesis::GameObject3D> towerObjects;
 	vector<genesis::GameObject3D> towerHeadObjects;
 
@@ -399,6 +398,9 @@ void run_gaben_game(GLFWwindow* window)
 		// Slowly decays the movement speed of Gaben if greater than base speed
 		if (_gabenGameInputManager._camera.MovementSpeed > 3.0f)
 			_gabenGameInputManager._camera.MovementSpeed -= _gabenGameInputManager.getDeltaTime() / 7.0f;
+		// Sets the maximum movement speed of the player
+		if (_gabenGameInputManager._camera.MovementSpeed > 12.0f)
+			_gabenGameInputManager._camera.MovementSpeed = 12.0f;
 
 		// Set the view position property in the fragment shader
 		shader.Use();
@@ -445,10 +447,13 @@ void run_gaben_game(GLFWwindow* window)
 		}
 		for (genesis::Enemy &enemyObject : enemyObjects)
 		{
-			enemyObject.setPositionY(-0.2f + sinf(currentFrame) / 4);
-			enemyObject.render();
-			resolveCollision(enemyObject, _gabenGameInputManager);
-			resolveEnemyInteractions(enemyObject, _gabenGameInputManager, _gabenGameInputManager.getDeltaTime(), DAMAGE);
+			if (!enemyObject.getDestroyed())
+			{
+				enemyObject.setPositionY(-0.2f + sinf(currentFrame) / 4);
+				enemyObject.render();
+				resolveCollision(enemyObject, _gabenGameInputManager);
+				resolveEnemyInteractions(enemyObject, _gabenGameInputManager, _gabenGameInputManager.getDeltaTime(), DAMAGE);
+			}
 		}
 		// Print the health of the player
 		//std::cout << _health << std::endl;
@@ -466,15 +471,18 @@ void run_gaben_game(GLFWwindow* window)
 		}
 		for (genesis::GameObject3D &pickupObject : pickupObjects)
 		{
-			if (pickupObject._rotationAngle > 360.f)
-				pickupObject._rotationAngle = 0.0f;
-			pickupObject._rotationAngle = pickupObject._rotationAngle + _gabenGameInputManager.getDeltaTime();
-			pickupObject.render();
+			if (!pickupObject.getDestroyed())
+			{
+				if (pickupObject._rotationAngle > 360.f)
+					pickupObject._rotationAngle = 0.0f;
+				pickupObject._rotationAngle = pickupObject._rotationAngle + _gabenGameInputManager.getDeltaTime();
+				pickupObject.render();
+			}
 			if (!pickupObject.getDestroyed() && checkCollision(pickupObject, _gabenGameInputManager))
 			{
 				pickupObject.setDestroyed(true);
 				_gabenGameInputManager._camera.MovementSpeed *= 2.0f;
-				_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/reload.mp3", GL_FALSE);
+				_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/stim.wav", GL_FALSE);
 			}
 		}
 		// Walls
@@ -496,7 +504,9 @@ void run_gaben_game(GLFWwindow* window)
 			resolveCollision(boxObject, _gabenGameInputManager);
 		}
 		// Towers
-
+		// Calculates the world position of where the player is looking at at most one unit away from the player
+		GLfloat x_ray = _gabenGameInputManager._camera.Position.x + 3 * _gabenGameInputManager._camera.Front.x;
+		GLfloat z_ray = _gabenGameInputManager._camera.Position.z + 3 * _gabenGameInputManager._camera.Front.z;
 		// Keeps track of when we can spawn a new tower defense (once every 15 seconds by default)
 		secondsSinceTrap += _gabenGameInputManager.getDeltaTime();
 		if (secondsSinceTrap > TOWER_SPAWN_RATE)
@@ -508,26 +518,40 @@ void run_gaben_game(GLFWwindow* window)
 		{	
 			numTrapsAvailable -= 1;
 
-			hitboxObjects.push_back(genesis::GameObject3D(shader, wallTexture, testVAO, 36, glm::vec3(0.0f, 0.0f, -3.0f)));
-			towerObjects.push_back(genesis::GameObject3D(shader, towerTexture, boxVAO, 36, glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.1f, 1.0f, 0.1f)));
-			towerHeadObjects.push_back(genesis::GameObject3D(shader, towerHeadTexture, boxVAO, 36, glm::vec3(0.0f, 0.8f, -3.0f), glm::vec3(0.2f, 0.2f, 0.2f)));
+			towerObjects.push_back(genesis::GameObject3D(shader, towerTexture, boxVAO, 36, glm::vec3(x_ray, 0.0f, z_ray), glm::vec3(0.1f, 1.0f, 0.1f)));			
+			towerObjects.back().setHitboxRadius(0.35f);
+			towerObjects.back().setHitboxOffset(glm::vec3(0.0f, 0.0f, 0.0f));
+			towerHeadObjects.push_back(genesis::GameObject3D(shader, towerHeadTexture, boxVAO, 36, glm::vec3(x_ray, 0.8f, z_ray), glm::vec3(0.2f, 0.2f, 0.2f)));
+			_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/towerplc.wav", GL_FALSE);
 		}
-		for (genesis::GameObject3D &hitboxObject : hitboxObjects)
+		for (int i = 0; i < towerObjects.size(); i++)
 		{
-			hitboxObject.render();
+			if (!towerObjects[i].getDestroyed())
+			{
+				if (towerObjects[i]._rotationAngle > 360.f)
+					towerObjects[i]._rotationAngle = 0.0f;
+				towerObjects[i]._rotationAngle = towerObjects[i]._rotationAngle + _gabenGameInputManager.getDeltaTime();
+				towerObjects[i].render();
+				resolveCollision(towerObjects[i], _gabenGameInputManager);
+				if (towerHeadObjects[i]._rotationAngle < -360.f)
+					towerHeadObjects[i]._rotationAngle = 0.0f;
+				towerHeadObjects[i]._rotationAngle = towerHeadObjects[i]._rotationAngle - _gabenGameInputManager.getDeltaTime();
+				towerHeadObjects[i].render();
+				resolveCollision(towerHeadObjects[i], _gabenGameInputManager);
+			}
+			for (genesis::Enemy &enemyObject : enemyObjects)
+			{
+				if (!towerObjects[i].getDestroyed() && checkTrapCollision(towerObjects[i], enemyObject))
+				{
+					towerObjects[i].setDestroyed(true);
+					towerHeadObjects[i].setDestroyed(true);
+					enemyObject.setDestroyed(true);
+					_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/death.wav", GL_FALSE);
+				}
+			}
 		}
-		for (genesis::GameObject3D &towerObject : towerObjects)
-		{
-			towerObject.render();
-		}
-		for (genesis::GameObject3D &towerHeadObject : towerHeadObjects)
-		{
-			towerHeadObject.render();
-		}
-
+		// Print the number of traps available to place
 		std::cout << numTrapsAvailable << std::endl;
-
-
 #pragma region "flock_render"
 		flockUpdateShader.Use();
 		// Shift the flock convergence point over time to create a more dynamic simulation
@@ -633,6 +657,37 @@ GLboolean checkCollision(genesis::GameObject3D &_object, genesis::InputManager &
 	// Collision in front of the hitbox?
 	bool collisionZ2 = hitboxPosition.z - _object.getHitboxRadius() <= cameraPosition.z &&
 		cameraPosition.z <= hitboxPosition.z;
+
+	return (collisionX && collisionZ) || (collisionX2 && collisionZ)
+		|| (collisionX && collisionZ2) || (collisionX2 && collisionZ2);
+}
+
+GLboolean checkTrapCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2)
+{
+	glm::vec3 hitboxPosition1 = _object1.getPosition() + _object1.getHitboxOffset();
+	glm::vec3 hitboxPosition2 = _object2.getPosition() + _object2.getHitboxOffset();
+	GLfloat object1XMax = hitboxPosition1.x + _object1.getHitboxRadius() + 0.15f;
+	GLfloat object1XMin = hitboxPosition1.x - _object1.getHitboxRadius() - 0.15f;
+	GLfloat object1ZMax = hitboxPosition1.z + _object1.getHitboxRadius() + 0.15f;
+	GLfloat object1ZMin = hitboxPosition1.z - _object1.getHitboxRadius() - 0.15f;
+	GLfloat object2XMax = hitboxPosition2.x + _object2.getHitboxRadius();
+	GLfloat object2XMin = hitboxPosition2.x - _object2.getHitboxRadius();
+	GLfloat object2ZMax = hitboxPosition2.z + _object2.getHitboxRadius();
+	GLfloat object2ZMin = hitboxPosition2.z - _object2.getHitboxRadius();
+
+	/** Collision detection booleans */
+	// Collision right of the hitbox?
+	bool collisionX = object1XMax >= object2XMin &&
+		object2XMin >= hitboxPosition1.x;
+	// Collision behind the hitbox?
+	bool collisionZ = object1ZMax >= object2ZMin &&
+		object2ZMin >= hitboxPosition1.z;
+	// Collision left of the hitbox?
+	bool collisionX2 = object1XMin <= object2XMax &&
+		object2XMax <= hitboxPosition1.x;
+	// Collision in front of the hitbox?
+	bool collisionZ2 = object1ZMin <= object2ZMax &&
+		object2ZMax <= hitboxPosition1.z;
 
 	return (collisionX && collisionZ) || (collisionX2 && collisionZ)
 		|| (collisionX && collisionZ2) || (collisionX2 && collisionZ2);
