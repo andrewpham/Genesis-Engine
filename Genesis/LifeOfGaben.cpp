@@ -335,7 +335,7 @@ void run_gaben_game(GLFWwindow* window)
 	GLuint towerTexture = _gabenGameResourceManager.getTexture("tower").ID;
 	_gabenGameResourceManager.loadTexture("../Genesis/Textures/Life of Gaben/tower_head.jpg", false, "towerHead");
 	GLuint towerHeadTexture = _gabenGameResourceManager.getTexture("towerHead").ID;
-	_gabenGameResourceManager.loadTexture("../Genesis/Textures/Life of Gaben/square.jpg", false, "square");
+	_gabenGameResourceManager.loadTexture("../Genesis/Textures/Life of Gaben/square.png", false, "square");
 	GLuint squareTexture = _gabenGameResourceManager.getTexture("square").ID;
 
 	// Cubemap (Skybox)
@@ -354,6 +354,7 @@ void run_gaben_game(GLFWwindow* window)
 	genesis::Model rock("../Genesis/Objects/Rock/rock.obj");
 	genesis::Model pickup("../Genesis/Objects/Life of Gaben/Pickup/cup OBJ.obj");
 	genesis::Model enemy("../Genesis/Objects/Nanosuit/nanosuit.obj");
+	genesis::Model crosshair("../Genesis/Objects/Life of Gaben/Crosshair/sphere.obj");
 
 	// Create game objects
 	genesis::GameObject3D floorObject(shader, floorTexture, floorVAO, 6, glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f), 90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -405,6 +406,7 @@ void run_gaben_game(GLFWwindow* window)
 	vector<genesis::GameObject3D> towerObjects;
 	vector<genesis::GameObject3D> towerHeadObjects;
 	genesis::GameObject3D squareObject(shader, squareTexture, squareVAO, 6, glm::vec3(0.0f, -0.99f, 0.0f), glm::vec3(1.0f), 90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	genesis::GameObject3D crossHairObject(shader, crosshair, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.015f, 0.015f, 0.015f));
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -542,6 +544,7 @@ void run_gaben_game(GLFWwindow* window)
 		// Towers
 		// Calculates the world position of where the player is looking at at most one unit away from the player
 		GLfloat x_ray = _gabenGameInputManager._camera.Position.x + 3 * _gabenGameInputManager._camera.Front.x;
+		GLfloat y_ray = _gabenGameInputManager._camera.Position.y + 3 * _gabenGameInputManager._camera.Front.y;
 		GLfloat z_ray = _gabenGameInputManager._camera.Position.z + 3 * _gabenGameInputManager._camera.Front.z;
 		// Keeps track of when we can spawn a new tower defense (once every 15 seconds by default)
 		secondsSinceTrap += _gabenGameInputManager.getDeltaTime();
@@ -591,6 +594,9 @@ void run_gaben_game(GLFWwindow* window)
 		// Square
 		squareObject.setPosition(glm::vec3(x_ray, -0.99f, z_ray));
 		squareObject.render();
+		// Crosshair
+		crossHairObject.setPosition(glm::vec3(x_ray, y_ray, z_ray));
+		crossHairObject.render();
 #pragma region "flock_render"
 		flockUpdateShader.Use();
 		// Shift the flock convergence point over time to create a more dynamic simulation
