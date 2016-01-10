@@ -11,6 +11,7 @@ Direction vectorDirection(glm::vec2);
 glm::quat rotationBetweenVectors(glm::vec3, glm::vec3);
 GLboolean checkCollision(genesis::GameObject3D&, genesis::InputManager&);
 GLboolean checkTrapCollision(genesis::GameObject3D&, genesis::GameObject3D&);
+GLboolean checkBulletCollision(genesis::Enemy&, genesis::InputManager&);
 void resolveCollision(genesis::GameObject3D&, genesis::InputManager&);
 void resolveEnemyInteractions(genesis::Enemy&, genesis::InputManager&, GLfloat, GLuint);
 void resolveWallCollisions(GLfloat, GLfloat, GLfloat, GLfloat, genesis::InputManager&);
@@ -109,6 +110,7 @@ void run_gaben_game(GLFWwindow* window)
 	GLfloat secondsSincePickup = 0.0f;
 	GLfloat secondsSinceEnemy = 0.0f;
 	GLfloat secondsSinceTrap = 0.0f;
+	GLfloat attackCooldown = 0.0f;
 	GLint numTrapsAvailable = 0;
 
 #pragma region "object_initialization"
@@ -406,7 +408,7 @@ void run_gaben_game(GLFWwindow* window)
 	vector<genesis::GameObject3D> towerObjects;
 	vector<genesis::GameObject3D> towerHeadObjects;
 	genesis::GameObject3D squareObject(shader, squareTexture, squareVAO, 6, glm::vec3(0.0f, -0.99f, 0.0f), glm::vec3(1.0f), 90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	genesis::GameObject3D crossHairObject(shader, crosshair, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.015f, 0.015f, 0.015f));
+	genesis::GameObject3D crossHairObject(shader, crosshair, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f));
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -439,6 +441,12 @@ void run_gaben_game(GLFWwindow* window)
 		// Sets the maximum movement speed of the player
 		if (_gabenGameInputManager._camera.MovementSpeed > 12.0f)
 			_gabenGameInputManager._camera.MovementSpeed = 12.0f;
+		// Controls the gunshot cooldown and later resets the cooldown timer once it expires
+		if (_gabenGameInputManager._keys[GLFW_KEY_SPACE])
+			attackCooldown += _gabenGameInputManager.getDeltaTime();
+		// Plays the gunshot sound every time we fire a bullet
+		if (attackCooldown > 0.075f)
+			_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/gunshot.mp3", GL_FALSE);
 
 		// Set the view position property in the fragment shader
 		shader.Use();
@@ -472,14 +480,14 @@ void run_gaben_game(GLFWwindow* window)
 		houseObject.render();
 		// Enemy Spawns
 		secondsSinceEnemy += _gabenGameInputManager.getDeltaTime();
-		if (secondsSinceEnemy >= 10.0f)
+		if (secondsSinceEnemy >= 1.0f)
 		{
 			secondsSinceEnemy = 0.0f;
 			GLfloat x_rand = random_range(west + 2, east - 2);
 			GLfloat z_rand = random_range(0.0f, south - 2);
 			enemyObjects.push_back(genesis::Enemy(shader, enemy, glm::vec3(x_rand, -0.2f, z_rand), glm::vec3(0.10f, 0.10f, 0.10f)));
 			enemyObjects.back().setHitboxRadius(0.4f);
-			enemyObjects.back().setHitboxOffset(glm::vec3(0.0f, 0.4f, 0.0f));
+			enemyObjects.back().setHitboxOffset(glm::vec3(0.0f, 0.8f, 0.0f));
 			enemyObjects.back().setAggroRadius(5.0f);
 			enemyObjects.back().setDamageRadius(2.0f);
 		}
@@ -491,13 +499,23 @@ void run_gaben_game(GLFWwindow* window)
 				enemyObject.render();
 				resolveCollision(enemyObject, _gabenGameInputManager);
 				resolveEnemyInteractions(enemyObject, _gabenGameInputManager, _gabenGameInputManager.getDeltaTime(), DAMAGE);
+				// Checks any bullet collisions with the enemy actor if the F key is pressed
+				if (_gabenGameInputManager._keys[GLFW_KEY_SPACE] && attackCooldown > 0.075f && checkBulletCollision(enemyObject, _gabenGameInputManager))
+				{
+					enemyObject.setHealth(enemyObject.getHealth() - 1);
+					if (enemyObject.getHealth() < 1)
+					{
+						enemyObject.setDestroyed(true);
+						_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/death.wav", GL_FALSE);
+					}
+				}
 			}
 		}
 		// Print the health of the player
 		//std::cout << _health << std::endl;
 		// Pickup Spawns
 		secondsSincePickup += _gabenGameInputManager.getDeltaTime();
-		if (secondsSincePickup >= 30.0f)
+		if (secondsSincePickup >= 20.0f)
 		{
 			secondsSincePickup = 0.0f;
 			GLfloat x_rand = random_range(west + 2, east - 2);
@@ -585,6 +603,7 @@ void run_gaben_game(GLFWwindow* window)
 					towerObjects[i].setDestroyed(true);
 					towerHeadObjects[i].setDestroyed(true);
 					enemyObject.setDestroyed(true);
+					_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/explosion.wav", GL_FALSE);
 					_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/death.wav", GL_FALSE);
 				}
 			}
@@ -597,6 +616,9 @@ void run_gaben_game(GLFWwindow* window)
 		// Crosshair
 		crossHairObject.setPosition(glm::vec3(x_ray, y_ray, z_ray));
 		crossHairObject.render();
+		// Resets the cooldown tracker once the variable for the current attack cooldown is used in this frame
+		if (attackCooldown > 0.075f)
+			attackCooldown = 0.0f;
 #pragma region "flock_render"
 		flockUpdateShader.Use();
 		// Shift the flock convergence point over time to create a more dynamic simulation
@@ -736,6 +758,49 @@ GLboolean checkTrapCollision(genesis::GameObject3D &_object1, genesis::GameObjec
 
 	return (collisionX && collisionZ) || (collisionX2 && collisionZ)
 		|| (collisionX && collisionZ2) || (collisionX2 && collisionZ2);
+}
+
+/** http://gamedev.stackexchange.com/questions/18436/most-efficient-aabb-vs-ray-collision-algorithms */
+GLboolean checkBulletCollision(genesis::Enemy &_enemy, genesis::InputManager &_inputManager)
+{
+	// dir is the unit direction vector of the ray
+	glm::vec3 dir = _inputManager._camera.Front;
+	glm::vec3 dirfrac;
+	dirfrac.x = 1.0f / dir.x;
+	dirfrac.y = 1.0f / dir.y;
+	dirfrac.z = 1.0f / dir.z;
+	// lb is the corner of the AABB with minimal coordinates, rt is the maximal corner
+	glm::vec3 enemyPos = _enemy.getPosition();
+	GLfloat hitboxRadius = _enemy.getHitboxRadius();
+	glm::vec3 hitboxOffset = _enemy.getHitboxOffset();
+	glm::vec3 lb = glm::vec3(enemyPos.x + hitboxOffset.x - hitboxRadius, enemyPos.y + hitboxOffset.y - (hitboxRadius + 0.4f), enemyPos.z + hitboxOffset.z - hitboxRadius);
+	glm::vec3 rt = glm::vec3(enemyPos.x + hitboxOffset.x + hitboxRadius, enemyPos.y + hitboxOffset.y + (hitboxRadius + 0.4f), enemyPos.z + hitboxOffset.z + hitboxRadius);
+	// org is the origin of the ray
+	glm::vec3 org = _inputManager._camera.Position;
+
+	float t1 = (lb.x - org.x) * dirfrac.x;
+	float t2 = (rt.x - org.x) * dirfrac.x;
+	float t3 = (lb.y - org.y) * dirfrac.y;
+	float t4 = (rt.y - org.y) * dirfrac.y;
+	float t5 = (lb.z - org.z) * dirfrac.z;
+	float t6 = (rt.z - org.z) * dirfrac.z;
+
+	float tmin = max(max(min(t1, t2), min(t3, t4)), min(t5, t6));
+	float tmax = min(min(max(t1, t2), max(t3, t4)), max(t5, t6));
+
+	// if tmax < 0, ray (line) is intersecting AABB, but whole AABB is behing us
+	if (tmax < 0)
+	{
+		return false;
+	}
+
+	// if tmin > tmax, ray doesn't intersect AABB
+	if (tmin > tmax)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void resolveCollision(genesis::GameObject3D &_object, genesis::InputManager &_inputManager)

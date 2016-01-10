@@ -24,12 +24,15 @@ namespace genesis {
 		GLfloat getDamageRadius();
 		void setOrientation(glm::quat);
 		glm::quat getOrientation();
+		void setHealth(GLuint);
+		GLuint getHealth();
 	protected:
 		// Enemy state
 		GLboolean _isAggroed;
 		GLfloat _aggroRadius;
 		GLfloat _damageRadius;
 		glm::quat _orientation;
+		GLuint _health;
 	};
 
 }
