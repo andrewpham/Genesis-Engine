@@ -357,6 +357,7 @@ void run_gaben_game(GLFWwindow* window)
 	genesis::Model pickup("../Genesis/Objects/Life of Gaben/Pickup/cup OBJ.obj");
 	genesis::Model enemy("../Genesis/Objects/Nanosuit/nanosuit.obj");
 	genesis::Model crosshair("../Genesis/Objects/Life of Gaben/Crosshair/sphere.obj");
+	genesis::Model gun("../Genesis/Objects/Life of Gaben/Gun/M4A1.obj");
 
 	// Create game objects
 	genesis::GameObject3D floorObject(shader, floorTexture, floorVAO, 6, glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f), 90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -409,6 +410,7 @@ void run_gaben_game(GLFWwindow* window)
 	vector<genesis::GameObject3D> towerHeadObjects;
 	genesis::GameObject3D squareObject(shader, squareTexture, squareVAO, 6, glm::vec3(0.0f, -0.99f, 0.0f), glm::vec3(1.0f), 90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	genesis::GameObject3D crossHairObject(shader, crosshair, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f));
+	genesis::GameObject3D gunObject(shader, gun, glm::vec3(0.2f, -0.2f, -0.5f), glm::vec3(0.03f), 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -444,9 +446,15 @@ void run_gaben_game(GLFWwindow* window)
 		// Controls the gunshot cooldown and later resets the cooldown timer once it expires
 		if (_gabenGameInputManager._keys[GLFW_KEY_SPACE])
 			attackCooldown += _gabenGameInputManager.getDeltaTime();
+		// Rotation angle controls to bob the gun up and down
+		if (gunObject._rotationAngle > 0.0f)
+			gunObject._rotationAngle -= 5 * _gabenGameInputManager.getDeltaTime();
 		// Plays the gunshot sound every time we fire a bullet
 		if (attackCooldown > 0.075f)
+		{
 			_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/gunshot.mp3", GL_FALSE);
+			gunObject._rotationAngle = 45.0f;
+		}
 
 		// Set the view position property in the fragment shader
 		shader.Use();
@@ -480,7 +488,7 @@ void run_gaben_game(GLFWwindow* window)
 		houseObject.render();
 		// Enemy Spawns
 		secondsSinceEnemy += _gabenGameInputManager.getDeltaTime();
-		if (secondsSinceEnemy >= 1.0f)
+		if (secondsSinceEnemy >= 20.0f)
 		{
 			secondsSinceEnemy = 0.0f;
 			GLfloat x_rand = random_range(west + 2, east - 2);
@@ -616,9 +624,14 @@ void run_gaben_game(GLFWwindow* window)
 		// Crosshair
 		crossHairObject.setPosition(glm::vec3(x_ray, y_ray, z_ray));
 		crossHairObject.render();
+		// Gun
+		view = glm::mat4();
+		glUniformMatrix4fv(uniforms.object.view, 1, GL_FALSE, glm::value_ptr(view));
+		gunObject.render();
 		// Resets the cooldown tracker once the variable for the current attack cooldown is used in this frame
 		if (attackCooldown > 0.075f)
 			attackCooldown = 0.0f;
+		view = _gabenGameInputManager._camera.GetViewMatrix();
 #pragma region "flock_render"
 		flockUpdateShader.Use();
 		// Shift the flock convergence point over time to create a more dynamic simulation
