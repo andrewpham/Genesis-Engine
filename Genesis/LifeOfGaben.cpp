@@ -410,7 +410,7 @@ void run_gaben_game(GLFWwindow* window)
 	vector<genesis::GameObject3D> towerHeadObjects;
 	genesis::GameObject3D squareObject(shader, squareTexture, squareVAO, 6, glm::vec3(0.0f, -0.99f, 0.0f), glm::vec3(1.0f), 90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	genesis::GameObject3D crossHairObject(shader, crosshair, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f));
-	genesis::GameObject3D gunObject(shader, gun, glm::vec3(0.2f, -0.2f, -0.5f), glm::vec3(0.03f), 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	genesis::GameObject3D gunObject(shader, gun, glm::vec3(0.2f, -0.2f, -0.5f), glm::vec3(0.03f));
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -446,15 +446,9 @@ void run_gaben_game(GLFWwindow* window)
 		// Controls the gunshot cooldown and later resets the cooldown timer once it expires
 		if (_gabenGameInputManager._keys[GLFW_KEY_SPACE])
 			attackCooldown += _gabenGameInputManager.getDeltaTime();
-		// Rotation angle controls to bob the gun up and down
-		if (gunObject._rotationAngle > 0.0f)
-			gunObject._rotationAngle -= 5 * _gabenGameInputManager.getDeltaTime();
 		// Plays the gunshot sound every time we fire a bullet
 		if (attackCooldown > 0.075f)
-		{
 			_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/gunshot.mp3", GL_FALSE);
-			gunObject._rotationAngle = 45.0f;
-		}
 
 		// Set the view position property in the fragment shader
 		shader.Use();
