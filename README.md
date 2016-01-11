@@ -12,6 +12,14 @@ Many of the features have already been implemented in a number of OpenGL demos t
 your leisure.  Current development focuses on hashing out a general component-based architecture from the 
 current OOP implementation in order to stymie the creep of massive inheritance hierarchies.  
 
+### Screenshots
+![1](https://github.com/andrewpham/Genesis-Engine/tree/master/Screenshots/screenshot1.png)
+![2](https://github.com/andrewpham/Genesis-Engine/tree/master/Screenshots/screenshot2.png)
+![3](https://github.com/andrewpham/Genesis-Engine/tree/master/Screenshots/screenshot3.png)
+![4](https://github.com/andrewpham/Genesis-Engine/tree/master/Screenshots/screenshot4.png)
+![5](https://github.com/andrewpham/Genesis-Engine/tree/master/Screenshots/screenshot5.png)
+![6](https://github.com/andrewpham/Genesis-Engine/tree/master/Screenshots/screenshot6.png)
+
 ### Additional features
 * Built-in 3D rendering system that works well with modern PCs.
 * Abstraction of the OpenGL state machine framework into a simpler API.
