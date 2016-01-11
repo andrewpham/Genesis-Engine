@@ -419,7 +419,7 @@ void run_gaben_game(GLFWwindow* window)
 	glUniform3f(uniforms.object.lightPos, LIGHT_POS.x, LIGHT_POS.y, LIGHT_POS.z);
 
 	// Play theme song
-	_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/theme.mp3", GL_TRUE);
+	//_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/theme.mp3", GL_TRUE);
 
 	// Game loop
 	while (!glfwWindowShouldClose(window))
