@@ -482,7 +482,7 @@ void run_gaben_game(GLFWwindow* window)
 		houseObject.render();
 		// Enemy Spawns
 		secondsSinceEnemy += _gabenGameInputManager.getDeltaTime();
-		if (secondsSinceEnemy >= 20.0f)
+		if (secondsSinceEnemy >= 4.0f)
 		{
 			secondsSinceEnemy = 0.0f;
 			GLfloat x_rand = random_range(west + 2, east - 2);
