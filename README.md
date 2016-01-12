@@ -13,12 +13,12 @@ your leisure.  Current development focuses on hashing out a general component-ba
 current OOP implementation in order to stymie the creep of massive inheritance hierarchies.  
 
 ### Screenshots
-![](https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot1.png =961x563)
-![](https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot2.png =961x563)
-![](https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot3.png =961x563)
-![](https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot4.png =961x563)
-![](https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot5.png =961x563)
-![](https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot6.png =961x563)
+<img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot1.png" style="width: 961px;"/>
+<img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot2.png" style="width: 961px;"/>
+<img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot3.png" style="width: 961px;"/>
+<img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot4.png" style="width: 961px;"/>
+<img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot5.png" style="width: 961px;"/>
+<img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot6.png" style="width: 961px;"/>
 
 ### Additional features
 * Built-in 3D rendering system that works well with modern PCs.
