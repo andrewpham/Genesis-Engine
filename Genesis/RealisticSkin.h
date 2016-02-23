@@ -6,7 +6,6 @@
 #include <gengine/ResourceManager.h>
 #include <gengine/Variables.h>
 #include <gengine/GameObject3D.h>
-#include <gengine/Algorithms.h>
 
 // GLM Mathematics
 #include <glm/gtc/type_ptr.hpp>

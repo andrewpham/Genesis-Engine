@@ -11,7 +11,7 @@ void run_skin_demo(GLFWwindow* window)
 	genesis::Shader shader = _skinDemoResourceManager.loadShader("Shaders/Realistic Skin/sss.vs", "Shaders/Realistic Skin/sss.frag", "shader");
 
 	// Load models
-	genesis::Model head("Objects/Head/Head.obj");
+	genesis::Model head("Objects/Head 2/HeadScan_ideal.obj");
 
 	// Set projection matrix
 	glm::mat4 projection = glm::perspective(_skinDemoInputManager._camera.Zoom, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
@@ -33,7 +33,7 @@ void run_skin_demo(GLFWwindow* window)
 		_skinDemoInputManager.checkKeysPressed();
 
 		// Clear buffers
-		glClearColor(0.f, 0.1f, 0.1f, 1.0f);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		shader.Use();
@@ -43,9 +43,9 @@ void run_skin_demo(GLFWwindow* window)
 
 		// Draw the loaded model
 		glm::mat4 model;
-		model = glm::translate(model, glm::vec3(0.0f, -165.0f, -40.0f)); // Translate it down a bit so it's at the center of the scene
-		model = glm::scale(model, glm::vec3(1.f, 1.f, 1.f));	// It's a bit too big for our scene, so scale it down
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		//model = glm::translate(model, glm::vec3(0.0f, -165.0f, -40.0f)); Translation parameters for head model #1
+		model = glm::translate(model, glm::vec3(-24.0f, 144.0f, -29.7f)); // Translation parameters for head model #2
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model)); 
 		head.Draw(shader);
 
 		// Swap the buffers

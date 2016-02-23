@@ -1,0 +1,11 @@
+# MTL written from C:\Users\Tom\Documents\3d projects\face scan\Head Scan Turbo\HeadScan_ideal.obj
+newmtl EModo_032Skin_032Shader
+Kd 0 0 0
+Ns 22.6274
+d 1
+illum 2
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+map_Kd Head_Diffuse.png
+map_Ks Head_cavity.png
+map_Disp Head_displace.png

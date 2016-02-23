@@ -6,7 +6,7 @@ Ks 0.500000 0.500000 0.500000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Kd subdermal.png
+map_Kd Skin.png
 map_Bump Skin_bump.png
 map_Ks Skin_specular.png
 
