@@ -20,11 +20,11 @@ namespace gwindow {
 		// Additional keybinds for the rest of the game engine demos
 		if (action == GLFW_PRESS)
 		{
-			_inputManager._keys[key] = true; _gabenGameInputManager._keys[key] = true;
+			_inputManager._keys[key] = true; _gabenGameInputManager._keys[key] = true; _skinDemoInputManager._keys[key] = true;
 		}
 		else if (action == GLFW_RELEASE)
 		{
-			_inputManager._keys[key] = false; _gabenGameInputManager._keys[key] = false;
+			_inputManager._keys[key] = false; _gabenGameInputManager._keys[key] = false; _skinDemoInputManager._keys[key] = false;
 		}
 	}
 
@@ -32,17 +32,18 @@ namespace gwindow {
 	{
 		if (_inputManager.getFirstMouse())
 		{
-			_inputManager.setLastX(xpos); _gabenGameInputManager.setLastX(xpos);
-			_inputManager.setLastY(ypos); _gabenGameInputManager.setLastY(ypos);
-			_inputManager.setFirstMouse(false); _gabenGameInputManager.setFirstMouse(false);
+			_inputManager.setLastX(xpos); _gabenGameInputManager.setLastX(xpos); _skinDemoInputManager.setLastX(xpos);
+			_inputManager.setLastY(ypos); _gabenGameInputManager.setLastY(ypos); _skinDemoInputManager.setLastY(ypos);
+			_inputManager.setFirstMouse(false); _gabenGameInputManager.setFirstMouse(false); _skinDemoInputManager.setFirstMouse(false);
 		}
 
 		GLfloat xoffset = xpos - _inputManager.getLastX();
 		GLfloat yoffset = _inputManager.getLastY() - ypos;
 
-		_inputManager.setLastX(xpos); _gabenGameInputManager.setLastX(xpos);
-		_inputManager.setLastY(ypos); _gabenGameInputManager.setLastY(ypos);
+		_inputManager.setLastX(xpos); _gabenGameInputManager.setLastX(xpos); _skinDemoInputManager.setLastX(xpos);
+		_inputManager.setLastY(ypos); _gabenGameInputManager.setLastY(ypos); _skinDemoInputManager.setLastY(ypos);
 
-		_inputManager._camera.ProcessMouseMovement(xoffset, yoffset); _gabenGameInputManager._camera.ProcessMouseMovement(xoffset, yoffset);
+		_inputManager._camera.ProcessMouseMovement(xoffset, yoffset); _gabenGameInputManager._camera.ProcessMouseMovement(xoffset, yoffset); 
+		_skinDemoInputManager._camera.ProcessMouseMovement(xoffset, yoffset);
 	}
 }

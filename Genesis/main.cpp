@@ -9,6 +9,7 @@
 // GL includes
 #include "LifeOfGaben.h"
 #include "Breakout.h"
+#include "RealisticSkin.h"
 #include "Demos.h"
 #include "Window.h"
 
@@ -25,10 +26,13 @@ int main()
 	glGetError(); // Call it once to catch glewInit() bug, all other errors are now from our application.
 
 	/** Uncomment this function to play the Life of Gaben game... */
-	run_gaben_game(window.getWindow());
+	//run_gaben_game(window.getWindow());
 
 	/** ...or uncomment this function to run Breakout... */
 	//play_breakout(window.getWindow());
+
+	/** ...or uncomment this function to view the skin rendering demo */
+	run_skin_demo(window.getWindow());
 
 	/** ...or uncomment ONE of these functions to display a demo showcasing some of the 3D rendering capabilities of this game engine */
 	//render_superbible_perpixelgloss(window.getWindow());
