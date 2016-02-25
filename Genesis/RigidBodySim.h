@@ -7,7 +7,7 @@
 // GLM Mathematics
 #include <glm/gtc/type_ptr.hpp>
 
-extern genesis::InputManager _skinDemoInputManager;
-extern genesis::ResourceManager _skinDemoResourceManager;
+extern genesis::InputManager _physicsSimInputManager;
+extern genesis::ResourceManager _physicsSimResourceManager;
 
-void run_skin_demo(GLFWwindow*);
+void run_physics_demo(GLFWwindow*);

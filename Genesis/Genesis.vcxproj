@@ -134,6 +134,7 @@
     <ClCompile Include="LifeOfGaben.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RealisticSkin.cpp" />
+    <ClCompile Include="RigidBodySim.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -142,6 +143,7 @@
     <ClInclude Include="Demos.h" />
     <ClInclude Include="LifeOfGaben.h" />
     <ClInclude Include="RealisticSkin.h" />
+    <ClInclude Include="RigidBodySim.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

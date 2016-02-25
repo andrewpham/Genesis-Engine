@@ -2,6 +2,7 @@
 #include "LifeOfGaben.h"
 #include "Breakout.h"
 #include "RealisticSkin.h"
+#include "RigidBodySim.h"
 #include "Demos.h"
 
 namespace gwindow {
