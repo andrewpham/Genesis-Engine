@@ -43,6 +43,8 @@ namespace genesis {
 		void setPosition(glm::vec3);
 		glm::vec3 getPosition();
 		void GameObject3D::setPositionY(GLfloat);
+		void setVelocity(glm::vec3);
+		glm::vec3 getVelocity();
 		void setRotationAxis(glm::vec3);
 		glm::vec3 getRotationAxis();
 		void setSize(glm::vec3);
@@ -69,6 +71,7 @@ namespace genesis {
 		GLuint _numVertices;
 
 		glm::vec3 _position;
+		glm::vec3 _velocity;
 		glm::vec3 _rotationAxis;
 		glm::vec3 _size;
 

@@ -2,6 +2,7 @@
 #include <gengine/Shader.h>
 #include <gengine/InputManager.h>
 #include <gengine/ResourceManager.h>
+#include <gengine/Variables.h>
 #include <gengine/GameObject3D.h>
 
 // GLM Mathematics

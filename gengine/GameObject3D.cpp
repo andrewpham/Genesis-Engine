@@ -124,6 +124,16 @@ namespace genesis {
 		this->_position.y = _y;
 	}
 
+	void GameObject3D::setVelocity(glm::vec3 _velocity)
+	{
+		this->_velocity = _velocity;
+	}
+
+	glm::vec3 GameObject3D::getVelocity()
+	{
+		return this->_velocity;
+	}
+
 	void GameObject3D::setRotationAxis(glm::vec3 _rotationAxis)
 	{
 		this->_rotationAxis = _rotationAxis;

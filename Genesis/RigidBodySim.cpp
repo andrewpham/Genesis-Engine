@@ -28,7 +28,51 @@ void run_physics_demo(GLFWwindow* window)
 	// Create game objects
 	genesis::GameObject3D floorObject(shader, floor, glm::vec3(-1.0f, -3.0f, -1.0f));
 	vector<genesis::GameObject3D> boxObjects;
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 0.0f, 0.0f)));
+	// Top left spawn
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 0.5f, -1.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 1.0f, -1.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 1.5f, -1.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 2.0f, -1.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 2.5f, -1.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 3.0f, -1.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 3.5f, -1.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 4.0f, -1.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 4.5f, -1.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 5.0f, -1.0f)));
+	// Top right spawn
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, -0.75f, -1.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, -0.45f, -1.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, -0.15f, -1.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, 0.15f, -1.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, 0.45f, -1.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, 0.75f, -1.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, 1.05f, -1.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, 1.35f, -1.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, 1.65f, -1.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, 1.95f, -1.0f)));
+	// Bottom left spawn
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 0.5f, 0.75f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 1.0f, 0.75f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 1.5f, 0.75f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 2.0f, 0.75f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 2.5f, 0.75f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 3.0f, 0.75f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 3.5f, 0.75f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 4.0f, 0.75f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 4.5f, 0.75f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-1.0f, 5.0f, 0.75f)));
+	// Bottom right spawn
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, 0.5f, 0.75f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, 1.0f, 0.75f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, 1.5f, 0.75f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, 2.0f, 0.75f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, 2.5f, 0.75f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, 3.0f, 0.75f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, 3.5f, 0.75f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, 4.0f, 0.75f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, 4.5f, 0.75f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, 5.0f, 0.75f)));
+
 
 	// Set projection matrix
 	glm::mat4 projection = glm::perspective(_physicsSimInputManager._camera.Zoom, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
@@ -58,6 +102,13 @@ void run_physics_demo(GLFWwindow* window)
 
 		// Draw the floor
 		floorObject.render();
+		// Draw the boxes
+		for (genesis::GameObject3D &boxObject : boxObjects)
+		{
+			boxObject.render();
+			boxObject.setVelocity(boxObject.getVelocity() + G_CONST * _physicsSimInputManager.getDeltaTime());
+			boxObject.setPosition(boxObject.getPosition() + boxObject.getVelocity() * _physicsSimInputManager.getDeltaTime());
+		}
 
 		// Swap the buffers
 		glfwSwapBuffers(window);
