@@ -1,7 +1,5 @@
 #pragma once
 #include <gengine/Shader.h>
-#include <gengine/sb7ktx.h>
-#include <gengine/sb7object.h>
 #include <gengine/InputManager.h>
 #include <gengine/ResourceManager.h>
 #include <gengine/Variables.h>
