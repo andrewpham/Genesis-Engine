@@ -21,6 +21,9 @@ void run_physics_demo(GLFWwindow* window)
 	uniforms.view = glGetUniformLocation(shader.ID, "view");
 	uniforms.projection = glGetUniformLocation(shader.ID, "projection");
 
+	// Used to pace the spawning of objects at regular intervals
+	GLfloat attackCooldown = 0.0f;
+
 	// Load models
 	genesis::Model floor("Objects/Crate/Crate2.obj");
 	genesis::Model box("Objects/Crate/Crate1.obj");
@@ -73,7 +76,6 @@ void run_physics_demo(GLFWwindow* window)
 	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, 4.5f, 0.75f)));
 	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.75f, 5.0f, 0.75f)));
 
-
 	// Set projection matrix
 	glm::mat4 projection = glm::perspective(_physicsSimInputManager._camera.Zoom, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
 	glUniformMatrix4fv(uniforms.projection, 1, GL_FALSE, glm::value_ptr(projection));
@@ -87,6 +89,9 @@ void run_physics_demo(GLFWwindow* window)
 		GLfloat currentFrame = glfwGetTime();
 		_physicsSimInputManager.setDeltaTime(currentFrame - _physicsSimInputManager.getLastFrame());
 		_physicsSimInputManager.setLastFrame(currentFrame);
+		// Controls the gunshot cooldown and later resets the cooldown timer when we fire a box
+		if (attackCooldown > 0.0f)
+			attackCooldown -= _physicsSimInputManager.getDeltaTime();
 
 		// Check and call events
 		glfwPollEvents();
@@ -95,6 +100,15 @@ void run_physics_demo(GLFWwindow* window)
 		// Clear buffers
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// Spawns a box every time we fire
+		if (_physicsSimInputManager._keys[GLFW_KEY_SPACE] && attackCooldown <= 0.0f)
+		{
+			_physicsSimInputManager.getSoundEngine()->play2D("../Genesis/Audio/Rigid Body Sim/boxspawn.wav", GL_FALSE);
+			boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(_physicsSimInputManager._camera.Position.x + _physicsSimInputManager._camera.Front.x, _physicsSimInputManager._camera.Position.y + _physicsSimInputManager._camera.Front.y, _physicsSimInputManager._camera.Position.z + _physicsSimInputManager._camera.Front.z)));
+			boxObjects.back().setVelocity(5.0f * _physicsSimInputManager._camera.Front);
+			attackCooldown = 0.5f;
+		}
 
 		// Set view matrix
 		glm::mat4 view = _physicsSimInputManager._camera.GetViewMatrix();

@@ -29,6 +29,9 @@ namespace genesis {
 			glm::mat4 model;
 			model = glm::translate(model, _position);
 			model = glm::rotate(model, _rotationAngle, _rotationAxis);
+			model = glm::rotate(model, _angularDisplacement.y, glm::vec3(0.0f, 0.0f, -1.0f));
+			model = glm::rotate(model, _angularDisplacement.x, glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::rotate(model, _angularDisplacement.z, glm::vec3(1.0f, 0.0f, 0.0f));
 			model = glm::scale(model, _size);
 			glUniformMatrix4fv(glGetUniformLocation(_shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
 			if (_isModel)
@@ -132,6 +135,26 @@ namespace genesis {
 	glm::vec3 GameObject3D::getVelocity()
 	{
 		return this->_velocity;
+	}
+
+	void GameObject3D::setAngularDisplacement(glm::vec3 _angularDisplacement)
+	{
+		this->_angularDisplacement = _angularDisplacement;
+	}
+
+	glm::vec3 GameObject3D::getAngularDisplacement()
+	{
+		return this->_angularDisplacement;
+	}
+
+	void GameObject3D::setAngularVelocity(glm::vec3 _angularVelocity)
+	{
+		this->_angularVelocity = _angularVelocity;
+	}
+
+	glm::vec3 GameObject3D::getAngularVelocity()
+	{
+		return this->_angularVelocity;
 	}
 
 	void GameObject3D::setRotationAxis(glm::vec3 _rotationAxis)
