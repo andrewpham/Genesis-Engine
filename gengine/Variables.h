@@ -32,7 +32,7 @@ static const glm::vec3	LIGHT_POS(0.0f, 1.0f, 4.0f);
 #define TOWER_SPAWN_RATE	15
 /** Variables pertaining to Rigid Body Sim */
 // Gravitational acceleration
-static const glm::vec3	G_CONST(0.0f, -0.1f, 0.0f);
+static const glm::vec3	G_CONST(0.0f, -0.05f, 0.0f);
 
 /** Enumerations and definitions pertaining to the OpenGL SuperBible Demos */
 

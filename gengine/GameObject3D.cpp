@@ -227,4 +227,14 @@ namespace genesis {
 		return this->_hitboxOffset;
 	}
 
+	void GameObject3D::setNormals(std::vector<glm::vec3> _normals)
+	{
+		this->_normals = _normals;
+	}
+
+	std::vector<glm::vec3> GameObject3D::getNormals()
+	{
+		return this->_normals;
+	}
+
 }
