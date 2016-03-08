@@ -207,6 +207,16 @@ namespace genesis {
 		return this->_hasNormalMap;
 	}
 
+	void GameObject3D::setIsStatic(GLboolean _isStatic)
+	{
+		this->_isStatic = _isStatic;
+	}
+
+	GLboolean GameObject3D::getIsStatic()
+	{
+		return this->_isStatic;
+	}
+
 	void GameObject3D::setHitboxRadius(GLfloat _hitboxRadius)
 	{
 		this->_hitboxRadius = _hitboxRadius;

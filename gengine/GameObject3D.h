@@ -60,6 +60,8 @@ namespace genesis {
 		GLboolean getDestroyed();
 		void setHasNormalMap(GLboolean);
 		GLboolean getHasNormalMap();
+		void setIsStatic(GLboolean);
+		GLboolean getIsStatic();
 
 		void setHitboxRadius(GLfloat);
 		GLfloat getHitboxRadius();
@@ -88,6 +90,7 @@ namespace genesis {
 		GLboolean _isModel;
 		GLboolean   _destroyed;
 		GLboolean _hasNormalMap;
+		GLboolean _isStatic;
 
 		GLfloat _hitboxRadius;
 		glm::vec3 _hitboxOffset;

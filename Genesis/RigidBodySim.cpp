@@ -9,8 +9,10 @@ std::vector<glm::vec3> _normals { glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0
 
 void getInterval(genesis::GameObject3D&, glm::vec3, float&, float&);
 bool intersectsOnNormal(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3, const glm::vec3&, const glm::vec3&, float&);
-bool findMTD(std::vector<glm::vec3>, std::vector<float>, glm::vec3&, float&);
+bool findMTD(std::vector<glm::vec3>&, std::vector<float>&, glm::vec3&, float&);
 bool checkCollision(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3&, float&);
+bool checkAABBCollision(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3&, float&);
+void resolveCollision(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3, float, float);
 
 void run_physics_demo(GLFWwindow* window)
 {
@@ -36,61 +38,74 @@ void run_physics_demo(GLFWwindow* window)
 	genesis::Model box("Objects/Crate/Crate1.obj");
 
 	// Create game objects
-	genesis::GameObject3D floorObject(shader, floor, glm::vec3(0.0f, -2.0f, 0.0f));
-	floorObject.setHitboxRadius(1.0f);
-	floorObject.setNormals(_normals);
 	vector<genesis::GameObject3D> boxObjects;
-	// Top left spawn
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 0.5f, -0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 1.0f, -0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 1.5f, -0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 2.0f, -0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 2.5f, -0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 3.0f, -0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 3.5f, -0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 4.0f, -0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 4.5f, -0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 5.0f, -0.875f)));
-	// Top right spawn
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, -0.75f, -0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, -0.45f, -0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, -0.15f, -0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 0.15f, -0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 0.45f, -0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 0.75f, -0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 1.05f, -0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 1.35f, -0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 1.65f, -0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 1.95f, -0.875f)));
-	// Bottom left spawn
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 0.5f, 0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 1.0f, 0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 1.5f, 0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 2.0f, 0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 2.5f, 0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 3.0f, 0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 3.5f, 0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 4.0f, 0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 4.5f, 0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 5.0f, 0.875f)));
-	// Bottom right spawn
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 0.5f, 0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 1.0f, 0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 1.5f, 0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 2.0f, 0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 2.5f, 0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 3.0f, 0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 3.5f, 0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 4.0f, 0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 4.5f, 0.875f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 5.0f, 0.875f)));
+	// Floor
+	boxObjects.push_back(genesis::GameObject3D(shader, floor, glm::vec3(0.0f, -2.0f, 0.0f)));
+	// Boxes
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 0.5f, 0.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 1.0f, 0.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 1.5f, 0.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 2.0f, 0.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 2.5f, 0.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 3.0f, 0.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 3.5f, 0.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 4.0f, 0.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 4.5f, 0.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 5.0f, 0.0f)));
+	//// Top left spawn
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 0.5f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 1.0f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 1.5f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 2.0f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 2.5f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 3.0f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 3.5f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 4.0f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 4.5f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 5.0f, -0.875f)));
+	//// Top right spawn
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, -0.75f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, -0.45f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, -0.15f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 0.15f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 0.45f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 0.75f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 1.05f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 1.35f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 1.65f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 1.95f, -0.875f)));
+	//// Bottom left spawn
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 0.5f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 1.0f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 1.5f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 2.0f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 2.5f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 3.0f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 3.5f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 4.0f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 4.5f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 5.0f, 0.875f)));
+	//// Bottom right spawn
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 0.5f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 1.0f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 1.5f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 2.0f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 2.5f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 3.0f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 3.5f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 4.0f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 4.5f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 5.0f, 0.875f)));
 
-	// Set the hitbox radii
+	// Set the hitbox radii and normals
 	for (genesis::GameObject3D &boxObject : boxObjects)
 	{
 		boxObject.setHitboxRadius(0.125f);
 		boxObject.setNormals(_normals);
+		boxObject.setIsStatic(false);
 	}
+	boxObjects[0].setHitboxRadius(1.0f);
+	boxObjects[0].setIsStatic(true);
 
 	// Set projection matrix
 	glm::mat4 projection = glm::perspective(_physicsSimInputManager._camera.Zoom, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
@@ -123,6 +138,9 @@ void run_physics_demo(GLFWwindow* window)
 			_physicsSimInputManager.getSoundEngine()->play2D("../Genesis/Audio/Rigid Body Sim/boxspawn.wav", GL_FALSE);
 			boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(_physicsSimInputManager._camera.Position.x + _physicsSimInputManager._camera.Front.x, _physicsSimInputManager._camera.Position.y + _physicsSimInputManager._camera.Front.y, _physicsSimInputManager._camera.Position.z + _physicsSimInputManager._camera.Front.z)));
 			boxObjects.back().setVelocity(5.0f * _physicsSimInputManager._camera.Front);
+			boxObjects.back().setHitboxRadius(0.125f);
+			boxObjects.back().setNormals(_normals);
+			boxObjects.back().setIsStatic(false);
 			attackCooldown = 0.5f;
 		}
 
@@ -130,14 +148,61 @@ void run_physics_demo(GLFWwindow* window)
 		glm::mat4 view = _physicsSimInputManager._camera.GetViewMatrix();
 		glUniformMatrix4fv(uniforms.view, 1, GL_FALSE, glm::value_ptr(view));
 
-		// Draw the floor
-		floorObject.render();
+		// Contact normal
+		glm::vec3 N;
+		// Collision type descriptor (t < 0 = penetration occurred)
+		float t = 0.0f;
+		bool collisionExists = false;
+
+		int i, j;
+		for (i = 0; i < boxObjects.size(); i++)
+		{
+			N.x = 0;
+			N.y = 0;
+			N.z = 0;
+			t = 0.0f;
+
+			for (j = 0; j < boxObjects.size(); j++)
+			{
+				if (i == j)
+					continue;
+				if (i != 0 && j != 0 && fabs(glm::length(boxObjects[i].getPosition() - boxObjects[j].getPosition())) > 0.6)
+					continue;
+				if (i == 0 || j == 0 && fabs(glm::length(boxObjects[i].getPosition() - boxObjects[j].getPosition())) > 2)
+					continue;
+
+				//collisionExists = checkCollision(boxObjects[i], boxObjects[j], N, t);
+				collisionExists = checkAABBCollision(boxObjects[i], boxObjects[j], N, t);
+				if (collisionExists && t < 0)
+				{
+					resolveCollision(boxObjects[i], boxObjects[j], -N, t, _physicsSimInputManager.getDeltaTime());
+				}
+				//else if (!boxObjects[i].getIsStatic())
+				//{
+				//	boxObjects[i].setVelocity(boxObjects[i].getVelocity() + G_CONST * _physicsSimInputManager.getDeltaTime());
+				//}
+				//boxObjects[i].setPosition(boxObjects[i].getPosition() + boxObjects[i].getVelocity() * _physicsSimInputManager.getDeltaTime());
+			}
+		}
+
 		// Draw the boxes
 		for (genesis::GameObject3D &boxObject : boxObjects)
 		{
 			boxObject.render();
-			boxObject.setVelocity(boxObject.getVelocity() + G_CONST * _physicsSimInputManager.getDeltaTime());
-			boxObject.setPosition(boxObject.getPosition() + boxObject.getVelocity() * _physicsSimInputManager.getDeltaTime());
+			//  Update step
+			if (!boxObject.getIsStatic())
+			{
+				if (boxObject.getPosition().y - boxObject.getHitboxRadius() > -1)
+				{
+					boxObject.setVelocity(boxObject.getVelocity() + G_CONST * _physicsSimInputManager.getDeltaTime());
+					boxObject.setPosition(boxObject.getPosition() + boxObject.getVelocity() * _physicsSimInputManager.getDeltaTime());
+					boxObject.setAngularDisplacement(boxObject.getAngularDisplacement() + boxObject.getAngularVelocity() * _physicsSimInputManager.getDeltaTime());
+				}
+				else
+				{
+					boxObject.setVelocity(glm::vec3(boxObject.getVelocity().x, 0.0f, boxObject.getVelocity().z));
+				}
+			}
 		}
 
 		// Swap the buffers
@@ -229,7 +294,7 @@ bool intersectsOnNormal(genesis::GameObject3D &_object1, genesis::GameObject3D &
 }
 
 /** Determines the maximum penetration depth given a list of penetration depths */
-bool findMTD(std::vector<glm::vec3> _axis, std::vector<float> _penetration, glm::vec3 &_normal, float &_t)
+bool findMTD(std::vector<glm::vec3> &_axis, std::vector<float> &_penetration, glm::vec3 &_normal, float &_t)
 {
 	bool penetrationExists = false;
 	_t = std::numeric_limits<float>::max();
@@ -303,4 +368,125 @@ bool checkCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_obj
 	_t = t;
 
 	return true;
+}
+
+bool checkAABBCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, glm::vec3 &_contactN, float &_t)
+{
+	float r0 = _object1.getHitboxRadius();
+	glm::vec3 min0 = _object1.getPosition() - glm::vec3(r0, r0, r0);
+	glm::vec3 max0 = _object1.getPosition() + glm::vec3(r0, r0, r0);
+	float r1 = _object2.getHitboxRadius();
+	glm::vec3 min1 = _object2.getPosition() - glm::vec3(r1, r1, r1);
+	glm::vec3 max1 = _object2.getPosition() + glm::vec3(r1, r1, r1);
+
+	bool penetrationExists = false;
+	penetrationExists = (min0.x <= max1.x && max0.x >= min1.x) &&
+		(min0.y <= max1.y && max0.y >= min1.y) &&
+		(min0.z <= max1.z && max0.z >= min1.z);
+
+	float penX = 0, penY = 0, penZ = 0;
+	if (penetrationExists && min0.x <= max1.x && max0.x >= min1.x)
+		penX = min(max1.x - min0.x, max0.x - min1.x);
+	if (penetrationExists && min0.y <= max1.y && max0.y >= min1.y)
+		penY = min(max1.y - min0.y, max0.y - min1.y);
+	if (penetrationExists && min0.z <= max1.z && max0.z >= min1.z)
+		penZ = min(max1.z - min0.z, max0.z - min1.z);
+
+	if (penX <= penY && penX <= penZ)
+	{
+		if (max1.x - min0.x <= max0.x - min1.x)
+			_contactN = glm::vec3(1.0f, 0.0f, 0.0f);
+		else
+			_contactN = glm::vec3(-1.0f, 0.0f, 0.0f);
+	}
+	else if (penY <= penZ && penY <= penX)
+	{
+		if (max1.y - min0.y <= max0.y - min1.y)
+			_contactN = glm::vec3(0.0f, 1.0f, 0.0f);
+		else 
+			_contactN = glm::vec3(0.0f, -1.0f, 0.0f);
+	}
+	else if (penZ <= penX && penZ <= penY)
+	{
+		if (max1.z - min0.z <= max0.z - min1.z)
+			_contactN = glm::vec3(0.0f, 0.0f, 1.0f);
+		else
+			_contactN = glm::vec3(0.0f, 0.0f, -1.0f);
+	}
+
+	if (penX == 0 && penY == 0 && penZ == 0)
+		_t = 0.0f;
+	else if (penetrationExists)
+	{
+		_t = -min(penX, min(penY, penZ));
+	}
+	else {
+		_t = 1.0f;
+	}
+
+	return penetrationExists;
+}
+
+/** Collision resolution scheme based on the paper:  Iterative Dynamics with Temporal Coherence */
+void resolveCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, glm::vec3 _contactNormal, float _penetration, float _timestep)
+{
+	float JV = -glm::dot(_contactNormal, _object1.getVelocity()) - glm::dot(glm::cross(-_contactNormal, _contactNormal), _object1.getAngularVelocity())
+		+ glm::dot(_contactNormal, _object2.getVelocity()) + glm::dot(glm::cross(-_contactNormal, _contactNormal), _object2.getAngularVelocity());
+
+	// Determines the mass and moment of inertia matrices of our objects
+	float r1 = _object1.getHitboxRadius();
+	float m1;
+	if (r1 == 0.125f)
+		m1 = 1.0f;
+	else
+		m1 = 1000.0f;
+	float M1Vals[9] = { m1,  0,  0,
+						0, m1,  0,
+						0,  0, m1 };
+	glm::mat3 M1;
+	memcpy(glm::value_ptr(M1), M1Vals, sizeof(M1Vals));
+
+	float r2 = _object1.getHitboxRadius();
+	float m2;
+	if (r2 == 0.125f)
+		m2 = 1.0f;
+	else
+		m2 = 1000.0f;
+	float M2Vals[9] = { m2,  0,  0,
+						0, m2,  0,
+						0,  0, m2 };
+	glm::mat3 M2;
+	memcpy(glm::value_ptr(M2), M2Vals, sizeof(M2Vals));
+
+	float i1 = m1 * r1 * r1 / 6;
+	float I1Vals[9] = { i1,  0,  0,
+					   0, i1,  0,
+					   0,  0, i1 };
+	glm::mat3 I1;
+	memcpy(glm::value_ptr(I1), I1Vals, sizeof(I1Vals));
+
+	float i2 = m2 * r2 * r2 / 6;
+	float I2Vals[9] = { i2,  0,  0,
+						0, i2,  0,
+						0,  0, i2 };
+	glm::mat3 I2;
+	memcpy(glm::value_ptr(I2), I2Vals, sizeof(I2Vals));
+
+	float Meff = glm::dot(-_contactNormal, glm::inverse(M1) * -_contactNormal) + 
+		glm::dot(-glm::cross(-_contactNormal, _contactNormal), glm::inverse(I1) * -glm::cross(-_contactNormal, _contactNormal)) + 
+		glm::dot(_contactNormal, glm::inverse(M2) * _contactNormal) + 
+		glm::dot(glm::cross(-_contactNormal, _contactNormal), glm::inverse(I2) * glm::cross(-_contactNormal, _contactNormal));
+
+	float lambda = -(JV + 0.10 / _timestep * _penetration) / Meff;
+
+	glm::vec3 deltaV1 = M1 * lambda * -_contactNormal;
+	glm::vec3 deltaW1 = I1 * lambda * -glm::cross(-_contactNormal, _contactNormal);
+	glm::vec3 deltaV2 = M2 * lambda * _contactNormal;
+	glm::vec3 deltaW2 = I2 * lambda * glm::cross(-_contactNormal, _contactNormal);
+
+	// Apply impulses
+	_object1.setVelocity(_object1.getVelocity() + deltaV1);
+	_object1.setAngularVelocity(_object1.getAngularVelocity() + deltaW1);
+	_object2.setVelocity(_object2.getVelocity() + deltaV2);
+	_object2.setAngularVelocity(_object2.getAngularVelocity() + deltaW2);
 }
