@@ -1,12 +1,7 @@
 #version 430 core
 out vec4 color;
 
-in VS_OUT {
-	vec3 Position;
-	vec3 Normal;
-	vec3 FragPos;
-	vec2 TexCoords;
-} fs_in;
+in vec2 TexCoords;
 
 layout(binding=0) uniform sampler2D texture_diffuse1;
 // This is the Beckmann distribution texture
@@ -23,7 +18,6 @@ uniform vec3 gauss4w = vec3(0.113, 0.007, 0.007);
 uniform vec3 gauss5w = vec3(0.358, 0.004, 0.0);
 uniform vec3 gauss6w = vec3(0.078, 0.0, 0.0);
 uniform float GaussWidth = 1.0;
-uniform float mix = 0.5;
 uniform bool profile1On = false;
 uniform bool profile2On = false;
 uniform bool profile3On = false;
@@ -75,7 +69,7 @@ vec4 convolveU()
 	float netFilterWidth = scaleConv * GaussWidth;  
 	// Gaussian curve – standard deviation of 1.0  
 	float curve[7] = {0.006, 0.061, 0.242, 0.383, 0.242, 0.061, 0.006};  
-	vec2 coords = fs_in.TexCoords - vec2(netFilterWidth * 3.0, 0.0);  
+	vec2 coords = TexCoords - vec2(netFilterWidth * 3.0, 0.0);  
 	vec4 sum = vec4(0.0, 0.0, 0.0, 0.0);  
 	for(int i = 0; i < 7; i++)  
 	{  
@@ -90,7 +84,7 @@ vec4 finalSkinShader()
 {  
 	// The total diffuse light exiting the surface  
 	vec3 diffuseLight = vec3(0.0, 0.0, 0.0);
-	vec4 irrad1tap = texture(texture_diffuse1, fs_in.TexCoords);
+	vec4 irrad1tap = texture(texture_diffuse1, TexCoords);
 	if (profile1On)
 		diffuseLight += gauss1w * irrad1tap.xyz;
 	if (profile2On)
@@ -114,23 +108,23 @@ vec4 finalSkinShader()
 	vec4 inv_a = -1.0 / ( 2.0 * a_values * a_values );  
 	vec4 fades = exp(thickness_mm * thickness_mm * inv_a); 
 	if (profile1On)
-		diffuseLight += gauss1w / normConst * fades.y * texture(texture_diffuse1, fs_in.TexCoords).xyz;  
+		diffuseLight += gauss1w / normConst * fades.z * texture(texture_diffuse1, TexCoords).xyz;  
 	if (profile2On)
-		diffuseLight += gauss2w / normConst * fades.y * texture(texture_diffuse1, fs_in.TexCoords).xyz;  
+		diffuseLight += gauss2w / normConst * fades.w * texture(texture_diffuse1, TexCoords).xyz;  
 	if (profile3On)
-		diffuseLight += gauss3w / normConst * fades.y * texture(texture_diffuse1, fs_in.TexCoords).xyz;
+		diffuseLight += gauss3w / normConst * fades.x * texture(texture_diffuse1, TexCoords).xyz;
 	if (profile4On)
-		diffuseLight += gauss4w / normConst * fades.y * texture(texture_diffuse1, fs_in.TexCoords).xyz;  
+		diffuseLight += gauss4w / normConst * fades.y * texture(texture_diffuse1, TexCoords).xyz;  
 	if (profile5On)
-		diffuseLight += gauss5w / normConst * fades.z * texture(texture_diffuse1, fs_in.TexCoords).xyz;  
+		diffuseLight += gauss5w / normConst * fades.z * texture(texture_diffuse1, TexCoords).xyz;  
 	if (profile6On)
-		diffuseLight += gauss6w / normConst * fades.w * texture(texture_diffuse1, fs_in.TexCoords).xyz;  
+		diffuseLight += gauss6w / normConst * fades.w * texture(texture_diffuse1, TexCoords).xyz;  
 	// Determine skin color from a diffuseColor map  
-	diffuseLight *= sqrt(texture(texture_diffuse1, fs_in.TexCoords).xyz);
-	diffuseLight *= 2.0 * (1.0 - texture(texture_ambient1, fs_in.TexCoords).xyz);
+	diffuseLight *= sqrt(texture(texture_diffuse1, TexCoords).xyz);
+	diffuseLight *= 2.0 * (1.0 - texture(texture_ambient1, TexCoords).xyz);
 	vec3 specularLight = vec3(0.0, 0.0, 0.0);  
 	// Compute specular for each light
-	vec3 N = texture(texture_normal1, fs_in.TexCoords).rgb;
+	vec3 N = texture(texture_normal1, TexCoords).rgb;
 	N = normalize(N * 2.0 - 1.0);  // this normal is in tangent space
     specularLight += vec3(0.0, 0.0, 0.0) *  
                 KS_Skin_Specular(N, lightPos, viewPos, 0.4, 0.35);  
@@ -142,6 +136,6 @@ void main()
 	if (scatteringOn)
 		color = finalSkinShader();
 	else
-		color = vec4(texture(texture_diffuse1, fs_in.TexCoords)) * 
-					2.0 * (1.0 - texture(texture_ambient1, fs_in.TexCoords));
+		color = vec4(texture(texture_diffuse1, TexCoords)) * 
+					2.0 * (1.0 - texture(texture_ambient1, TexCoords));
 }
