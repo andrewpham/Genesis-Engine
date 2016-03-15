@@ -127,6 +127,7 @@ vec4 finalSkinShader()
 		diffuseLight += gauss6w / normConst * fades.w * texture(texture_diffuse1, fs_in.TexCoords).xyz;  
 	// Determine skin color from a diffuseColor map  
 	diffuseLight *= sqrt(texture(texture_diffuse1, fs_in.TexCoords).xyz);
+	diffuseLight *= 2.0 * (1.0 - texture(texture_ambient1, fs_in.TexCoords).xyz);
 	vec3 specularLight = vec3(0.0, 0.0, 0.0);  
 	// Compute specular for each light
 	vec3 N = texture(texture_normal1, fs_in.TexCoords).rgb;
@@ -141,5 +142,6 @@ void main()
 	if (scatteringOn)
 		color = finalSkinShader();
 	else
-		color = vec4(texture(texture_diffuse1, fs_in.TexCoords));
+		color = vec4(texture(texture_diffuse1, fs_in.TexCoords)) * 
+					2.0 * (1.0 - texture(texture_ambient1, fs_in.TexCoords));
 }
