@@ -1,7 +1,8 @@
 #pragma once
 
 #define PI_F			3.14159265358979f
-#define WINDOW_NAME		"Rigid Body Sim"
+//#define WINDOW_NAME		"Rigid Body Sim"
+#define WINDOW_NAME		"Realistic Skin"
 #define SCREEN_WIDTH	1920
 #define SCREEN_HEIGHT	1080
 /** Variables pertaining to the OpenGL SuperBible Demos */

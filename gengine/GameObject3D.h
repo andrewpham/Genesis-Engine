@@ -35,6 +35,8 @@ namespace genesis {
 		GLuint getTexture();
 		void setNormalMap(GLuint);
 		GLuint getNormalMap();
+		void setSpecularMap(GLuint);
+		GLuint getSpecularMap();
 		void setVAO(GLuint);
 		GLuint getVAO();
 		void setNumVertices(GLuint);
@@ -60,6 +62,8 @@ namespace genesis {
 		GLboolean getDestroyed();
 		void setHasNormalMap(GLboolean);
 		GLboolean getHasNormalMap();
+		void setHasSpecularMap(GLboolean);
+		GLboolean getHasSpecularMap();
 		void setIsStatic(GLboolean);
 		GLboolean getIsStatic();
 
@@ -76,6 +80,7 @@ namespace genesis {
 		Model _model;
 		GLuint _texture;
 		GLuint _normalMap;
+		GLuint _specularMap;
 		GLuint _VAO;
 		GLuint _numVertices;
 
@@ -90,6 +95,7 @@ namespace genesis {
 		GLboolean _isModel;
 		GLboolean   _destroyed;
 		GLboolean _hasNormalMap;
+		GLboolean _hasSpecularMap;
 		GLboolean _isStatic;
 
 		GLfloat _hitboxRadius;

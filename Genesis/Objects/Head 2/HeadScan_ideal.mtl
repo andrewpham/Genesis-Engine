@@ -6,6 +6,7 @@ d 1
 illum 2
 Ka 0 0 0
 Ks 0.05 0.05 0.05
+map_Ka Head_cavity.png
 map_Kd Head_Diffuse.png
-map_Ks Head_cavity.png
-map_Disp Head_displace.png
+map_Ks beckmannTex.jpg
+map_Kn Head_Normal.png

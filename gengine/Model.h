@@ -172,6 +172,10 @@ namespace genesis {
 				// 2. Specular maps
 				vector<Texture> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 				textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+				vector<Texture> ambientMaps = this->loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_ambient");
+				textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
+				vector<Texture> normalMaps = this->loadMaterialTextures(material, aiTextureType_NORMALS, "texture_normal");
+				textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 			}
 
 			// Return a mesh object created from the extracted mesh data

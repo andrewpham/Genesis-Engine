@@ -46,6 +46,11 @@ namespace genesis {
 					glActiveTexture(GL_TEXTURE1);
 					glBindTexture(GL_TEXTURE_2D, _normalMap);
 				}
+				if (_hasSpecularMap)
+				{
+					glActiveTexture(GL_TEXTURE2);
+					glBindTexture(GL_TEXTURE_2D, _specularMap);
+				}
 				glDrawArrays(GL_TRIANGLES, 0, _numVertices);
 				glBindVertexArray(0);
 			}
@@ -90,6 +95,16 @@ namespace genesis {
 	GLuint GameObject3D::getNormalMap()
 	{
 		return this->_normalMap;
+	}
+
+	void GameObject3D::setSpecularMap(GLuint _specularMap)
+	{
+		this->_specularMap = _specularMap;
+	}
+
+	GLuint GameObject3D::getSpecularMap()
+	{
+		return this->_specularMap;
 	}
 
 	void GameObject3D::setVAO(GLuint _VAO)
@@ -205,6 +220,16 @@ namespace genesis {
 	GLboolean GameObject3D::getHasNormalMap()
 	{
 		return this->_hasNormalMap;
+	}
+
+	void GameObject3D::setHasSpecularMap(GLboolean _hasSpecularMap)
+	{
+		this->_hasSpecularMap = _hasSpecularMap;
+	}
+
+	GLboolean GameObject3D::getHasSpecularMap()
+	{
+		return this->_hasSpecularMap;
 	}
 
 	void GameObject3D::setIsStatic(GLboolean _isStatic)

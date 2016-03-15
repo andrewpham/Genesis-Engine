@@ -61,6 +61,9 @@ namespace genesis {
 			// Bind appropriate textures
 			GLuint diffuseNr = 1;
 			GLuint specularNr = 1;
+			GLuint ambientNr = 1;
+			GLuint normalNr = 1;
+
 			for (GLuint i = 0; i < this->textures.size(); i++)
 			{
 				glActiveTexture(GL_TEXTURE0 + i); // Active proper texture unit before binding
@@ -72,6 +75,10 @@ namespace genesis {
 					ss << diffuseNr++; // Transfer GLuint to stream
 				else if (name == "texture_specular")
 					ss << specularNr++; // Transfer GLuint to stream
+				else if (name == "texture_ambient")
+					ss << ambientNr++;
+				else if (name == "texture_normal")
+					ss << normalNr++;
 				number = ss.str();
 				// Now set the sampler to the correct texture unit
 				glUniform1i(glGetUniformLocation(shader.ID, (name + number).c_str()), i);
