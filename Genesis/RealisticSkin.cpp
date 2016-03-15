@@ -23,6 +23,7 @@ void run_skin_demo(GLFWwindow* window)
 		GLint profile5On;
 		GLint profile6On;
 		GLint scatteringOn;
+		GLint ambientOcclusionOn;
 	} uniforms;
 
 	// Cache the uniform locations
@@ -38,10 +39,11 @@ void run_skin_demo(GLFWwindow* window)
 	uniforms.profile5On = glGetUniformLocation(shader.ID, "profile5On");
 	uniforms.profile6On = glGetUniformLocation(shader.ID, "profile6On");
 	uniforms.scatteringOn = glGetUniformLocation(shader.ID, "scatteringOn");
+	uniforms.ambientOcclusionOn = glGetUniformLocation(shader.ID, "ambientOcclusionOn");
 
 	// Used to pace the toggling of diffusion profiles
 	GLfloat toggleCooldown = 0.0f;
-	GLboolean p1State = false, p2State = false, p3State = false, p4State = false, p5State = false, p6State = false, hasScattering = false;
+	GLboolean p1State = false, p2State = false, p3State = false, p4State = false, p5State = false, p6State = false, hasScattering = false, hasAmbientOcclusion = false;
 
 	// Load models
 	genesis::Model head("Objects/Head 2/HeadScan_ideal.obj");
@@ -139,6 +141,11 @@ void run_skin_demo(GLFWwindow* window)
 				hasScattering = false;
 				toggleCooldown = 1.0f;
 			}
+			if (_skinDemoInputManager._keys[GLFW_KEY_C])
+			{
+				hasAmbientOcclusion = !hasAmbientOcclusion;
+				toggleCooldown = 1.0f;
+			}
 		}
 
 		// Set view matrix
@@ -152,6 +159,7 @@ void run_skin_demo(GLFWwindow* window)
 		glUniform1i(uniforms.profile5On, p5State);
 		glUniform1i(uniforms.profile6On, p6State);
 		glUniform1i(uniforms.scatteringOn, hasScattering);
+		glUniform1i(uniforms.ambientOcclusionOn, hasAmbientOcclusion);
 
 		// Draw the head
 		headObject.render();

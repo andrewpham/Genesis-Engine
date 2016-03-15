@@ -25,6 +25,7 @@ uniform bool profile4On = false;
 uniform bool profile5On = false;
 uniform bool profile6On = false;
 uniform bool scatteringOn = false;
+uniform bool ambientOcclusionOn = false;
 
 float fresnelReflectance(vec3 H, vec3 V, float F0)
 {
@@ -121,7 +122,8 @@ vec4 finalSkinShader()
 		diffuseLight += gauss6w / normConst * fades.w * texture(texture_diffuse1, TexCoords).xyz;  
 	// Determine skin color from a diffuseColor map  
 	diffuseLight *= sqrt(texture(texture_diffuse1, TexCoords).xyz);
-	diffuseLight *= 2.0 * (1.0 - texture(texture_ambient1, TexCoords).xyz);
+	if (ambientOcclusionOn)
+		diffuseLight *= 2.0 * (1.0 - texture(texture_ambient1, TexCoords).xyz);
 	vec3 specularLight = vec3(0.0, 0.0, 0.0);  
 	// Compute specular for each light
 	vec3 N = texture(texture_normal1, TexCoords).rgb;
@@ -136,6 +138,10 @@ void main()
 	if (scatteringOn)
 		color = finalSkinShader();
 	else
-		color = vec4(texture(texture_diffuse1, TexCoords)) * 
-					2.0 * (1.0 - texture(texture_ambient1, TexCoords));
+	{
+		if (ambientOcclusionOn)
+			color = vec4(texture(texture_diffuse1, TexCoords)) * 2.0 * (1.0 - texture(texture_ambient1, TexCoords));
+		else
+			color = vec4(texture(texture_diffuse1, TexCoords));
+	}
 }

@@ -33,10 +33,10 @@ int main()
 	//play_breakout(window.getWindow());
 
 	/** ...or uncomment only this function to view the skin rendering demo */
-	run_skin_demo(window.getWindow());
+	//run_skin_demo(window.getWindow());
 
 	/** ...or uncomment only this function to run the rigid body simulation */
-	//run_physics_demo(window.getWindow());
+	run_physics_demo(window.getWindow());
 
 	/** ...or uncomment ONLY ONE of these functions to display a demo showcasing some of the 3D rendering capabilities of this game engine */
 	//render_superbible_perpixelgloss(window.getWindow());
