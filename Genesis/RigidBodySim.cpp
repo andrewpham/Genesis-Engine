@@ -40,10 +40,8 @@ void run_physics_demo(GLFWwindow* window)
 	// Create game objects
 	vector<genesis::GameObject3D> boxObjects;
 	// Floor
-	boxObjects.push_back(genesis::GameObject3D(shader, floor, glm::vec3(0.0f, -2.0f, 0.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, floor, glm::vec3(0.0f, -1.5f, 0.0f)));
 	// Boxes
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 0.5f, 0.0f)));
-	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 1.0f, 0.0f)));
 	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 1.5f, 0.0f)));
 	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 2.0f, 0.0f)));
 	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 2.5f, 0.0f)));
@@ -52,6 +50,8 @@ void run_physics_demo(GLFWwindow* window)
 	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 4.0f, 0.0f)));
 	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 4.5f, 0.0f)));
 	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 5.0f, 0.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 5.5f, 0.0f)));
+	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 6.0f, 0.0f)));
 	//// Top left spawn
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 0.5f, -0.875f)));
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 1.0f, -0.875f)));
@@ -192,7 +192,9 @@ void run_physics_demo(GLFWwindow* window)
 			//  Update step
 			if (!boxObject.getIsStatic())
 			{
-				if (boxObject.getPosition().y - boxObject.getHitboxRadius() > -1)
+				if (boxObject.getPosition().y - boxObject.getHitboxRadius() > -0.5 || 
+					boxObject.getPosition().x > 1.125 || boxObject.getPosition().x < -1.125 || 
+					boxObject.getPosition().z > 1.125 || boxObject.getPosition().z < -1.125)
 				{
 					boxObject.setVelocity(boxObject.getVelocity() + G_CONST * _physicsSimInputManager.getDeltaTime());
 					boxObject.setPosition(boxObject.getPosition() + boxObject.getVelocity() * _physicsSimInputManager.getDeltaTime());
@@ -430,8 +432,10 @@ bool checkAABBCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &
 /** Collision resolution scheme based on the paper:  Iterative Dynamics with Temporal Coherence */
 void resolveCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, glm::vec3 _contactNormal, float _penetration, float _timestep)
 {
-	float JV = -glm::dot(_contactNormal, _object1.getVelocity()) - glm::dot(glm::cross(-_contactNormal, _contactNormal), _object1.getAngularVelocity())
-		+ glm::dot(_contactNormal, _object2.getVelocity()) + glm::dot(glm::cross(-_contactNormal, _contactNormal), _object2.getAngularVelocity());
+	glm::vec3 rA = glm::normalize(_object2.getPosition() - _object1.getPosition());
+	glm::vec3 rB = -rA;
+	float JV = -glm::dot(_contactNormal, _object1.getVelocity()) - glm::dot(glm::cross(-rA, _contactNormal), _object1.getAngularVelocity())
+		+ glm::dot(_contactNormal, _object2.getVelocity()) + glm::dot(glm::cross(-rB, _contactNormal), _object2.getAngularVelocity());
 
 	// Determines the mass and moment of inertia matrices of our objects
 	float r1 = _object1.getHitboxRadius();
@@ -458,14 +462,14 @@ void resolveCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_o
 	glm::mat3 M2;
 	memcpy(glm::value_ptr(M2), M2Vals, sizeof(M2Vals));
 
-	float i1 = m1 * r1 * r1 / 6;
+	float i1 = 300 * m1 * r1 * r1 / 6;
 	float I1Vals[9] = { i1,  0,  0,
 					   0, i1,  0,
 					   0,  0, i1 };
 	glm::mat3 I1;
 	memcpy(glm::value_ptr(I1), I1Vals, sizeof(I1Vals));
 
-	float i2 = m2 * r2 * r2 / 6;
+	float i2 = 300 * m2 * r2 * r2 / 6;
 	float I2Vals[9] = { i2,  0,  0,
 						0, i2,  0,
 						0,  0, i2 };
@@ -480,9 +484,10 @@ void resolveCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_o
 	float lambda = -(JV + 0.10 / _timestep * _penetration) / Meff;
 
 	glm::vec3 deltaV1 = M1 * lambda * -_contactNormal;
-	glm::vec3 deltaW1 = I1 * lambda * -glm::cross(-_contactNormal, _contactNormal);
+	glm::vec3 deltaW1 = I1 * lambda * -glm::cross(-rA, _contactNormal);
 	glm::vec3 deltaV2 = M2 * lambda * _contactNormal;
-	glm::vec3 deltaW2 = I2 * lambda * glm::cross(-_contactNormal, _contactNormal);
+	glm::vec3 deltaW2 = I2 * lambda * glm::cross(-rB, _contactNormal);
+	cout << deltaW2.x << " " << deltaW2.y << " " << deltaW2.z << endl;
 
 	// Apply impulses
 	_object1.setVelocity(_object1.getVelocity() + deltaV1);
