@@ -7,9 +7,10 @@ genesis::ResourceManager _physicsSimResourceManager;
 std::vector<glm::vec3> _normals { glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f),
 									glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(-1.0f, 0.0f, 0.0f) };
 
-void getInterval(genesis::GameObject3D&, glm::vec3, float&, float&);
-bool intersectsOnNormal(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3, const glm::vec3&, const glm::vec3&, float&);
-bool findMTD(std::vector<glm::vec3>&, std::vector<float>&, glm::vec3&, float&);
+/** Function descriptions can be found next to the corresponding definitions below */
+void getAxes(genesis::GameObject3D&, genesis::GameObject3D&, vector<glm::vec3>&);
+void getVertices(genesis::GameObject3D&, vector<glm::vec3>&);
+bool intersectsWhenProjected(vector<glm::vec3>&, vector<glm::vec3>&, glm::vec3&, float&);
 bool checkCollision(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3&, float&);
 bool checkAABBCollision(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3&, float&);
 void resolveCollision(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3, float, float);
@@ -18,20 +19,62 @@ void run_physics_demo(GLFWwindow* window)
 {
 	// Setup and compile our shaders
 	genesis::Shader shader = _physicsSimResourceManager.loadShader("Shaders/Rigid Body Sim/object.vs", "Shaders/Rigid Body Sim/object.frag", "shader");
+	genesis::Shader skyboxShader = _physicsSimResourceManager.loadShader("../Genesis/Shaders/Life of Gaben/skybox.vs", "Shaders/Life of Gaben/skybox.frag", "skybox");
+
+	// Skybox data and state
+	GLuint skyboxVAO, skyboxVBO;
 
 	struct
 	{
-		GLint view;
-		GLint projection;
+		struct
+		{
+			GLint view;
+			GLint projection;
+			GLint lightPos;
+			GLint viewPos;
+		} object;
+		struct
+		{
+			GLint view;
+			GLint projection;
+		} skybox;
 	} uniforms;
 
 	// Cache the uniform locations
 	shader.Use();
-	uniforms.view = glGetUniformLocation(shader.ID, "view");
-	uniforms.projection = glGetUniformLocation(shader.ID, "projection");
+	uniforms.object.view = glGetUniformLocation(shader.ID, "view");
+	uniforms.object.projection = glGetUniformLocation(shader.ID, "projection");
+	uniforms.object.lightPos = glGetUniformLocation(shader.ID, "lightPos");
+	uniforms.object.viewPos = glGetUniformLocation(shader.ID, "viewPos");
+	// Set the light source properties in the fragment shader
+	glUniform3f(uniforms.object.lightPos, LIGHT_POS.x, LIGHT_POS.y, LIGHT_POS.z);
+	skyboxShader.Use();
+	uniforms.skybox.view = glGetUniformLocation(skyboxShader.ID, "view");
+	uniforms.skybox.projection = glGetUniformLocation(skyboxShader.ID, "projection");
 
 	// Used to pace the spawning of objects at regular intervals
 	GLfloat attackCooldown = 0.0f;
+
+	/** Setup skybox VAO */
+	glGenVertexArrays(1, &skyboxVAO);
+	glGenBuffers(1, &skyboxVBO);
+	glBindVertexArray(skyboxVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(SKYBOX_VERTICES), &SKYBOX_VERTICES, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glBindVertexArray(0);
+
+	// Cubemap (Skybox)
+	vector<const GLchar*> faces;
+	faces.push_back("../Genesis/Textures/Skybox/Rigid Body Sim/right.jpg");
+	faces.push_back("../Genesis/Textures/Skybox/Rigid Body Sim/left.jpg");
+	faces.push_back("../Genesis/Textures/Skybox/Rigid Body Sim/top.jpg");
+	faces.push_back("../Genesis/Textures/Skybox/Rigid Body Sim/bottom.jpg");
+	faces.push_back("../Genesis/Textures/Skybox/Rigid Body Sim/back.jpg");
+	faces.push_back("../Genesis/Textures/Skybox/Rigid Body Sim/front.jpg");
+	_physicsSimResourceManager.loadCubemap(faces);
+	GLuint cubemapTexture = _physicsSimResourceManager.getCubemap();
 
 	// Load models
 	genesis::Model floor("Objects/Crate/Crate2.obj");
@@ -53,8 +96,6 @@ void run_physics_demo(GLFWwindow* window)
 	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 5.5f, 0.0f)));
 	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 6.0f, 0.0f)));
 	//// Top left spawn
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 0.5f, -0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 1.0f, -0.875f)));
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 1.5f, -0.875f)));
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 2.0f, -0.875f)));
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 2.5f, -0.875f)));
@@ -63,20 +104,9 @@ void run_physics_demo(GLFWwindow* window)
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 4.0f, -0.875f)));
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 4.5f, -0.875f)));
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 5.0f, -0.875f)));
-	//// Top right spawn
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, -0.75f, -0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, -0.45f, -0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, -0.15f, -0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 0.15f, -0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 0.45f, -0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 0.75f, -0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 1.05f, -0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 1.35f, -0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 1.65f, -0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 1.95f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 5.5f, -0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 6.0f, -0.875f)));
 	//// Bottom left spawn
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 0.5f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 1.0f, 0.875f)));
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 1.5f, 0.875f)));
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 2.0f, 0.875f)));
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 2.5f, 0.875f)));
@@ -85,9 +115,9 @@ void run_physics_demo(GLFWwindow* window)
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 4.0f, 0.875f)));
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 4.5f, 0.875f)));
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 5.0f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 5.5f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 6.0f, 0.875f)));
 	//// Bottom right spawn
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 0.5f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 1.0f, 0.875f)));
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 1.5f, 0.875f)));
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 2.0f, 0.875f)));
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 2.5f, 0.875f)));
@@ -96,6 +126,8 @@ void run_physics_demo(GLFWwindow* window)
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 4.0f, 0.875f)));
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 4.5f, 0.875f)));
 	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 5.0f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 5.5f, 0.875f)));
+	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 6.0f, 0.875f)));
 
 	// Set the hitbox radii and normals
 	for (genesis::GameObject3D &boxObject : boxObjects)
@@ -106,10 +138,6 @@ void run_physics_demo(GLFWwindow* window)
 	}
 	boxObjects[0].setHitboxRadius(1.0f);
 	boxObjects[0].setIsStatic(true);
-
-	// Set projection matrix
-	glm::mat4 projection = glm::perspective(_physicsSimInputManager._camera.Zoom, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
-	glUniformMatrix4fv(uniforms.projection, 1, GL_FALSE, glm::value_ptr(projection));
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -144,9 +172,31 @@ void run_physics_demo(GLFWwindow* window)
 			attackCooldown = 0.5f;
 		}
 
-		// Set view matrix
-		glm::mat4 view = _physicsSimInputManager._camera.GetViewMatrix();
-		glUniformMatrix4fv(uniforms.view, 1, GL_FALSE, glm::value_ptr(view));
+		// Set the view position property in the fragment shader
+		shader.Use();
+		glUniform3f(uniforms.object.viewPos, _physicsSimInputManager._camera.Position.x, _physicsSimInputManager._camera.Position.y, _physicsSimInputManager._camera.Position.z);
+
+		// Draw skybox first
+		glDepthMask(GL_FALSE); // Remember to turn depth writing off
+
+		skyboxShader.Use();
+		glm::mat4 view = glm::mat4(glm::mat3(_physicsSimInputManager._camera.GetViewMatrix()));	// Remove any translation component of the view matrix
+		glm::mat4 projection = glm::perspective(_physicsSimInputManager._camera.Zoom, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
+		glUniformMatrix4fv(uniforms.skybox.view, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(uniforms.skybox.projection, 1, GL_FALSE, glm::value_ptr(projection));
+
+		glBindVertexArray(skyboxVAO);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+
+		glDepthMask(GL_TRUE); // Turn depth writing back on
+
+		// Then draw scene as normal
+		shader.Use();
+		view = _physicsSimInputManager._camera.GetViewMatrix();
+		glUniformMatrix4fv(uniforms.object.view, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(uniforms.object.projection, 1, GL_FALSE, glm::value_ptr(projection));
 
 		// Contact normal
 		glm::vec3 N;
@@ -164,6 +214,7 @@ void run_physics_demo(GLFWwindow* window)
 
 			for (j = 0; j < boxObjects.size(); j++)
 			{
+				/** Forgo collision detection if we know that the boxes cannot possibly collide */
 				if (i == j)
 					continue;
 				if (i != 0 && j != 0 && fabs(glm::length(boxObjects[i].getPosition() - boxObjects[j].getPosition())) > 0.6)
@@ -171,17 +222,11 @@ void run_physics_demo(GLFWwindow* window)
 				if (i == 0 || j == 0 && fabs(glm::length(boxObjects[i].getPosition() - boxObjects[j].getPosition())) > 2)
 					continue;
 
-				//collisionExists = checkCollision(boxObjects[i], boxObjects[j], N, t);
 				collisionExists = checkAABBCollision(boxObjects[i], boxObjects[j], N, t);
 				if (collisionExists && t < 0)
 				{
 					resolveCollision(boxObjects[i], boxObjects[j], -N, t, _physicsSimInputManager.getDeltaTime());
 				}
-				//else if (!boxObjects[i].getIsStatic())
-				//{
-				//	boxObjects[i].setVelocity(boxObjects[i].getVelocity() + G_CONST * _physicsSimInputManager.getDeltaTime());
-				//}
-				//boxObjects[i].setPosition(boxObjects[i].getPosition() + boxObjects[i].getVelocity() * _physicsSimInputManager.getDeltaTime());
 			}
 		}
 
@@ -189,22 +234,17 @@ void run_physics_demo(GLFWwindow* window)
 		for (genesis::GameObject3D &boxObject : boxObjects)
 		{
 			boxObject.render();
-			//  Update step
+			// Update step
 			if (!boxObject.getIsStatic())
+				boxObject.setVelocity(boxObject.getVelocity() + G_CONST * _physicsSimInputManager.getDeltaTime());
+			// Unless we're dealing with the big box
+			else
 			{
-				if (boxObject.getPosition().y - boxObject.getHitboxRadius() > -0.5 || 
-					boxObject.getPosition().x > 1.125 || boxObject.getPosition().x < -1.125 || 
-					boxObject.getPosition().z > 1.125 || boxObject.getPosition().z < -1.125)
-				{
-					boxObject.setVelocity(boxObject.getVelocity() + G_CONST * _physicsSimInputManager.getDeltaTime());
-					boxObject.setPosition(boxObject.getPosition() + boxObject.getVelocity() * _physicsSimInputManager.getDeltaTime());
-					boxObject.setAngularDisplacement(boxObject.getAngularDisplacement() + boxObject.getAngularVelocity() * _physicsSimInputManager.getDeltaTime());
-				}
-				else
-				{
-					boxObject.setVelocity(glm::vec3(boxObject.getVelocity().x, 0.0f, boxObject.getVelocity().z));
-				}
+				boxObject.setVelocity(glm::vec3(0.0f, 0.0f, 0.0f));
+				boxObject.setAngularVelocity(glm::vec3(0.0f, 0.0f, 0.0f));
 			}
+			boxObject.setPosition(boxObject.getPosition() + boxObject.getVelocity() * _physicsSimInputManager.getDeltaTime());
+			boxObject.setAngularDisplacement(boxObject.getAngularDisplacement() + boxObject.getAngularVelocity() * _physicsSimInputManager.getDeltaTime());
 		}
 
 		// Swap the buffers
@@ -214,162 +254,125 @@ void run_physics_demo(GLFWwindow* window)
 	glfwTerminate();
 }
 
-void getInterval(genesis::GameObject3D &_object, glm::vec3 _normal, float &_minRange, float &_maxRange)
+/** Calculate the normals that need to be considered in collision detection */
+void getAxes(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, vector<glm::vec3> &_axes)
 {
-	_minRange = std::numeric_limits<float>::max();
-	_maxRange = std::numeric_limits<float>::min();
+	glm::mat4 rotationMat;
+	rotationMat = glm::rotate(rotationMat, _object1.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, -1.0f));
+	rotationMat = glm::rotate(rotationMat, _object1.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
+	rotationMat = glm::rotate(rotationMat, _object1.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat3 rotation = glm::mat3(rotationMat);
+	glm::vec3 a0 = _object1.getPosition() + rotation * glm::vec3(1.0f, 0.0f, 0.0f);
+	glm::vec3 a1 = _object1.getPosition() + rotation * glm::vec3(0.0f, 1.0f, 0.0f);
+	glm::vec3 a2 = _object1.getPosition() + rotation * glm::vec3(0.0f, 0.0f, 1.0f);
+	rotationMat = glm::mat4();
+	rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, -1.0f));
+	rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
+	rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
+	rotation = glm::mat3(rotationMat);
+	glm::vec3 b0 = _object2.getPosition() + rotation * glm::vec3(1.0f, 0.0f, 0.0f);
+	glm::vec3 b1 = _object2.getPosition() + rotation * glm::vec3(0.0f, 1.0f, 0.0f);
+	glm::vec3 b2 = _object2.getPosition() + rotation * glm::vec3(0.0f, 0.0f, 1.0f);
+
+	_axes.push_back(glm::normalize(a0));
+	_axes.push_back(glm::normalize(a1));
+	_axes.push_back(glm::normalize(a2));
+	_axes.push_back(glm::normalize(b0));
+	_axes.push_back(glm::normalize(b1));
+	_axes.push_back(glm::normalize(b2));
+	_axes.push_back(glm::normalize(glm::cross(a0, b0)));
+	_axes.push_back(glm::normalize(glm::cross(a0, b1)));
+	_axes.push_back(glm::normalize(glm::cross(a0, b2)));
+	_axes.push_back(glm::normalize(glm::cross(a1, b0)));
+	_axes.push_back(glm::normalize(glm::cross(a1, b1)));
+	_axes.push_back(glm::normalize(glm::cross(a1, b2)));
+	_axes.push_back(glm::normalize(glm::cross(a2, b0)));
+	_axes.push_back(glm::normalize(glm::cross(a2, b1)));
+	_axes.push_back(glm::normalize(glm::cross(a2, b2)));
+}
+
+void getVertices(genesis::GameObject3D &_object, vector<glm::vec3> &_vertices)
+{
 	float r = _object.getHitboxRadius();
-	vector<glm::vec3> vertices;
 	glm::mat4 rotationMat;
 	rotationMat = glm::rotate(rotationMat, _object.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, -1.0f));
 	rotationMat = glm::rotate(rotationMat, _object.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
 	rotationMat = glm::rotate(rotationMat, _object.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
 	glm::mat3 rotation = glm::mat3(rotationMat);
-	vertices.push_back(_object.getPosition() + rotation * glm::vec3(-r, -r, -r));
-	vertices.push_back(_object.getPosition() + rotation * glm::vec3(r, -r, -r));
-	vertices.push_back(_object.getPosition() + rotation * glm::vec3(-r, r, -r));
-	vertices.push_back(_object.getPosition() + rotation * glm::vec3(-r, -r, r));
-	vertices.push_back(_object.getPosition() + rotation * glm::vec3(r, r, -r));
-	vertices.push_back(_object.getPosition() + rotation * glm::vec3(r, -r, r));
-	vertices.push_back(_object.getPosition() + rotation * glm::vec3(-r, r, r));
-	vertices.push_back(_object.getPosition() + rotation * glm::vec3(r, r, r));
-
-	for (glm::vec3 vertex : vertices)
-	{
-		float pointOnNormal = glm::dot(_normal, vertex);
-		if (pointOnNormal < _minRange)
-			_minRange = pointOnNormal;
-		if (pointOnNormal > _maxRange)
-			_maxRange = pointOnNormal;
-	}
+	_vertices.push_back(_object.getPosition() + rotation * glm::vec3(-r, -r, -r));
+	_vertices.push_back(_object.getPosition() + rotation * glm::vec3(r, -r, -r));
+	_vertices.push_back(_object.getPosition() + rotation * glm::vec3(-r, r, -r));
+	_vertices.push_back(_object.getPosition() + rotation * glm::vec3(-r, -r, r));
+	_vertices.push_back(_object.getPosition() + rotation * glm::vec3(r, r, -r));
+	_vertices.push_back(_object.getPosition() + rotation * glm::vec3(r, -r, r));
+	_vertices.push_back(_object.getPosition() + rotation * glm::vec3(-r, r, r));
+	_vertices.push_back(_object.getPosition() + rotation * glm::vec3(r, r, r));
 }
 
-bool intersectsOnNormal(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, glm::vec3 _normal, const glm::vec3 &_offset, const glm::vec3 &_xVel, float &_t)
+bool intersectsWhenProjected(vector<glm::vec3> &_vertices1, vector<glm::vec3> &_vertices2, glm::vec3 &_axis, float &_t)
 {
-	float min0, max0;	// Projected interval onto the normal of the first object
-	float min1, max1;	// Projected interval onto the normal of the second object
-
-	// Project the vertices of our objects onto the normal and extract the intervals on the normal
-	getInterval(_object1, _normal, min0, max0);
-	getInterval(_object2, _normal, min1, max1);
-
-	// h helps translates our objects into local space
-	float h = glm::dot(_offset, _normal);
-	min0 += h;
-	max0 += h;
-
-	float d0 = min0 - max1; // If overlap, d0 < 0
-	float d1 = min1 - max0; // If overlap, d1 < 0
-	// If separated, test dynamic intervals
-	float v;
-	float t0, t1, temp;
-	if (d0 > 0.0f || d1 > 0.0f) {
-		v = glm::dot(_xVel, _normal);
-		
-		// Small velocity, so only the overlap test will be relevant
-		if (fabs(v) < 0.0000001f) return false;
-
-		t0 = -d0 / v;	// Time of impact until d0 reaches 0
-		t1 = d1 / v;	// Time of impact until d1 reaches 1
-
-		if (t0 > t1)
-		{
-			temp = t0;
-			t0 = t1;
-			t1 = temp;
-		}
-
-		_t = (t0 > 0.0f) ? t0 : t1;
-
-		if (_t < 0.0f || _t > 1.0f)
-			return false;
-
+	// Handles the case where the cross product = {0, 0, 0}
+	if (fabs(_axis.x) < 0.001f && fabs(_axis.y) < 0.001f && fabs(_axis.z) < 0.001f)
 		return true;
-	}
-	else {
-		// If there is overlap, get the overlap interval
-		_t = (d0 > d1) ? d0 : d1;
-		return true;
-	}
 
-	return false;
-}
+	float aMin = std::numeric_limits<float>::max();
+	float aMax = std::numeric_limits<float>::min();
+	float bMin = std::numeric_limits<float>::max();
+	float bMax = std::numeric_limits<float>::min();
 
-/** Determines the maximum penetration depth given a list of penetration depths */
-bool findMTD(std::vector<glm::vec3> &_axis, std::vector<float> &_penetration, glm::vec3 &_normal, float &_t)
-{
-	bool penetrationExists = false;
-	_t = std::numeric_limits<float>::max();
+	// Determine the two projected intervals
 	int i;
-
-	for (i = 0; i < _axis.size(); i++)
+	for (i = 0; i < _vertices1.size(); i++)
 	{
-		if (_penetration[i] < 0.0f)
-		{
-			penetrationExists = true;
-			if (_penetration[i] < _t)
-			{
-				_t = _penetration[i];
-				_normal = _axis[i];
-			}
-		}
+		float aDist = glm::dot(_vertices1[i], _axis);
+		aMin = (aDist < aMin) ? aDist : aMin;
+		aMax = (aDist > aMax) ? aDist : aMax;
+		float bDist = glm::dot(_vertices2[i], _axis);
+		bMin = (bDist < bMin) ? bDist : bMin;
+		bMax = (bDist > bMax) ? bDist : bMax;
 	}
 
-	return penetrationExists;
+	// Intersection test
+	float longSpan = max(aMax, bMax) - min(aMin, bMin);
+	float sumSpan = aMax - aMin + bMax - bMin;
+	_t = longSpan - sumSpan;
+	return longSpan < sumSpan;
 }
 
 /** Checks the two rigid bodies to see if a collision occurs, and calculates the contact normal and collision type descriptor (t) */
 bool checkCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, glm::vec3 &_contactN, float &_t)
 {
-	glm::vec3 offset = _object2.getPosition() - _object1.getPosition();
-	float xLength = glm::length(offset);
+	vector<glm::vec3> axes;
+	getAxes(_object1, _object2, axes);
+	
+	vector<glm::vec3> vertices1, vertices2;
+	getVertices(_object1, vertices1);
+	getVertices(_object2, vertices2);
 
-	glm::vec3 xVel = _object2.getVelocity() - _object1.getVelocity();
-	std::vector<float> depth(12);
-	std::vector<glm::vec3> axis(12);
-
-	int i, j = 0;
-	float t = 1.0f;
-
-	/** Check if there exists an axis that separates the two objects */
-	for (i = 0; i < 6; i++)
+	int i;
+	float pen;
+	_t = std::numeric_limits<float>::max();
+	for (i = 0; i < axes.size(); i++)
 	{
-		// Returns false if there exists any axis or normal that separates the two bounds
-		if (!intersectsOnNormal(_object1, _object2, _object1.getNormals()[i], offset, xVel, t))
+		if (!intersectsWhenProjected(vertices1, vertices2, axes[i], pen))
+		{
 			return false;
-		axis[j] = _object1.getNormals()[i];
-		depth[j] = t;
-		j++;
-	}
-	for (i = 0; i < 6; i++)
-	{
-		if (!intersectsOnNormal(_object2, _object1, _object2.getNormals()[i], offset, xVel, t))
-			return false;
-		axis[j] = _object2.getNormals()[i];
-		depth[j] = t;
-		j++;
+		}
+		if (pen < _t)
+		{
+			_t = pen;
+			_contactN = axes[i];
+		}
 	}
 
-	// Contact normal
-	glm::vec3 N;
-
-	if (!findMTD(axis, depth, N, t))
+	if (_t < 0)
+	{
+		if (glm::dot(_contactN, _object2.getPosition() - _object1.getPosition()) < 0)
+			_contactN = -_contactN;
+		return true;
+	}
+	else
 		return false;
-
-	if (glm::dot(N, offset) < 0.0f)
-		N = glm::vec3(-N.x, -N.y, -N.z);
-	N = glm::vec3(-N.x, -N.y, -N.z);
-	if (N.x == -0)
-		N.x = 0;
-	if (N.y == -0)
-		N.y = 0;
-	if (N.z == -0)
-		N.z = 0;
-
-	_contactN = N;
-	_t = t;
-
-	return true;
 }
 
 bool checkAABBCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, glm::vec3 &_contactN, float &_t)
@@ -487,7 +490,6 @@ void resolveCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_o
 	glm::vec3 deltaW1 = I1 * lambda * -glm::cross(-rA, _contactNormal);
 	glm::vec3 deltaV2 = M2 * lambda * _contactNormal;
 	glm::vec3 deltaW2 = I2 * lambda * glm::cross(-rB, _contactNormal);
-	cout << deltaW2.x << " " << deltaW2.y << " " << deltaW2.z << endl;
 
 	// Apply impulses
 	_object1.setVelocity(_object1.getVelocity() + deltaV1);

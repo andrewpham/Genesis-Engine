@@ -96,6 +96,8 @@ void run_gaben_game(GLFWwindow* window)
 	uniforms.object.projection = glGetUniformLocation(shader.ID, "projection");
 	uniforms.object.lightPos = glGetUniformLocation(shader.ID, "lightPos");
 	uniforms.object.viewPos = glGetUniformLocation(shader.ID, "viewPos");
+	// Set the light source properties in the fragment shader
+	glUniform3f(uniforms.object.lightPos, LIGHT_POS.x, LIGHT_POS.y, LIGHT_POS.z);
 	skyboxShader.Use();
 	uniforms.skybox.view = glGetUniformLocation(skyboxShader.ID, "view");
 	uniforms.skybox.projection = glGetUniformLocation(skyboxShader.ID, "projection");
@@ -413,10 +415,6 @@ void run_gaben_game(GLFWwindow* window)
 	genesis::GameObject3D gunObject(shader, gun, glm::vec3(0.2f, -0.2f, -0.5f), glm::vec3(0.03f));
 
 	glEnable(GL_DEPTH_TEST);
-
-	// Set the light source properties in the fragment shader
-	shader.Use();
-	glUniform3f(uniforms.object.lightPos, LIGHT_POS.x, LIGHT_POS.y, LIGHT_POS.z);
 
 	// Play theme song
 	//_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/theme.mp3", GL_TRUE);

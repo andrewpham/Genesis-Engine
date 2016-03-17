@@ -40,6 +40,8 @@ void run_skin_demo(GLFWwindow* window)
 	uniforms.profile6On = glGetUniformLocation(shader.ID, "profile6On");
 	uniforms.scatteringOn = glGetUniformLocation(shader.ID, "scatteringOn");
 	uniforms.ambientOcclusionOn = glGetUniformLocation(shader.ID, "ambientOcclusionOn");
+	// Set the light source properties in the fragment shader
+	glUniform3f(uniforms.lightPos, LIGHT_POS.x, LIGHT_POS.y, LIGHT_POS.z);
 
 	// Used to pace the toggling of diffusion profiles
 	GLfloat toggleCooldown = 0.0f;
@@ -50,11 +52,6 @@ void run_skin_demo(GLFWwindow* window)
 
 	// Create game objects
 	genesis::GameObject3D headObject(shader, head, glm::vec3(-24.0f, 144.0f, -29.7f));
-
-	// Set projection matrix
-	glm::mat4 projection = glm::perspective(_skinDemoInputManager._camera.Zoom, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
-	glUniformMatrix4fv(uniforms.projection, 1, GL_FALSE, glm::value_ptr(projection));
-	glUniform3f(uniforms.lightPos, LIGHT_POS.x, LIGHT_POS.y, LIGHT_POS.z);
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -150,7 +147,9 @@ void run_skin_demo(GLFWwindow* window)
 
 		// Set view matrix
 		glm::mat4 view = _skinDemoInputManager._camera.GetViewMatrix();
+		glm::mat4 projection = glm::perspective(_skinDemoInputManager._camera.Zoom, (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
 		glUniformMatrix4fv(uniforms.view, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(uniforms.projection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniform3f(uniforms.viewPos, _skinDemoInputManager._camera.Position.x, _skinDemoInputManager._camera.Position.y, _skinDemoInputManager._camera.Position.z);
 		glUniform1i(uniforms.profile1On, p1State);
 		glUniform1i(uniforms.profile2On, p2State);
