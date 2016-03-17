@@ -67,12 +67,12 @@ void run_physics_demo(GLFWwindow* window)
 
 	// Cubemap (Skybox)
 	vector<const GLchar*> faces;
-	faces.push_back("../Genesis/Textures/Skybox/Rigid Body Sim/right.jpg");
-	faces.push_back("../Genesis/Textures/Skybox/Rigid Body Sim/left.jpg");
-	faces.push_back("../Genesis/Textures/Skybox/Rigid Body Sim/top.jpg");
-	faces.push_back("../Genesis/Textures/Skybox/Rigid Body Sim/bottom.jpg");
-	faces.push_back("../Genesis/Textures/Skybox/Rigid Body Sim/back.jpg");
-	faces.push_back("../Genesis/Textures/Skybox/Rigid Body Sim/front.jpg");
+	faces.push_back("../Genesis/Textures/Skybox/Rigid Body Sim/right.png");
+	faces.push_back("../Genesis/Textures/Skybox/Rigid Body Sim/left.png");
+	faces.push_back("../Genesis/Textures/Skybox/Rigid Body Sim/top.png");
+	faces.push_back("../Genesis/Textures/Skybox/Rigid Body Sim/bottom.png");
+	faces.push_back("../Genesis/Textures/Skybox/Rigid Body Sim/back.png");
+	faces.push_back("../Genesis/Textures/Skybox/Rigid Body Sim/front.png");
 	_physicsSimResourceManager.loadCubemap(faces);
 	GLuint cubemapTexture = _physicsSimResourceManager.getCubemap();
 
