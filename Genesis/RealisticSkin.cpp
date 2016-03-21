@@ -78,37 +78,44 @@ void run_skin_demo(GLFWwindow* window)
 		{
 			if (_skinDemoInputManager._keys[GLFW_KEY_1])
 			{
+				_skinDemoInputManager.getSoundEngine()->play2D("../Genesis/Audio/Realistic Skin/lightswitch.wav", GL_FALSE);
 				p1State = !p1State;
 				toggleCooldown = 1.0f;
 			}
 			if (_skinDemoInputManager._keys[GLFW_KEY_2])
 			{
+				_skinDemoInputManager.getSoundEngine()->play2D("../Genesis/Audio/Realistic Skin/lightswitch.wav", GL_FALSE);
 				p2State = !p2State;
 				toggleCooldown = 1.0f;
 			}
 			if (_skinDemoInputManager._keys[GLFW_KEY_3])
 			{
+				_skinDemoInputManager.getSoundEngine()->play2D("../Genesis/Audio/Realistic Skin/lightswitch.wav", GL_FALSE);
 				p3State = !p3State;
 				toggleCooldown = 1.0f;
 			}
 			if (_skinDemoInputManager._keys[GLFW_KEY_4])
 			{
+				_skinDemoInputManager.getSoundEngine()->play2D("../Genesis/Audio/Realistic Skin/lightswitch.wav", GL_FALSE);
 				p4State = !p4State;
 				toggleCooldown = 1.0f;
 			}
 			if (_skinDemoInputManager._keys[GLFW_KEY_5])
 			{
+				_skinDemoInputManager.getSoundEngine()->play2D("../Genesis/Audio/Realistic Skin/lightswitch.wav", GL_FALSE);
 				p5State = !p5State;
 				toggleCooldown = 1.0f;
 			}
 			if (_skinDemoInputManager._keys[GLFW_KEY_6])
 			{
+				_skinDemoInputManager.getSoundEngine()->play2D("../Genesis/Audio/Realistic Skin/lightswitch.wav", GL_FALSE);
 				p6State = !p6State;
 				toggleCooldown = 1.0f;
 			}
 			// Switches off all diffusion scattering profiles
 			if (_skinDemoInputManager._keys[GLFW_KEY_SPACE])
 			{
+				_skinDemoInputManager.getSoundEngine()->play2D("../Genesis/Audio/Realistic Skin/lightswitch.wav", GL_FALSE);
 				p1State = false;
 				p2State = false;
 				p3State = false;
@@ -120,6 +127,7 @@ void run_skin_demo(GLFWwindow* window)
 			// Switches on all diffusion scattering profiles
 			if (_skinDemoInputManager._keys[GLFW_KEY_ENTER])
 			{
+				_skinDemoInputManager.getSoundEngine()->play2D("../Genesis/Audio/Realistic Skin/lightswitch.wav", GL_FALSE);
 				p1State = true;
 				p2State = true;
 				p3State = true;
@@ -130,16 +138,19 @@ void run_skin_demo(GLFWwindow* window)
 			}
 			if (_skinDemoInputManager._keys[GLFW_KEY_P])
 			{
+				_skinDemoInputManager.getSoundEngine()->play2D("../Genesis/Audio/Realistic Skin/lightswitch.wav", GL_FALSE);
 				hasScattering = true;
 				toggleCooldown = 1.0f;
 			}
 			if (_skinDemoInputManager._keys[GLFW_KEY_O])
 			{
+				_skinDemoInputManager.getSoundEngine()->play2D("../Genesis/Audio/Realistic Skin/lightswitch.wav", GL_FALSE);
 				hasScattering = false;
 				toggleCooldown = 1.0f;
 			}
 			if (_skinDemoInputManager._keys[GLFW_KEY_C])
 			{
+				_skinDemoInputManager.getSoundEngine()->play2D("../Genesis/Audio/Realistic Skin/lightswitch.wav", GL_FALSE);
 				hasAmbientOcclusion = !hasAmbientOcclusion;
 				toggleCooldown = 1.0f;
 			}

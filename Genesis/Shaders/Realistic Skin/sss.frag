@@ -123,7 +123,7 @@ vec4 finalSkinShader()
 	// Determine skin color from a diffuseColor map  
 	diffuseLight *= sqrt(texture(texture_diffuse1, TexCoords).xyz);
 	if (ambientOcclusionOn)
-		diffuseLight *= 2.0 * (1.0 - texture(texture_ambient1, TexCoords).xyz);
+		diffuseLight *= 3.0 * (1.0 - texture(texture_ambient1, TexCoords).xyz);
 	vec3 specularLight = vec3(0.0, 0.0, 0.0);  
 	// Compute specular for each light
 	vec3 N = texture(texture_normal1, TexCoords).rgb;
@@ -140,7 +140,7 @@ void main()
 	else
 	{
 		if (ambientOcclusionOn)
-			color = vec4(texture(texture_diffuse1, TexCoords)) * 2.0 * (1.0 - texture(texture_ambient1, TexCoords));
+			color = vec4(texture(texture_diffuse1, TexCoords)) * 3.0 * (1.0 - texture(texture_ambient1, TexCoords));
 		else
 			color = vec4(texture(texture_diffuse1, TexCoords));
 	}
