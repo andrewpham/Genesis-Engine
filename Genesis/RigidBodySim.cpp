@@ -4,10 +4,7 @@
 
 genesis::InputManager _physicsSimInputManager;
 genesis::ResourceManager _physicsSimResourceManager;
-std::vector<glm::vec3> _normals { glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f),
-									glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(-1.0f, 0.0f, 0.0f) };
 
-/** Function descriptions can be found next to the corresponding definitions below */
 /** For this demo, I implemented 2 different collision detection functions */
 void getAxes(genesis::GameObject3D&, genesis::GameObject3D&, vector<glm::vec3>&);
 glm::vec3 getAxisX(genesis::GameObject3D&, glm::mat3&);
@@ -20,6 +17,7 @@ bool checkCollision(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3&, 
 
 bool checkAABBCollision(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3&, float&);
 
+void computeBasis(const glm::vec3&, glm::vec3&, glm::vec3&);
 void resolveCollision(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3, float, float);
 
 void run_physics_demo(GLFWwindow* window)
@@ -140,7 +138,6 @@ void run_physics_demo(GLFWwindow* window)
 	for (genesis::GameObject3D &boxObject : boxObjects)
 	{
 		boxObject.setHitboxRadius(0.125f);
-		boxObject.setNormals(_normals);
 		boxObject.setIsStatic(false);
 	}
 	boxObjects[0].setHitboxRadius(1.0f);
@@ -172,9 +169,8 @@ void run_physics_demo(GLFWwindow* window)
 		{
 			_physicsSimInputManager.getSoundEngine()->play2D("../Genesis/Audio/Rigid Body Sim/boxspawn.wav", GL_FALSE);
 			boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(_physicsSimInputManager._camera.Position.x + _physicsSimInputManager._camera.Front.x, _physicsSimInputManager._camera.Position.y + _physicsSimInputManager._camera.Front.y, _physicsSimInputManager._camera.Position.z + _physicsSimInputManager._camera.Front.z)));
-			boxObjects.back().setVelocity(5.0f * _physicsSimInputManager._camera.Front);
+			boxObjects.back().setVelocity(7.0f * _physicsSimInputManager._camera.Front);
 			boxObjects.back().setHitboxRadius(0.125f);
-			boxObjects.back().setNormals(_normals);
 			boxObjects.back().setIsStatic(false);
 			attackCooldown = 0.5f;
 		}
@@ -268,7 +264,7 @@ void run_physics_demo(GLFWwindow* window)
 void getAxes(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, vector<glm::vec3> &_axes)
 {
 	glm::mat4 rotationMat;
-	rotationMat = glm::rotate(rotationMat, _object1.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, -1.0f));
+	rotationMat = glm::rotate(rotationMat, _object1.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
 	rotationMat = glm::rotate(rotationMat, _object1.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
 	rotationMat = glm::rotate(rotationMat, _object1.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
 	glm::mat3 rotation = glm::mat3(rotationMat);
@@ -276,7 +272,7 @@ void getAxes(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, v
 	glm::vec3 a1 = rotation * glm::vec3(0.0f, 1.0f, 0.0f);
 	glm::vec3 a2 = rotation * glm::vec3(0.0f, 0.0f, 1.0f);
 	rotationMat = glm::mat4();
-	rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, -1.0f));
+	rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
 	rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
 	rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
 	rotation = glm::mat3(rotationMat);
@@ -319,7 +315,7 @@ glm::vec3 getAxisZ(genesis::GameObject3D &_object, glm::mat3 &_rotation)
 float transformToAxis(genesis::GameObject3D &_object, glm::vec3 &_axis)
 {
 	glm::mat4 rotationMat;
-	rotationMat = glm::rotate(rotationMat, _object.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, -1.0f));
+	rotationMat = glm::rotate(rotationMat, _object.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
 	rotationMat = glm::rotate(rotationMat, _object.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
 	rotationMat = glm::rotate(rotationMat, _object.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
 	glm::mat3 rotation = glm::mat3(rotationMat);
@@ -351,6 +347,7 @@ void fillPointFaceBoxBox(genesis::GameObject3D &_object1, genesis::GameObject3D 
 	_contactN = glm::normalize(normal);
 }
 
+/** SAT collision detection scheme based on ideas from the book:  Game Physics Engine Development */
 bool checkCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, glm::vec3 &_contactN, float &_t)
 {
 	vector<glm::vec3> axes;
@@ -459,68 +456,92 @@ bool checkAABBCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &
 	return penetrationExists;
 }
 
+void computeBasis(const glm::vec3 &n, glm::vec3 &t1, glm::vec3 &t2)
+{
+	// Suppose vector a has all equal components and is a unit vector: a = (s, s, s)
+	// Then 3*s*s = 1, s = sqrt(1/3) = 0.57735. This means that at least one component of a
+	// unit vector must be greater or equal to 0.57735.
+
+	if (fabs(n.x) >= 0.57735f)
+		t1 = glm::vec3(n.y, -n.x, 0.0f);
+	else
+		t1 = glm::vec3(0.0f, n.z, -n.y);
+
+	t1 = glm::normalize(t1);
+	t2 = glm::normalize(glm::cross(n, t1));
+}
+
 /** Collision resolution scheme based on the paper:  Iterative Dynamics with Temporal Coherence */
 void resolveCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, glm::vec3 _contactNormal, float _penetration, float _timestep)
 {
-	glm::vec3 rA = glm::normalize(_object2.getPosition() - _object1.getPosition());
-	glm::vec3 rB = -rA;
-	float JV = -glm::dot(_contactNormal, _object1.getVelocity()) - glm::dot(glm::cross(-rA, _contactNormal), _object1.getAngularVelocity())
-		+ glm::dot(_contactNormal, _object2.getVelocity()) + glm::dot(glm::cross(-rB, _contactNormal), _object2.getAngularVelocity());
+	float totalImpulse = 0.0f;
 
-	// Determines the mass and moment of inertia matrices of our objects
-	float r1 = _object1.getHitboxRadius();
-	float m1;
-	if (r1 == 0.125f)
-		m1 = 1.0f;
-	else
-		m1 = 1000000000000.0f;
-	float M1Vals[9] = { m1,  0,  0,
-						0, m1,  0,
-						0,  0, m1 };
-	glm::mat3 M1;
-	memcpy(glm::value_ptr(M1), M1Vals, sizeof(M1Vals));
+	int i;
+	for (i = 0; i < 5; i++)
+	{
+		glm::vec3 rA = glm::normalize(_object2.getPosition() - _object1.getPosition());
+		glm::vec3 rB = -rA;
+		float JV = -glm::dot(_contactNormal, _object1.getVelocity()) - glm::dot(glm::cross(-rA, _contactNormal), _object1.getAngularVelocity())
+			+ glm::dot(_contactNormal, _object2.getVelocity()) + glm::dot(glm::cross(-rB, _contactNormal), _object2.getAngularVelocity());
 
-	float r2 = _object1.getHitboxRadius();
-	float m2;
-	if (r2 == 0.125f)
-		m2 = 1.0f;
-	else
-		m2 = 1000000000000.0f;
-	float M2Vals[9] = { m2,  0,  0,
-						0, m2,  0,
-						0,  0, m2 };
-	glm::mat3 M2;
-	memcpy(glm::value_ptr(M2), M2Vals, sizeof(M2Vals));
+		// Determines the mass and moment of inertia matrices of our objects
+		float r1 = _object1.getHitboxRadius();
+		float m1;
+		if (r1 == 0.125f)
+			m1 = 1.0f;
+		else
+			m1 = 512.0f;
+		float M1Vals[9] = { m1,  0,  0,
+							0, m1,  0,
+							0,  0, m1 };
+		glm::mat3 M1;
+		memcpy(glm::value_ptr(M1), M1Vals, sizeof(M1Vals));
 
-	float i1 = 300 * m1 * r1 * r1 / 6;
-	float I1Vals[9] = { i1,  0,  0,
-					   0, i1,  0,
-					   0,  0, i1 };
-	glm::mat3 I1;
-	memcpy(glm::value_ptr(I1), I1Vals, sizeof(I1Vals));
+		float r2 = _object1.getHitboxRadius();
+		float m2;
+		if (r2 == 0.125f)
+			m2 = 1.0f;
+		else
+			m2 = 512.0f;
+		float M2Vals[9] = { m2,  0,  0,
+							0, m2,  0,
+							0,  0, m2 };
+		glm::mat3 M2;
+		memcpy(glm::value_ptr(M2), M2Vals, sizeof(M2Vals));
 
-	float i2 = 300 * m2 * r2 * r2 / 6;
-	float I2Vals[9] = { i2,  0,  0,
-						0, i2,  0,
-						0,  0, i2 };
-	glm::mat3 I2;
-	memcpy(glm::value_ptr(I2), I2Vals, sizeof(I2Vals));
+		float i1 = 300 * m1 * r1 * r1 / 6;
+		float I1Vals[9] = { i1,  0,  0,
+						   0, i1,  0,
+						   0,  0, i1 };
+		glm::mat3 I1;
+		memcpy(glm::value_ptr(I1), I1Vals, sizeof(I1Vals));
 
-	float Meff = glm::dot(-_contactNormal, glm::inverse(M1) * -_contactNormal) + 
-		glm::dot(-glm::cross(-_contactNormal, _contactNormal), glm::inverse(I1) * -glm::cross(-_contactNormal, _contactNormal)) + 
-		glm::dot(_contactNormal, glm::inverse(M2) * _contactNormal) + 
-		glm::dot(glm::cross(-_contactNormal, _contactNormal), glm::inverse(I2) * glm::cross(-_contactNormal, _contactNormal));
+		float i2 = 300 * m2 * r2 * r2 / 6;
+		float I2Vals[9] = { i2,  0,  0,
+							0, i2,  0,
+							0,  0, i2 };
+		glm::mat3 I2;
+		memcpy(glm::value_ptr(I2), I2Vals, sizeof(I2Vals));
 
-	float lambda = -(JV + 0.10 / _timestep * _penetration) / Meff;
+		float Meff = glm::dot(-_contactNormal, glm::inverse(M1) * -_contactNormal) +
+			glm::dot(-glm::cross(-_contactNormal, _contactNormal), glm::inverse(I1) * -glm::cross(-_contactNormal, _contactNormal)) +
+			glm::dot(_contactNormal, glm::inverse(M2) * _contactNormal) +
+			glm::dot(glm::cross(-_contactNormal, _contactNormal), glm::inverse(I2) * glm::cross(-_contactNormal, _contactNormal));
 
-	glm::vec3 deltaV1 = M1 * lambda * -_contactNormal;
-	glm::vec3 deltaW1 = I1 * lambda * -glm::cross(-rA, _contactNormal);
-	glm::vec3 deltaV2 = M2 * lambda * _contactNormal;
-	glm::vec3 deltaW2 = I2 * lambda * glm::cross(-rB, _contactNormal);
+		float lambda = -(JV + 0.10f / _timestep * _penetration) / Meff;
+		float oldImpulse = totalImpulse;
+		totalImpulse = glm::clamp(lambda + oldImpulse, 0.0f, std::numeric_limits<float>::max());
+		lambda = totalImpulse - oldImpulse;
 
-	// Apply impulses
-	_object1.setVelocity(_object1.getVelocity() + deltaV1);
-	_object1.setAngularVelocity(_object1.getAngularVelocity() + deltaW1);
-	_object2.setVelocity(_object2.getVelocity() + deltaV2);
-	_object2.setAngularVelocity(_object2.getAngularVelocity() + deltaW2);
+		glm::vec3 deltaV1 = M1 * lambda * -_contactNormal;
+		glm::vec3 deltaW1 = I1 * lambda * -glm::cross(-rA, _contactNormal);
+		glm::vec3 deltaV2 = M2 * lambda * _contactNormal;
+		glm::vec3 deltaW2 = I2 * lambda * glm::cross(-rB, _contactNormal);
+
+		// Apply impulses
+		_object1.setVelocity(_object1.getVelocity() + deltaV1);
+		_object1.setAngularVelocity(_object1.getAngularVelocity() + deltaW1);
+		_object2.setVelocity(_object2.getVelocity() + deltaV2);
+		_object2.setAngularVelocity(_object2.getAngularVelocity() + deltaW2);
+	}
 }

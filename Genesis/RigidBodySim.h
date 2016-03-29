@@ -11,7 +11,5 @@
 
 extern genesis::InputManager _physicsSimInputManager;
 extern genesis::ResourceManager _physicsSimResourceManager;
-// Defines the normals associated with each cube
-extern std::vector<glm::vec3> _normals;
 
 void run_physics_demo(GLFWwindow*);

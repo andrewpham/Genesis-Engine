@@ -29,7 +29,7 @@ namespace genesis {
 			glm::mat4 model;
 			model = glm::translate(model, _position);
 			model = glm::rotate(model, _rotationAngle, _rotationAxis);
-			model = glm::rotate(model, _angularDisplacement.y, glm::vec3(0.0f, 0.0f, -1.0f));
+			model = glm::rotate(model, _angularDisplacement.y, glm::vec3(0.0f, 0.0f, 1.0f));
 			model = glm::rotate(model, _angularDisplacement.x, glm::vec3(0.0f, 1.0f, 0.0f));
 			model = glm::rotate(model, _angularDisplacement.z, glm::vec3(1.0f, 0.0f, 0.0f));
 			model = glm::scale(model, _size);
@@ -260,16 +260,6 @@ namespace genesis {
 	glm::vec3 GameObject3D::getHitboxOffset()
 	{
 		return this->_hitboxOffset;
-	}
-
-	void GameObject3D::setNormals(std::vector<glm::vec3> _normals)
-	{
-		this->_normals = _normals;
-	}
-
-	std::vector<glm::vec3> GameObject3D::getNormals()
-	{
-		return this->_normals;
 	}
 
 }

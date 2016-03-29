@@ -71,9 +71,6 @@ namespace genesis {
 		GLfloat getHitboxRadius();
 		void setHitboxOffset(glm::vec3);
 		glm::vec3 getHitboxOffset();
-
-		void setNormals(std::vector<glm::vec3>);
-		std::vector<glm::vec3> getNormals();
 	protected:
 		// Object state
 		Shader _shader;
@@ -100,8 +97,6 @@ namespace genesis {
 
 		GLfloat _hitboxRadius;
 		glm::vec3 _hitboxOffset;
-
-		std::vector<glm::vec3> _normals;
 	};
 
 }
