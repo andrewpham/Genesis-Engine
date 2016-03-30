@@ -195,7 +195,7 @@ void run_physics_demo(GLFWwindow* window)
 
 		glDepthMask(GL_TRUE); // Turn depth writing back on
 
-		// Then draw scene as normal
+							  // Then draw scene as normal
 		shader.Use();
 		view = _physicsSimInputManager._camera.GetViewMatrix();
 		glUniformMatrix4fv(uniforms.object.view, 1, GL_FALSE, glm::value_ptr(view));
@@ -474,14 +474,18 @@ void computeBasis(const glm::vec3 &n, glm::vec3 &t1, glm::vec3 &t2)
 /** Collision resolution scheme based on the paper:  Iterative Dynamics with Temporal Coherence */
 void resolveCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, glm::vec3 _contactNormal, float _penetration, float _timestep)
 {
-	float totalImpulse = 0.0f;
+	float totalImpulseN = 0.0f;
+	float totalImpulseT1 = 0.0f;
+	float totalImpulseT2 = 0.0f;
+	glm::vec3 t1, t2;
+	computeBasis(_contactNormal, t1, t2);
 
 	int i;
-	for (i = 0; i < 5; i++)
+	for (i = 0; i < 3; i++)
 	{
 		glm::vec3 rA = glm::normalize(_object2.getPosition() - _object1.getPosition());
 		glm::vec3 rB = -rA;
-		float JV = -glm::dot(_contactNormal, _object1.getVelocity()) - glm::dot(glm::cross(-rA, _contactNormal), _object1.getAngularVelocity())
+		float JnV = -glm::dot(_contactNormal, _object1.getVelocity()) - glm::dot(glm::cross(-rA, _contactNormal), _object1.getAngularVelocity())
 			+ glm::dot(_contactNormal, _object2.getVelocity()) + glm::dot(glm::cross(-rB, _contactNormal), _object2.getAngularVelocity());
 
 		// Determines the mass and moment of inertia matrices of our objects
@@ -492,8 +496,8 @@ void resolveCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_o
 		else
 			m1 = 512.0f;
 		float M1Vals[9] = { m1,  0,  0,
-							0, m1,  0,
-							0,  0, m1 };
+			0, m1,  0,
+			0,  0, m1 };
 		glm::mat3 M1;
 		memcpy(glm::value_ptr(M1), M1Vals, sizeof(M1Vals));
 
@@ -504,43 +508,94 @@ void resolveCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_o
 		else
 			m2 = 512.0f;
 		float M2Vals[9] = { m2,  0,  0,
-							0, m2,  0,
-							0,  0, m2 };
+			0, m2,  0,
+			0,  0, m2 };
 		glm::mat3 M2;
 		memcpy(glm::value_ptr(M2), M2Vals, sizeof(M2Vals));
 
 		float i1 = 300 * m1 * r1 * r1 / 6;
 		float I1Vals[9] = { i1,  0,  0,
-						   0, i1,  0,
-						   0,  0, i1 };
+			0, i1,  0,
+			0,  0, i1 };
 		glm::mat3 I1;
 		memcpy(glm::value_ptr(I1), I1Vals, sizeof(I1Vals));
 
 		float i2 = 300 * m2 * r2 * r2 / 6;
 		float I2Vals[9] = { i2,  0,  0,
-							0, i2,  0,
-							0,  0, i2 };
+			0, i2,  0,
+			0,  0, i2 };
 		glm::mat3 I2;
 		memcpy(glm::value_ptr(I2), I2Vals, sizeof(I2Vals));
 
-		float Meff = glm::dot(-_contactNormal, glm::inverse(M1) * -_contactNormal) +
-			glm::dot(-glm::cross(-_contactNormal, _contactNormal), glm::inverse(I1) * -glm::cross(-_contactNormal, _contactNormal)) +
+		float MeffN = glm::dot(-_contactNormal, glm::inverse(M1) * -_contactNormal) +
+			glm::dot(-glm::cross(-rA, _contactNormal), glm::inverse(I1) * -glm::cross(-rA, _contactNormal)) +
 			glm::dot(_contactNormal, glm::inverse(M2) * _contactNormal) +
-			glm::dot(glm::cross(-_contactNormal, _contactNormal), glm::inverse(I2) * glm::cross(-_contactNormal, _contactNormal));
+			glm::dot(glm::cross(-rB, _contactNormal), glm::inverse(I2) * glm::cross(-rB, _contactNormal));
 
-		float lambda = -(JV + 0.10f / _timestep * _penetration) / Meff;
-		float oldImpulse = totalImpulse;
-		totalImpulse = glm::clamp(lambda + oldImpulse, 0.0f, std::numeric_limits<float>::max());
-		lambda = totalImpulse - oldImpulse;
+		float lambdaN = -(JnV + 0.10f / _timestep * _penetration) / MeffN;
+		float oldImpulseN = totalImpulseN;
+		totalImpulseN = glm::clamp(lambdaN + oldImpulseN, 0.0f, std::numeric_limits<float>::max());
+		lambdaN = totalImpulseN - oldImpulseN;
 
-		glm::vec3 deltaV1 = M1 * lambda * -_contactNormal;
-		glm::vec3 deltaW1 = I1 * lambda * -glm::cross(-rA, _contactNormal);
-		glm::vec3 deltaV2 = M2 * lambda * _contactNormal;
-		glm::vec3 deltaW2 = I2 * lambda * glm::cross(-rB, _contactNormal);
+		glm::vec3 deltaV1 = M1 * lambdaN * -_contactNormal;
+		glm::vec3 deltaW1 = I1 * lambdaN * -glm::cross(-rA, _contactNormal);
+		glm::vec3 deltaV2 = M2 * lambdaN * _contactNormal;
+		glm::vec3 deltaW2 = I2 * lambdaN * glm::cross(-rB, _contactNormal);
 
 		// Apply impulses
 		_object1.setVelocity(_object1.getVelocity() + deltaV1);
 		_object1.setAngularVelocity(_object1.getAngularVelocity() + deltaW1);
+		_object2.setVelocity(_object2.getVelocity() + deltaV2);
+		_object2.setAngularVelocity(_object2.getAngularVelocity() + deltaW2);
+
+		/** Now deal with the friction constraints */
+		float Jt1V = -glm::dot(t1, _object1.getVelocity()) - glm::dot(glm::cross(-rA, t1), _object1.getAngularVelocity())
+			+ glm::dot(t1, _object2.getVelocity()) + glm::dot(glm::cross(-rB, t1), _object2.getAngularVelocity());
+
+		float MeffT1 = glm::dot(-t1, glm::inverse(M1) * -t1) +
+			glm::dot(-glm::cross(-rA, t1), glm::inverse(I1) * -glm::cross(-rA, t1)) +
+			glm::dot(t1, glm::inverse(M2) * t1) +
+			glm::dot(glm::cross(-rB, t1), glm::inverse(I2) * glm::cross(-rB, t1));
+
+		float lambdaT1 = -Jt1V / MeffT1;
+		float oldImpulseT1 = totalImpulseT1;
+		float limitT1 = 0.65f * totalImpulseN;
+		totalImpulseT1 = glm::clamp(lambdaT1 + oldImpulseT1, -limitT1, limitT1);
+		lambdaT1 = totalImpulseT1 - oldImpulseT1;
+
+		deltaV1 = M1 * lambdaT1 * -t1;
+		deltaW1 = I1 * lambdaT1 * -glm::cross(-rA, t1);
+		deltaV2 = M2 * lambdaT1 * t1;
+		deltaW2 = I2 * lambdaT1 * glm::cross(-rB, t1);
+
+		// Apply impulses
+		_object1.setVelocity(_object1.getVelocity() + deltaV1);
+		_object1.setAngularVelocity(_object1.getAngularVelocity() + deltaW1);
+		_object2.setVelocity(_object2.getVelocity() + deltaV2);
+		_object2.setAngularVelocity(_object2.getAngularVelocity() + deltaW2);
+
+		float Jt2V = -glm::dot(t2, _object2.getVelocity()) - glm::dot(glm::cross(-rA, t2), _object2.getAngularVelocity())
+			+ glm::dot(t2, _object2.getVelocity()) + glm::dot(glm::cross(-rB, t2), _object2.getAngularVelocity());
+
+		float MeffT2 = glm::dot(-t2, glm::inverse(M1) * -t2) +
+			glm::dot(-glm::cross(-rA, t2), glm::inverse(I1) * -glm::cross(-rA, t2)) +
+			glm::dot(t2, glm::inverse(M2) * t2) +
+			glm::dot(glm::cross(-rB, t2), glm::inverse(I2) * glm::cross(-rB, t2));
+
+		float lambdaT2 = -Jt2V / MeffT2;
+		float oldImpulseT2 = totalImpulseT2;
+		float limitT2 = 0.65f * totalImpulseN;
+		totalImpulseT2 = glm::clamp(lambdaT2 + oldImpulseT2, -limitT2, limitT2);
+		lambdaT2 = totalImpulseT2 - oldImpulseT2;
+
+		deltaV1 = M1 * lambdaT2 * -t2;
+		deltaW1 = I1 * lambdaT2 * -glm::cross(-rA, t2);
+		deltaV2 = M2 * lambdaT2 * t2;
+		deltaW2 = I2 * lambdaT2 * glm::cross(-rB, t2);
+
+		// Apply impulses
+		_object2.setVelocity(_object2.getVelocity() + deltaV1);
+		_object2.setAngularVelocity(_object2.getAngularVelocity() + deltaW1);
 		_object2.setVelocity(_object2.getVelocity() + deltaV2);
 		_object2.setAngularVelocity(_object2.getAngularVelocity() + deltaW2);
 	}
