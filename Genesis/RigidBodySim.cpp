@@ -12,13 +12,14 @@ glm::vec3 getAxisY(genesis::GameObject3D&, glm::mat3&);
 glm::vec3 getAxisZ(genesis::GameObject3D&, glm::mat3&);
 float transformToAxis(genesis::GameObject3D&, glm::vec3&);
 float penetrationOnAxis(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3&);
-void fillPointFaceBoxBox(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3&, vector<glm::vec3>&, size_t);
-bool checkCollision(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3&, float&);
+void fillPointFaceBoxBox(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3&, glm::vec3&, vector<glm::vec3>&, size_t);
+glm::vec3 contactPoint(glm::vec3&, glm::vec3&, float, glm::vec3&, glm::vec3&, float, bool);
+bool checkCollision(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3&, glm::vec3&, float&);
 
-bool checkAABBCollision(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3&, float&);
+bool checkAABBCollision(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3&, glm::vec3&, float&);
 
 void computeBasis(const glm::vec3&, glm::vec3&, glm::vec3&);
-void resolveCollision(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3, float, float);
+void resolveCollision(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3, glm::vec3, float, float);
 
 void run_physics_demo(GLFWwindow* window)
 {
@@ -203,6 +204,8 @@ void run_physics_demo(GLFWwindow* window)
 
 		// Contact normal
 		glm::vec3 N;
+		// Contact point
+		glm::vec3 p;
 		// Collision type descriptor (t < 0 = penetration occurred)
 		float t = 0.0f;
 		bool collisionExists = false;
@@ -210,13 +213,13 @@ void run_physics_demo(GLFWwindow* window)
 		int i, j;
 		for (i = 0; i < boxObjects.size(); i++)
 		{
-			N.x = 0;
-			N.y = 0;
-			N.z = 0;
+			N = glm::vec3(0.0f, 0.0f, 0.0f);
 			t = 0.0f;
 
 			for (j = 0; j < boxObjects.size(); j++)
 			{
+				p = glm::vec3(std::numeric_limits<float>::max(), 0.0f, 0.0f);
+
 				/** Forgo collision detection if we know that the boxes cannot possibly collide */
 				if (i == j)
 					continue;
@@ -226,12 +229,12 @@ void run_physics_demo(GLFWwindow* window)
 					continue;
 
 				if (i == 0 || j == 0)
-					collisionExists = checkAABBCollision(boxObjects[i], boxObjects[j], N, t);
+					collisionExists = checkAABBCollision(boxObjects[i], boxObjects[j], N, p, t);
 				else
-					collisionExists = checkCollision(boxObjects[i], boxObjects[j], N, t);
+					collisionExists = checkCollision(boxObjects[i], boxObjects[j], N, p, t);
 				if (collisionExists && t < 0)
 				{
-					resolveCollision(boxObjects[i], boxObjects[j], -N, t, _physicsSimInputManager.getDeltaTime());
+					resolveCollision(boxObjects[i], boxObjects[j], -N, p, t, _physicsSimInputManager.getDeltaTime());
 				}
 			}
 		}
@@ -268,6 +271,7 @@ void getAxes(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, v
 	rotationMat = glm::rotate(rotationMat, _object1.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
 	rotationMat = glm::rotate(rotationMat, _object1.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
 	glm::mat3 rotation = glm::mat3(rotationMat);
+	// Face axes for object 1.
 	glm::vec3 a0 = rotation * glm::vec3(1.0f, 0.0f, 0.0f);
 	glm::vec3 a1 = rotation * glm::vec3(0.0f, 1.0f, 0.0f);
 	glm::vec3 a2 = rotation * glm::vec3(0.0f, 0.0f, 1.0f);
@@ -276,10 +280,12 @@ void getAxes(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, v
 	rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
 	rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
 	rotation = glm::mat3(rotationMat);
+	// Face axes for object 2.
 	glm::vec3 b0 = rotation * glm::vec3(1.0f, 0.0f, 0.0f);
 	glm::vec3 b1 = rotation * glm::vec3(0.0f, 1.0f, 0.0f);
 	glm::vec3 b2 = rotation * glm::vec3(0.0f, 0.0f, 1.0f);
 
+	// Edge-edge axes.
 	_axes.push_back(a0);
 	_axes.push_back(a1);
 	_axes.push_back(a2);
@@ -337,18 +343,83 @@ float penetrationOnAxis(genesis::GameObject3D &_object1, genesis::GameObject3D &
 	return oneProject + twoProject - distance;
 }
 
-void fillPointFaceBoxBox(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, glm::vec3 &_contactN, vector<glm::vec3> &_axes, size_t best)
+void fillPointFaceBoxBox(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, glm::vec3 &_contactN, glm::vec3 &_contactPoint, vector<glm::vec3> &_axes, size_t best)
 {
 	glm::vec3 normal = _axes[best];
 	// Which face is in contact?
 	if (glm::dot(normal, _object2.getPosition() - _object1.getPosition()) > 0)
 		normal *= -1.0f;
 
+	// Which vertex is in contact (in two's coordinates)?
+	float r = _object2.getHitboxRadius();
+	glm::vec3 vertex = glm::vec3(r, r, r);
+
+	glm::mat4 rotationMat;
+	rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
+	rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
+	rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat3 rotation = glm::mat3(rotationMat);
+
+	if (glm::dot(getAxisX(_object2, rotation), normal) < 0.0f)
+		vertex.x = -vertex.x;
+	if (glm::dot(getAxisY(_object2, rotation), normal) < 0.0f)
+		vertex.y = -vertex.y;
+	if (glm::dot(getAxisZ(_object2, rotation), normal) < 0.0f)
+		vertex.z = -vertex.z;
+
+	glm::mat4 offset;
+	offset = glm::translate(offset, _object2.getPosition());
+	offset = glm::rotate(offset, _object2.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
+	offset = glm::rotate(offset, _object2.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
+	offset = glm::rotate(offset, _object2.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
+
+	// Convert to work coordinates.
+	vertex = glm::vec3(offset * glm::vec4(vertex, 1.0f));
+
+	// Create the contact data.
 	_contactN = glm::normalize(normal);
+	_contactPoint = vertex;
+}
+
+glm::vec3 contactPoint(glm::vec3 &pOne, glm::vec3 &dOne, float oneSize, glm::vec3 &pTwo, glm::vec3 &dTwo, float twoSize, bool useOne)
+{
+	glm::vec3 toSt, cOne, cTwo;
+	float dpStaOne, dpStaTwo, dpOneTwo, smOne, smTwo;
+	float denom, mua, mub;
+
+	smOne = glm::dot(dOne, dOne);
+	smTwo = glm::dot(dTwo, dTwo);
+	dpOneTwo = glm::dot(dTwo, dOne);
+
+	toSt = pOne - pTwo;
+	dpStaOne = glm::dot(dOne, toSt);
+	dpStaTwo = glm::dot(dTwo, toSt);
+
+	denom = smOne * smTwo - dpOneTwo * dpOneTwo;
+
+	if (fabs(denom) < 0.0001f) 
+	{
+		return useOne ? pOne : pTwo;
+	}
+
+	mua = (dpOneTwo * dpStaTwo - smTwo * dpStaOne) / denom;
+	mub = (smOne * dpStaTwo - dpOneTwo * dpStaOne) / denom;
+
+	if (mua > oneSize || mua < -oneSize || mub > twoSize || mub < -twoSize)
+	{
+		return useOne ? pOne : pTwo;
+	}
+	else
+	{
+		cOne = pOne + dOne * mua;
+		cTwo = pTwo + dTwo * mub;
+
+		return cOne * 0.5f + cTwo * 0.5f;
+	}
 }
 
 /** SAT collision detection scheme based on ideas from the book:  Game Physics Engine Development */
-bool checkCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, glm::vec3 &_contactN, float &_t)
+bool checkCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, glm::vec3 &_contactN, glm::vec3 &_contactPoint, float &_t)
 {
 	vector<glm::vec3> axes;
 	getAxes(_object1, _object2, axes);
@@ -375,13 +446,13 @@ bool checkCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_obj
 
 	if (bestCase < 3)
 	{
-		fillPointFaceBoxBox(_object1, _object2, _contactN, axes, bestCase);
+		fillPointFaceBoxBox(_object1, _object2, _contactN, _contactPoint, axes, bestCase);
 		_t = -bestOverlap;
 		return true;
 	}
 	else if (bestCase < 6)
 	{
-		fillPointFaceBoxBox(_object2, _object1, _contactN, axes, bestCase);
+		fillPointFaceBoxBox(_object2, _object1, _contactN, _contactPoint, axes, bestCase);
 		_t = -bestOverlap;
 		return true;
 	}
@@ -392,14 +463,102 @@ bool checkCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_obj
 
 		if (glm::dot(axis, _object2.getPosition() - _object1.getPosition()) > 0) axis *= -1.0f;
 
+		glm::mat4 rotationMat1;
+		rotationMat1 = glm::rotate(rotationMat1, _object1.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
+		rotationMat1 = glm::rotate(rotationMat1, _object1.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
+		rotationMat1 = glm::rotate(rotationMat1, _object1.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
+		glm::mat3 rotation1 = glm::mat3(rotationMat1);
+
+		glm::mat4 rotationMat2;
+		rotationMat2 = glm::rotate(rotationMat2, _object2.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
+		rotationMat2 = glm::rotate(rotationMat2, _object2.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
+		rotationMat2 = glm::rotate(rotationMat2, _object2.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
+		glm::mat3 rotation2 = glm::mat3(rotationMat2);
+
+		size_t best = bestCase - 6;
+		size_t oneAxisIndex = best / 3;
+		size_t twoAxisIndex = best % 3;
+		glm::vec3 oneAxis, twoAxis;
+		glm::vec3 oneAxisX = getAxisX(_object1, rotation1);
+		glm::vec3 oneAxisY = getAxisY(_object1, rotation1);
+		glm::vec3 oneAxisZ = getAxisZ(_object1, rotation1);
+		glm::vec3 twoAxisX = getAxisX(_object2, rotation2);
+		glm::vec3 twoAxisY = getAxisY(_object2, rotation2);
+		glm::vec3 twoAxisZ = getAxisZ(_object2, rotation2);
+		if (oneAxisIndex == 0)
+			oneAxis = oneAxisX;
+		else if (oneAxisIndex == 1)
+			oneAxis = oneAxisY;
+		else
+			oneAxis = oneAxisZ;
+		if (twoAxisIndex == 0)
+			twoAxis = twoAxisX;
+		else if (twoAxisIndex == 1)
+			twoAxis = twoAxisY;
+		else
+			twoAxis = twoAxisZ;
+
+		float r1 = _object1.getHitboxRadius();
+		float r2 = _object2.getHitboxRadius();
+		glm::vec3 ptOnOneEdge = glm::vec3(r1, r1, r1);
+		glm::vec3 ptOnTwoEdge = glm::vec3(r2, r2, r2);
+		glm::vec3 oneAxisCurr, twoAxisCurr;
+		int i;
+		for (i = 0; i < 3; i++)
+		{
+			if (i == oneAxisIndex) ptOnOneEdge[i] = 0.0f;
+			else
+			{
+				if (i == 0)
+					oneAxisCurr = oneAxisX;
+				else if (i == 1)
+					oneAxisCurr = oneAxisY;
+				else
+					oneAxisCurr = oneAxisZ;
+				
+				if (glm::dot(oneAxisCurr, axis) > 0.0f) ptOnOneEdge[i] = -ptOnOneEdge[i];
+			}
+
+			if (i == twoAxisIndex) ptOnTwoEdge[i] = 0.0f;
+			else
+			{
+				if (i == 0)
+					twoAxisCurr = twoAxisX;
+				else if (i == 1)
+					twoAxisCurr = twoAxisY;
+				else
+					twoAxisCurr = twoAxisZ;
+
+				if (glm::dot(twoAxisCurr, axis) < 0.0f) ptOnTwoEdge[i] = -ptOnTwoEdge[i];
+			}
+		}
+
+		glm::mat4 offset1;
+		offset1 = glm::translate(offset1, _object1.getPosition());
+		offset1 = glm::rotate(offset1, _object1.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
+		offset1 = glm::rotate(offset1, _object1.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
+		offset1 = glm::rotate(offset1, _object1.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
+
+		glm::mat4 offset2;
+		offset2 = glm::translate(offset2, _object2.getPosition());
+		offset2 = glm::rotate(offset2, _object2.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
+		offset2 = glm::rotate(offset2, _object2.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
+		offset2 = glm::rotate(offset2, _object2.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
+
+		ptOnOneEdge = glm::vec3(offset1 * glm::vec4(ptOnOneEdge, 1.0f));
+		ptOnTwoEdge = glm::vec3(offset2 * glm::vec4(ptOnTwoEdge, 1.0f));
+
+		glm::vec3 vertex = contactPoint(ptOnOneEdge, oneAxis, r1, ptOnTwoEdge, twoAxis, r2, bestCase > 2);
+
 		_contactN = axis;
+		_contactPoint = vertex;
 		_t = -bestOverlap;
 		return true;
 	}
 	return false;
 }
 
-bool checkAABBCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, glm::vec3 &_contactN, float &_t)
+bool checkAABBCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, glm::vec3 &_contactN, glm::vec3 &_contactPoint, float &_t)
 {
 	float r0 = _object1.getHitboxRadius();
 	glm::vec3 min0 = _object1.getPosition() - glm::vec3(r0, r0, r0);
@@ -472,7 +631,7 @@ void computeBasis(const glm::vec3 &n, glm::vec3 &t1, glm::vec3 &t2)
 }
 
 /** Collision resolution scheme based on the paper:  Iterative Dynamics with Temporal Coherence */
-void resolveCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, glm::vec3 _contactNormal, float _penetration, float _timestep)
+void resolveCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, glm::vec3 _contactNormal, glm::vec3 _contactPoint, float _penetration, float _timestep)
 {
 	float totalImpulseN = 0.0f;
 	float totalImpulseT1 = 0.0f;
@@ -532,7 +691,7 @@ void resolveCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_o
 			glm::dot(_contactNormal, glm::inverse(M2) * _contactNormal) +
 			glm::dot(glm::cross(-rB, _contactNormal), glm::inverse(I2) * glm::cross(-rB, _contactNormal));
 
-		float lambdaN = -(JnV + 0.10f / _timestep * _penetration) / MeffN;
+		float lambdaN = -(JnV + 0.15f / _timestep * _penetration) / MeffN;
 		float oldImpulseN = totalImpulseN;
 		totalImpulseN = glm::clamp(lambdaN + oldImpulseN, 0.0f, std::numeric_limits<float>::max());
 		lambdaN = totalImpulseN - oldImpulseN;
