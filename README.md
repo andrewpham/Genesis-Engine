@@ -19,6 +19,9 @@ current OOP implementation in order to stymie the creep of massive inheritance h
 <img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot4.png" width=293>
 <img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot5.png" width=293>
 <img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot6.png" width=293>
+<img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot7.png" width=293>
+<img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot8.png" width=293>
+<img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot9.png" width=293>
 
 ### Additional features
 * Built-in 3D rendering system that works well with modern PCs.
