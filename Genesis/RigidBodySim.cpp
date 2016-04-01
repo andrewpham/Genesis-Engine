@@ -13,7 +13,7 @@ glm::vec3 getAxisZ(genesis::GameObject3D&, glm::mat3&);
 float transformToAxis(genesis::GameObject3D&, glm::vec3&);
 float penetrationOnAxis(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3&);
 void fillPointFaceBoxBox(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3&, glm::vec3&, vector<glm::vec3>&, size_t);
-glm::vec3 contactPoint(glm::vec3&, glm::vec3&, float, glm::vec3&, glm::vec3&, float, bool);
+glm::vec3 getContactPoint(glm::vec3&, glm::vec3&, float, glm::vec3&, glm::vec3&, float, bool);
 bool checkCollision(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3&, glm::vec3&, float&);
 
 bool checkAABBCollision(genesis::GameObject3D&, genesis::GameObject3D&, glm::vec3&, glm::vec3&, float&);
@@ -101,39 +101,6 @@ void run_physics_demo(GLFWwindow* window)
 	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 5.0f, 0.0f)));
 	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 5.5f, 0.0f)));
 	boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.0f, 6.0f, 0.0f)));
-	//// Top left spawn
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 1.5f, -0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 2.0f, -0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 2.5f, -0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 3.0f, -0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 3.5f, -0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 4.0f, -0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 4.5f, -0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 5.0f, -0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 5.5f, -0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 6.0f, -0.875f)));
-	//// Bottom left spawn
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 1.5f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 2.0f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 2.5f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 3.0f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 3.5f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 4.0f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 4.5f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 5.0f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 5.5f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(-0.875, 6.0f, 0.875f)));
-	//// Bottom right spawn
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 1.5f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 2.0f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 2.5f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 3.0f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 3.5f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 4.0f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 4.5f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 5.0f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 5.5f, 0.875f)));
-	//boxObjects.push_back(genesis::GameObject3D(shader, box, glm::vec3(0.875, 6.0f, 0.875f)));
 
 	// Set the hitbox radii and normals
 	for (genesis::GameObject3D &boxObject : boxObjects)
@@ -181,7 +148,7 @@ void run_physics_demo(GLFWwindow* window)
 		glUniform3f(uniforms.object.viewPos, _physicsSimInputManager._camera.Position.x, _physicsSimInputManager._camera.Position.y, _physicsSimInputManager._camera.Position.z);
 
 		// Draw skybox first
-		glDepthMask(GL_FALSE); // Remember to turn depth writing off
+		glDepthMask(GL_FALSE); // Turn depth writing off
 
 		skyboxShader.Use();
 		glm::mat4 view = glm::mat4(glm::mat3(_physicsSimInputManager._camera.GetViewMatrix()));	// Remove any translation component of the view matrix
@@ -196,7 +163,7 @@ void run_physics_demo(GLFWwindow* window)
 
 		glDepthMask(GL_TRUE); // Turn depth writing back on
 
-							  // Then draw scene as normal
+		// Then draw scene as normal
 		shader.Use();
 		view = _physicsSimInputManager._camera.GetViewMatrix();
 		glUniformMatrix4fv(uniforms.object.view, 1, GL_FALSE, glm::value_ptr(view));
@@ -214,12 +181,11 @@ void run_physics_demo(GLFWwindow* window)
 		for (i = 0; i < boxObjects.size(); i++)
 		{
 			N = glm::vec3(0.0f, 0.0f, 0.0f);
+			p = glm::vec3(0.0f, 0.0f, 0.0f);
 			t = 0.0f;
 
 			for (j = 0; j < boxObjects.size(); j++)
 			{
-				p = glm::vec3(std::numeric_limits<float>::max(), 0.0f, 0.0f);
-
 				/** Forgo collision detection if we know that the boxes cannot possibly collide */
 				if (i == j)
 					continue;
@@ -271,7 +237,7 @@ void getAxes(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, v
 	rotationMat = glm::rotate(rotationMat, _object1.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
 	rotationMat = glm::rotate(rotationMat, _object1.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
 	glm::mat3 rotation = glm::mat3(rotationMat);
-	// Face axes for object 1.
+	// Face axes for object 1
 	glm::vec3 a0 = rotation * glm::vec3(1.0f, 0.0f, 0.0f);
 	glm::vec3 a1 = rotation * glm::vec3(0.0f, 1.0f, 0.0f);
 	glm::vec3 a2 = rotation * glm::vec3(0.0f, 0.0f, 1.0f);
@@ -280,12 +246,12 @@ void getAxes(genesis::GameObject3D &_object1, genesis::GameObject3D &_object2, v
 	rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
 	rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
 	rotation = glm::mat3(rotationMat);
-	// Face axes for object 2.
+	// Face axes for object 2
 	glm::vec3 b0 = rotation * glm::vec3(1.0f, 0.0f, 0.0f);
 	glm::vec3 b1 = rotation * glm::vec3(0.0f, 1.0f, 0.0f);
 	glm::vec3 b2 = rotation * glm::vec3(0.0f, 0.0f, 1.0f);
 
-	// Edge-edge axes.
+	// Edge-edge axes
 	_axes.push_back(a0);
 	_axes.push_back(a1);
 	_axes.push_back(a2);
@@ -339,7 +305,7 @@ float penetrationOnAxis(genesis::GameObject3D &_object1, genesis::GameObject3D &
 	float distance = fabs(glm::dot(_object2.getPosition() - _object1.getPosition(), _axis));
 
 	// Return the overlap (i.e., positive indicates
-	// overlap, negative indicates separation).
+	// overlap, negative indicates separation)
 	return oneProject + twoProject - distance;
 }
 
@@ -350,71 +316,75 @@ void fillPointFaceBoxBox(genesis::GameObject3D &_object1, genesis::GameObject3D 
 	if (glm::dot(normal, _object2.getPosition() - _object1.getPosition()) > 0)
 		normal *= -1.0f;
 
-	// Which vertex is in contact (in two's coordinates)?
-	float r = _object2.getHitboxRadius();
-	glm::vec3 vertex = glm::vec3(r, r, r);
+	//// Which vertex is in contact (in two's coordinates)?
+	//float r = _object2.getHitboxRadius();
+	//glm::vec3 vertex = glm::vec3(r, r, r);
 
-	glm::mat4 rotationMat;
-	rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
-	rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
-	rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
-	glm::mat3 rotation = glm::mat3(rotationMat);
+	//glm::mat4 rotationMat;
+	//rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
+	//rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
+	//rotationMat = glm::rotate(rotationMat, _object2.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
+	//glm::mat3 rotation = glm::mat3(rotationMat);
 
-	if (glm::dot(getAxisX(_object2, rotation), normal) < 0.0f)
-		vertex.x = -vertex.x;
-	if (glm::dot(getAxisY(_object2, rotation), normal) < 0.0f)
-		vertex.y = -vertex.y;
-	if (glm::dot(getAxisZ(_object2, rotation), normal) < 0.0f)
-		vertex.z = -vertex.z;
+	//if (glm::dot(getAxisX(_object2, rotation), normal) < 0.0f)
+	//	vertex.x = -vertex.x;
+	//if (glm::dot(getAxisY(_object2, rotation), normal) < 0.0f)
+	//	vertex.y = -vertex.y;
+	//if (glm::dot(getAxisZ(_object2, rotation), normal) < 0.0f)
+	//	vertex.z = -vertex.z;
 
-	glm::mat4 offset;
-	offset = glm::translate(offset, _object2.getPosition());
-	offset = glm::rotate(offset, _object2.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
-	offset = glm::rotate(offset, _object2.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
-	offset = glm::rotate(offset, _object2.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
+	//glm::mat4 offset;
+	//offset = glm::translate(offset, _object2.getPosition());
+	//offset = glm::rotate(offset, _object2.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
+	//offset = glm::rotate(offset, _object2.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
+	//offset = glm::rotate(offset, _object2.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
 
-	// Convert to work coordinates.
-	vertex = glm::vec3(offset * glm::vec4(vertex, 1.0f));
+	//// Convert to work coordinates
+	//vertex = glm::vec3(offset * glm::vec4(vertex, 1.0f));
 
-	// Create the contact data.
+	// Create the contact data
 	_contactN = glm::normalize(normal);
-	_contactPoint = vertex;
+	//_contactPoint = vertex;
 }
 
-glm::vec3 contactPoint(glm::vec3 &pOne, glm::vec3 &dOne, float oneSize, glm::vec3 &pTwo, glm::vec3 &dTwo, float twoSize, bool useOne)
+glm::vec3 getContactPoint(glm::vec3 &ptOnEdgeOne, glm::vec3 &axisOne, float oneSize, glm::vec3 &ptOnEdgeTwo, glm::vec3 &axisTwo, float twoSize, bool useOne)
 {
-	glm::vec3 toSt, cOne, cTwo;
-	float dpStaOne, dpStaTwo, dpOneTwo, smOne, smTwo;
-	float denom, mua, mub;
+	glm::vec3 toSt, nearestPtOnOne, nearestPtOnTwo;
+	float dpStaOne, dpStaTwo, dotProductEdges, smOne, smTwo;
+	float denom, a, b;
 
-	smOne = glm::dot(dOne, dOne);
-	smTwo = glm::dot(dTwo, dTwo);
-	dpOneTwo = glm::dot(dTwo, dOne);
+	// Work out how far along each edge is the closest point
+	smOne = glm::dot(axisOne, axisOne);
+	smTwo = glm::dot(axisTwo, axisTwo);
+	dotProductEdges = glm::dot(axisTwo, axisOne);
 
-	toSt = pOne - pTwo;
-	dpStaOne = glm::dot(dOne, toSt);
-	dpStaTwo = glm::dot(dTwo, toSt);
+	// The vector between the test points on each edge
+	toSt = ptOnEdgeOne - ptOnEdgeTwo;
+	// How much of those vectors are in the direction of each edge?
+	dpStaOne = glm::dot(axisOne, toSt);
+	dpStaTwo = glm::dot(axisTwo, toSt);
 
-	denom = smOne * smTwo - dpOneTwo * dpOneTwo;
+	denom = smOne * smTwo - dotProductEdges * dotProductEdges;
 
 	if (fabs(denom) < 0.0001f) 
 	{
-		return useOne ? pOne : pTwo;
+		return useOne ? ptOnEdgeOne : ptOnEdgeTwo;
 	}
 
-	mua = (dpOneTwo * dpStaTwo - smTwo * dpStaOne) / denom;
-	mub = (smOne * dpStaTwo - dpOneTwo * dpStaOne) / denom;
+	a = (dotProductEdges * dpStaTwo - smTwo * dpStaOne) / denom;
+	b = (smOne * dpStaTwo - dotProductEdges * dpStaOne) / denom;
 
-	if (mua > oneSize || mua < -oneSize || mub > twoSize || mub < -twoSize)
+	if (a > oneSize || a < -oneSize || b > twoSize || b < -twoSize)
 	{
-		return useOne ? pOne : pTwo;
+		return useOne ? ptOnEdgeOne : ptOnEdgeTwo;
 	}
 	else
 	{
-		cOne = pOne + dOne * mua;
-		cTwo = pTwo + dTwo * mub;
+		// Use a point midway between the two nearest points
+		nearestPtOnOne = ptOnEdgeOne + axisOne * a;
+		nearestPtOnTwo = ptOnEdgeTwo + axisTwo * b;
 
-		return cOne * 0.5f + cTwo * 0.5f;
+		return nearestPtOnOne * 0.5f + nearestPtOnTwo * 0.5f;
 	}
 }
 
@@ -431,7 +401,7 @@ bool checkCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_obj
 	{
 		glm::vec3 axis = axes[i];
 
-		// Check for axes that were generated by (almost) parallel edges.
+		// Check for axes that were generated by (almost) parallel edges
 		if (glm::length(axis) < 0.001) continue;
 		axis = glm::normalize(axis);
 
@@ -463,95 +433,97 @@ bool checkCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_obj
 
 		if (glm::dot(axis, _object2.getPosition() - _object1.getPosition()) > 0) axis *= -1.0f;
 
-		glm::mat4 rotationMat1;
-		rotationMat1 = glm::rotate(rotationMat1, _object1.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
-		rotationMat1 = glm::rotate(rotationMat1, _object1.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
-		rotationMat1 = glm::rotate(rotationMat1, _object1.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
-		glm::mat3 rotation1 = glm::mat3(rotationMat1);
+		//glm::mat4 rotationMat1;
+		//rotationMat1 = glm::rotate(rotationMat1, _object1.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
+		//rotationMat1 = glm::rotate(rotationMat1, _object1.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
+		//rotationMat1 = glm::rotate(rotationMat1, _object1.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
+		//glm::mat3 rotation1 = glm::mat3(rotationMat1);
 
-		glm::mat4 rotationMat2;
-		rotationMat2 = glm::rotate(rotationMat2, _object2.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
-		rotationMat2 = glm::rotate(rotationMat2, _object2.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
-		rotationMat2 = glm::rotate(rotationMat2, _object2.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
-		glm::mat3 rotation2 = glm::mat3(rotationMat2);
+		//glm::mat4 rotationMat2;
+		//rotationMat2 = glm::rotate(rotationMat2, _object2.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
+		//rotationMat2 = glm::rotate(rotationMat2, _object2.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
+		//rotationMat2 = glm::rotate(rotationMat2, _object2.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
+		//glm::mat3 rotation2 = glm::mat3(rotationMat2);
 
-		size_t best = bestCase - 6;
-		size_t oneAxisIndex = best / 3;
-		size_t twoAxisIndex = best % 3;
-		glm::vec3 oneAxis, twoAxis;
-		glm::vec3 oneAxisX = getAxisX(_object1, rotation1);
-		glm::vec3 oneAxisY = getAxisY(_object1, rotation1);
-		glm::vec3 oneAxisZ = getAxisZ(_object1, rotation1);
-		glm::vec3 twoAxisX = getAxisX(_object2, rotation2);
-		glm::vec3 twoAxisY = getAxisY(_object2, rotation2);
-		glm::vec3 twoAxisZ = getAxisZ(_object2, rotation2);
-		if (oneAxisIndex == 0)
-			oneAxis = oneAxisX;
-		else if (oneAxisIndex == 1)
-			oneAxis = oneAxisY;
-		else
-			oneAxis = oneAxisZ;
-		if (twoAxisIndex == 0)
-			twoAxis = twoAxisX;
-		else if (twoAxisIndex == 1)
-			twoAxis = twoAxisY;
-		else
-			twoAxis = twoAxisZ;
+		//size_t best = bestCase - 6;
+		//size_t oneAxisIndex = best / 3;
+		//size_t twoAxisIndex = best % 3;
+		//glm::vec3 oneAxis, twoAxis;
+		//glm::vec3 oneAxisX = getAxisX(_object1, rotation1);
+		//glm::vec3 oneAxisY = getAxisY(_object1, rotation1);
+		//glm::vec3 oneAxisZ = getAxisZ(_object1, rotation1);
+		//glm::vec3 twoAxisX = getAxisX(_object2, rotation2);
+		//glm::vec3 twoAxisY = getAxisY(_object2, rotation2);
+		//glm::vec3 twoAxisZ = getAxisZ(_object2, rotation2);
+		//if (oneAxisIndex == 0)
+		//	oneAxis = oneAxisX;
+		//else if (oneAxisIndex == 1)
+		//	oneAxis = oneAxisY;
+		//else
+		//	oneAxis = oneAxisZ;
+		//if (twoAxisIndex == 0)
+		//	twoAxis = twoAxisX;
+		//else if (twoAxisIndex == 1)
+		//	twoAxis = twoAxisY;
+		//else
+		//	twoAxis = twoAxisZ;
 
-		float r1 = _object1.getHitboxRadius();
-		float r2 = _object2.getHitboxRadius();
-		glm::vec3 ptOnOneEdge = glm::vec3(r1, r1, r1);
-		glm::vec3 ptOnTwoEdge = glm::vec3(r2, r2, r2);
-		glm::vec3 oneAxisCurr, twoAxisCurr;
-		int i;
-		for (i = 0; i < 3; i++)
-		{
-			if (i == oneAxisIndex) ptOnOneEdge[i] = 0.0f;
-			else
-			{
-				if (i == 0)
-					oneAxisCurr = oneAxisX;
-				else if (i == 1)
-					oneAxisCurr = oneAxisY;
-				else
-					oneAxisCurr = oneAxisZ;
-				
-				if (glm::dot(oneAxisCurr, axis) > 0.0f) ptOnOneEdge[i] = -ptOnOneEdge[i];
-			}
+		//float r1 = _object1.getHitboxRadius();
+		//float r2 = _object2.getHitboxRadius();
+		//glm::vec3 ptOnOneEdge = glm::vec3(r1, r1, r1);
+		//glm::vec3 ptOnTwoEdge = glm::vec3(r2, r2, r2);
+		//glm::vec3 oneAxisCurr, twoAxisCurr;
+		//int i;
+		//for (i = 0; i < 3; i++)
+		//{
+		//	if (i == oneAxisIndex) ptOnOneEdge[i] = 0.0f;
+		//	else
+		//	{
+		//		if (i == 0)
+		//			oneAxisCurr = oneAxisX;
+		//		else if (i == 1)
+		//			oneAxisCurr = oneAxisY;
+		//		else
+		//			oneAxisCurr = oneAxisZ;
+		//		
+		//		if (glm::dot(oneAxisCurr, axis) > 0.0f) ptOnOneEdge[i] = -ptOnOneEdge[i];
+		//	}
 
-			if (i == twoAxisIndex) ptOnTwoEdge[i] = 0.0f;
-			else
-			{
-				if (i == 0)
-					twoAxisCurr = twoAxisX;
-				else if (i == 1)
-					twoAxisCurr = twoAxisY;
-				else
-					twoAxisCurr = twoAxisZ;
+		//	if (i == twoAxisIndex) ptOnTwoEdge[i] = 0.0f;
+		//	else
+		//	{
+		//		if (i == 0)
+		//			twoAxisCurr = twoAxisX;
+		//		else if (i == 1)
+		//			twoAxisCurr = twoAxisY;
+		//		else
+		//			twoAxisCurr = twoAxisZ;
 
-				if (glm::dot(twoAxisCurr, axis) < 0.0f) ptOnTwoEdge[i] = -ptOnTwoEdge[i];
-			}
-		}
+		//		if (glm::dot(twoAxisCurr, axis) < 0.0f) ptOnTwoEdge[i] = -ptOnTwoEdge[i];
+		//	}
+		//}
 
-		glm::mat4 offset1;
-		offset1 = glm::translate(offset1, _object1.getPosition());
-		offset1 = glm::rotate(offset1, _object1.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
-		offset1 = glm::rotate(offset1, _object1.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
-		offset1 = glm::rotate(offset1, _object1.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
+		//glm::mat4 offset1;
+		//offset1 = glm::translate(offset1, _object1.getPosition());
+		//offset1 = glm::rotate(offset1, _object1.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
+		//offset1 = glm::rotate(offset1, _object1.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
+		//offset1 = glm::rotate(offset1, _object1.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
 
-		glm::mat4 offset2;
-		offset2 = glm::translate(offset2, _object2.getPosition());
-		offset2 = glm::rotate(offset2, _object2.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
-		offset2 = glm::rotate(offset2, _object2.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
-		offset2 = glm::rotate(offset2, _object2.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
+		//glm::mat4 offset2;
+		//offset2 = glm::translate(offset2, _object2.getPosition());
+		//offset2 = glm::rotate(offset2, _object2.getAngularDisplacement().y, glm::vec3(0.0f, 0.0f, 1.0f));
+		//offset2 = glm::rotate(offset2, _object2.getAngularDisplacement().x, glm::vec3(0.0f, 1.0f, 0.0f));
+		//offset2 = glm::rotate(offset2, _object2.getAngularDisplacement().z, glm::vec3(1.0f, 0.0f, 0.0f));
 
-		ptOnOneEdge = glm::vec3(offset1 * glm::vec4(ptOnOneEdge, 1.0f));
-		ptOnTwoEdge = glm::vec3(offset2 * glm::vec4(ptOnTwoEdge, 1.0f));
+		//// Move them into world coordinates (they are already oriented
+		//// correctly, since they have been derived from the axes)
+		//ptOnOneEdge = glm::vec3(offset1 * glm::vec4(ptOnOneEdge, 1.0f));
+		//ptOnTwoEdge = glm::vec3(offset2 * glm::vec4(ptOnTwoEdge, 1.0f));
 
-		glm::vec3 vertex = contactPoint(ptOnOneEdge, oneAxis, r1, ptOnTwoEdge, twoAxis, r2, bestCase > 2);
+		//glm::vec3 vertex = getContactPoint(ptOnOneEdge, oneAxis, r1, ptOnTwoEdge, twoAxis, r2, bestCase > 2);
 
 		_contactN = axis;
-		_contactPoint = vertex;
+		//_contactPoint = vertex;
 		_t = -bestOverlap;
 		return true;
 	}
@@ -619,7 +591,7 @@ void computeBasis(const glm::vec3 &n, glm::vec3 &t1, glm::vec3 &t2)
 {
 	// Suppose vector a has all equal components and is a unit vector: a = (s, s, s)
 	// Then 3*s*s = 1, s = sqrt(1/3) = 0.57735. This means that at least one component of a
-	// unit vector must be greater or equal to 0.57735.
+	// unit vector must be greater or equal to 0.57735
 
 	if (fabs(n.x) >= 0.57735f)
 		t1 = glm::vec3(n.y, -n.x, 0.0f);
@@ -640,7 +612,7 @@ void resolveCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_o
 	computeBasis(_contactNormal, t1, t2);
 
 	int i;
-	for (i = 0; i < 3; i++)
+	for (i = 0; i < 5; i++)
 	{
 		glm::vec3 rA = glm::normalize(_object2.getPosition() - _object1.getPosition());
 		glm::vec3 rB = -rA;
@@ -672,14 +644,14 @@ void resolveCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_o
 		glm::mat3 M2;
 		memcpy(glm::value_ptr(M2), M2Vals, sizeof(M2Vals));
 
-		float i1 = 300 * m1 * r1 * r1 / 6;
+		float i1 = 330 * m1 * r1 * r1 / 6;
 		float I1Vals[9] = { i1,  0,  0,
 			0, i1,  0,
 			0,  0, i1 };
 		glm::mat3 I1;
 		memcpy(glm::value_ptr(I1), I1Vals, sizeof(I1Vals));
 
-		float i2 = 300 * m2 * r2 * r2 / 6;
+		float i2 = 330 * m2 * r2 * r2 / 6;
 		float I2Vals[9] = { i2,  0,  0,
 			0, i2,  0,
 			0,  0, i2 };
@@ -691,7 +663,7 @@ void resolveCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_o
 			glm::dot(_contactNormal, glm::inverse(M2) * _contactNormal) +
 			glm::dot(glm::cross(-rB, _contactNormal), glm::inverse(I2) * glm::cross(-rB, _contactNormal));
 
-		float lambdaN = -(JnV + 0.15f / _timestep * _penetration) / MeffN;
+		float lambdaN = -(JnV + 0.10f / _timestep * _penetration) / MeffN;
 		float oldImpulseN = totalImpulseN;
 		totalImpulseN = glm::clamp(lambdaN + oldImpulseN, 0.0f, std::numeric_limits<float>::max());
 		lambdaN = totalImpulseN - oldImpulseN;
@@ -718,7 +690,7 @@ void resolveCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_o
 
 		float lambdaT1 = -Jt1V / MeffT1;
 		float oldImpulseT1 = totalImpulseT1;
-		float limitT1 = 0.65f * totalImpulseN;
+		float limitT1 = 0.20f * totalImpulseN;
 		totalImpulseT1 = glm::clamp(lambdaT1 + oldImpulseT1, -limitT1, limitT1);
 		lambdaT1 = totalImpulseT1 - oldImpulseT1;
 
@@ -743,7 +715,7 @@ void resolveCollision(genesis::GameObject3D &_object1, genesis::GameObject3D &_o
 
 		float lambdaT2 = -Jt2V / MeffT2;
 		float oldImpulseT2 = totalImpulseT2;
-		float limitT2 = 0.65f * totalImpulseN;
+		float limitT2 = 0.20f * totalImpulseN;
 		totalImpulseT2 = glm::clamp(lambdaT2 + oldImpulseT2, -limitT2, limitT2);
 		lambdaT2 = totalImpulseT2 - oldImpulseT2;
 

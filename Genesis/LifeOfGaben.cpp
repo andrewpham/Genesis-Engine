@@ -657,7 +657,7 @@ void run_gaben_game(GLFWwindow* window)
 	glfwTerminate();
 }
 
-// Calculates which direction a vector is facing (N,E,S or W)
+/** Calculates which direction a vector is facing (N,E,S or W) */
 Direction vectorDirection(glm::vec2 _target)
 {
 	glm::vec2 compass[] = {
@@ -942,7 +942,7 @@ void resolveEnemyInteractions(genesis::Enemy &_object, genesis::InputManager &_i
 	}
 }
 
-// Note the coordinate bounds within the game world and ensure proper collision resolution at those limits
+/** Note the coordinate bounds within the game world and ensure proper collision resolution at those limits */
 void resolveWallCollisions(GLfloat _north, GLfloat _south, GLfloat _east, GLfloat _west, genesis::InputManager &_inputManager)
 {
 	glm::vec3 cameraPosition = _inputManager._camera.Position;
