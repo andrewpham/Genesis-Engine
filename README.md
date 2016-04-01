@@ -14,10 +14,7 @@ current OOP implementation in order to stymie the creep of massive inheritance h
 
 ### Screenshots
 <img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot1.png" width=293>
-<img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot2.png" width=293>
-<img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot3.png" width=293>
 <img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot4.png" width=293>
-<img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot5.png" width=293>
 <img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot6.png" width=293>
 <img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot7.png" width=293>
 <img src="https://raw.githubusercontent.com/andrewpham/Genesis-Engine/master/Screenshots/screenshot8.png" width=293>
