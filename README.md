@@ -6,7 +6,7 @@ features enabled by OpenGL 4.3.  Some of the features made possible by restricti
 more recent specifications include particle systems based on compute shaders and shader storage buffer 
 objects, and terrain detail with the inclusion of tessellation shaders.  Standardized GLSL scripts 
 provide the basis for a rich lighting model that will be iterated on over time to provide the most 
-realistic environments possible over a wide range of potential projects.  
+realistic environments possible over a wide range of potential projects.
 
 Many of the features have already been implemented in a number of OpenGL demos that you can browse at  
 your leisure.  Current development focuses on hashing out a data-oriented architecture from the
@@ -38,7 +38,7 @@ current OOP implementation in order to optimize every last bit of code.
 ### How to build on Windows 7/8/10
 You will require both the 2013 and 2015 Visual C++ redistributable packages.  Easiest way to fulfill this 
 requirement is to just simply install both Visual Studio 2013 and Visual Studio 2015 **or** 2017, which you can find
-[here.](https://www.visualstudio.com/en-us/news/releasenotes/vs2013-archive).
+[here](https://www.visualstudio.com/en-us/news/releasenotes/vs2013-archive).
 
 Make sure you have a graphics card that supports OpenGL 4.3.  You may have to install the latest drivers
 provided by the manufacturer of your graphics card.  *Note that you will not need need Visual Studio 2015/2017
@@ -61,7 +61,7 @@ Put the following files from `bin/win32-visualStudio` into `Genesis-Engine/Debug
 * Under gengine **Configuration Properties** (right click gengine in the Solution Explorer > Properties):
 	- VC++ Directories:  Include Directories.  Add `$(SolutionDir)Deps/Include/` by clicking the down arrow to the right of the field and selecting `<Edit...>`.
 	- VC++ Directories:  Library Directories.  Add `$(SolutionDir)Deps/Libs/` by clicking the down arrow to the right of the field and selecting `<Edit...>`.
-         - General: Platform Toolset.  Make sure `Visual Studio 2015 (v140)` is selected (if working in Visual Studio 2017).
+	- General: Platform Toolset.  Make sure `Visual Studio 2015 (v140)` is selected (if working in Visual Studio 2017).
 * Under **Librarian > General** still in the gengine properties, make sure that the following **Additional Dependencies** are added by selecting `<Edit...>`:
 	- opengl32.lib
 	- glfw3.lib
@@ -69,11 +69,11 @@ Put the following files from `bin/win32-visualStudio` into `Genesis-Engine/Debug
 	- glew32s.lib
 	- assimpd.lib
 	- irrKlang.lib
-        - legacy_stdio_definitions.lib (if working in Visual Studio 2017)
+	- legacy_stdio_definitions.lib (if working in Visual Studio 2017)
 * Under Genesis **Configuration Properties**:
 	- VC++ Directories: Include Directories.  Add `$(SolutionDir)Deps/Include/`.
 	- VC++ Directories: Library Directories.  Add `$(SolutionDir)Deps/Libs/` and `$(SolutionDir)Debug/` using the same method as above.
-        - General: Platform Toolset.  Make sure `Visual Studio 2015 (v140)` is selected (if working in Visual Studio 2017).
+	- General: Platform Toolset.  Make sure `Visual Studio 2015 (v140)` is selected (if working in Visual Studio 2017).
 * Under **Linker > Input** still in the Genesis properties, make sure that the following **Additional Dependencies** are added by selecting `<Edit...>`:
 	- opengl32.lib
 	- glfw3.lib
@@ -82,7 +82,7 @@ Put the following files from `bin/win32-visualStudio` into `Genesis-Engine/Debug
 	- assimpd.lib
 	- irrKlang.lib
 	- gengine.lib
-        - legacy_stdio_definitions.lib (if working in Visual Studio 2017)
+	- legacy_stdio_definitions.lib (if working in Visual Studio 2017)
 	
 In order to run the solution, you will need to set the build in the upper panel to `Debug` and `x86`. 
 Then build both the game engine (gengine) and gameplay code (Genesis)  by right clicking Genesis 
