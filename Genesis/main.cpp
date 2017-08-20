@@ -19,7 +19,7 @@ int main()
 	glGetError(); // Call it once to catch glewInit() bug, all other errors are now from our application.
 
 	/** Uncomment only this function to play the Life of Gaben game... */
-	//run_gaben_game(window.getWindow());
+	run_gaben_game(window.getWindow());
 
 	/** ...or uncomment only this function to run Breakout... */
 	//play_breakout(window.getWindow());
@@ -28,7 +28,7 @@ int main()
 	//run_skin_demo(window.getWindow());
 
 	/** ...or uncomment only this function to run the rigid body simulation */
-	run_physics_demo(window.getWindow());
+	//run_physics_demo(window.getWindow());
 
 	/** ...or uncomment ONLY ONE of these functions to display a demo showcasing some of the 3D rendering capabilities of this game engine */
 	//render_superbible_perpixelgloss(window.getWindow());
