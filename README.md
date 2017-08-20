@@ -1,7 +1,7 @@
 Genesis Game Engine
 -------------------
 
-Genesis is a comprehensive game engine for both 2D and 3D projects, focused heavily on the graphics 
+Genesis is a comprehensive game engine for both 2D and 3D projects, presenting a few of the graphics 
 features enabled by OpenGL 4.3.  Some of the features made possible by restricting development to 
 more recent specifications include particle systems based on compute shaders and shader storage buffer 
 objects, and terrain detail with the inclusion of tessellation shaders.  Standardized GLSL scripts 
@@ -37,7 +37,7 @@ current OOP implementation in order to optimize every last bit of code.
 
 ### How to build on Windows 7/8/10
 You will require both the 2013 and 2015 Visual C++ redistributable packages.  Easiest way to fulfill this 
-requirement is to just simply install both Visual Studio 2013 and Visual Studio 2015 **OR** 2017, which you can find
+requirement is to just simply install both Visual Studio 2013 and Visual Studio 2015 **or** 2017, which you can find
 [here.](https://www.visualstudio.com/en-us/news/releasenotes/vs2013-archive).
 
 Make sure you have a graphics card that supports OpenGL 4.3.  You may have to install the latest drivers
@@ -59,9 +59,9 @@ Put the following files from `bin/win32-visualStudio` into `Genesis-Engine/Debug
 * Open `Genesis.sln`.
 * If you get a pop-up asking you to convert the C++ compiler, hit cancel.
 * Under gengine **Configuration Properties** (right click gengine in the Solution Explorer > Properties):
-        - General: Platform Toolset.  Make sure `Visual Studio 2015 (v140)` is selected (if working in Visual Studio 2017).
 	- VC++ Directories:  Include Directories.  Add `$(SolutionDir)Deps/Include/` by clicking the down arrow to the right of the field and selecting `<Edit...>`.
 	- VC++ Directories:  Library Directories.  Add `$(SolutionDir)Deps/Libs/` by clicking the down arrow to the right of the field and selecting `<Edit...>`.
+         - General: Platform Toolset.  Make sure `Visual Studio 2015 (v140)` is selected (if working in Visual Studio 2017).
 * Under **Librarian > General** still in the gengine properties, make sure that the following **Additional Dependencies** are added by selecting `<Edit...>`:
 	- opengl32.lib
 	- glfw3.lib
@@ -71,9 +71,9 @@ Put the following files from `bin/win32-visualStudio` into `Genesis-Engine/Debug
 	- irrKlang.lib
         - legacy_stdio_definitions.lib (if working in Visual Studio 2017)
 * Under Genesis **Configuration Properties**:
-        - General: Platform Toolset.  Make sure `Visual Studio 2015 (v140)` is selected (if working in Visual Studio 2017).
 	- VC++ Directories: Include Directories.  Add `$(SolutionDir)Deps/Include/`.
 	- VC++ Directories: Library Directories.  Add `$(SolutionDir)Deps/Libs/` and `$(SolutionDir)Debug/` using the same method as above.
+        - General: Platform Toolset.  Make sure `Visual Studio 2015 (v140)` is selected (if working in Visual Studio 2017).
 * Under **Linker > Input** still in the Genesis properties, make sure that the following **Additional Dependencies** are added by selecting `<Edit...>`:
 	- opengl32.lib
 	- glfw3.lib
@@ -94,13 +94,13 @@ lines, making sure that only one function is uncommented at any given point.
 ##### Troubleshooting
 If you have no audio devices available, a runtime exception will be thrown.
 
-### Life of Gaben Controls
+### Life of Gaben controls
 * **Mouse** - Aim
 * **WASD** - Movement
 * **Spacebar** - Fire Weapon
 * **E** - Plant Tower Mine If Available off Cooldown
 
-### Rigid Body Simulation Controls
+### Rigid Body Simulation controls
 * **Mouse** - Aim
 * **WASD** - Movement
 * **Spacebar** - Launch/Fire Box
