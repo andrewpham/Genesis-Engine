@@ -417,7 +417,7 @@ void run_gaben_game(GLFWwindow* window)
 	glEnable(GL_DEPTH_TEST);
 
 	// Play theme song
-	//_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/theme.mp3", GL_TRUE);
+	_gabenGameInputManager.getSoundEngine()->play2D("../Genesis/Audio/Life of Gaben/theme.mp3", GL_TRUE);
 
 	// Game loop
 	while (!glfwWindowShouldClose(window))
