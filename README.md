@@ -1,4 +1,4 @@
-Genesis Game Engine
+Genesis Game Engine (Power of a Thousand Sun)
 -------------------
 
 Genesis is a comprehensive game engine for both 2D and 3D projects, presenting a few of the graphics 
