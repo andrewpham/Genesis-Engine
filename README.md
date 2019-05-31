@@ -1,4 +1,4 @@
-Genesis Game Engine (Power of a Thousand Sun)
+Genesis Game Engine
 -------------------
 
 Genesis is a comprehensive game engine for both 2D and 3D projects, presenting a few of the graphics 
@@ -38,7 +38,7 @@ current OOP implementation in order to optimize every last bit of code.
 ### How to build on Windows 7/8/10
 You will require both the 2013 and 2015 Visual C++ redistributable packages.  Easiest way to fulfill this 
 requirement is to just simply install both Visual Studio 2013 and Visual Studio 2015 **or** 2017, which you can find
-[here](https://www.visualstudio.com/en-us/news/releasenotes/vs2013-archive).
+[here](https://visualstudio.microsoft.com/vs/older-downloads/).
 
 Make sure you have a graphics card that supports OpenGL 4.3.  You may have to install the latest drivers
 provided by the manufacturer of your graphics card.  *Note that you will not need need Visual Studio 2015/2017
@@ -115,5 +115,5 @@ If you have no audio devices available, a runtime exception will be thrown.
 If you are a developer, we need your help.  Genesis is a young project and we have a lot of new features
 to implement and bugs to fix.  Feel free to refactor the current codebase and improve what we already have.  
 Once the Visual Studio workflow is set, contributing is as easy as changing just a few lines of code.  Feel 
-free to shoot me an email at andrew.pham@uwaterloo.ca to begin a correspondence on how you can help grow 
+free to shoot me an email at andrew.tucker.p@gmail.com to begin a correspondence on how you can help grow
 the project!
